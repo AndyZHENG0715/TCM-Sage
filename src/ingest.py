@@ -162,8 +162,11 @@ def main():
         for chapter_title, chapter_content in chapters:
             print(f"🔄 Processing chapter: {chapter_title}")
 
-            # Split the current chapter into chunks
-            chapter_chunks = text_splitter.split_text(chapter_content)
+            # Before splitting, prepend the chapter title to the content
+            full_chapter_text = f"{chapter_title}\n{chapter_content}"
+
+            # Split the chapter text (now including title)
+            chapter_chunks = text_splitter.split_text(full_chapter_text)
 
             # Create chunk dictionaries with metadata for this chapter
             for chunk in chapter_chunks:
