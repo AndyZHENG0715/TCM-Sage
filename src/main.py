@@ -275,23 +275,43 @@ Answer:
             | StrOutputParser()
         )
 
-        # Define a sample query
-        query = "阴阳是什么？"
-        print(f"\nSample Query: {query}")
-        print("=" * 60)
-
-        # Execute the RAG chain
-        print("Executing RAG pipeline...")
-        answer = rag_chain.invoke(query)
-
-        # Display the results
-        print("\nGenerated Answer:")
-        print("=" * 60)
-        print(answer)
-        print("=" * 60)
-
-        print("\nRAG pipeline executed successfully!")
+        print("\nRAG pipeline initialized successfully!")
         print("TCM-Sage is ready to answer questions about Traditional Chinese Medicine!")
+        print("=" * 60)
+
+        # 交互式查询循环
+        while True:
+            try:
+                # 提示用户输入问题
+                user_query = input("\n请输入您的问题 (輸入 exit 來結束): ").strip()
+
+                # 检查退出命令
+                if user_query.lower() in ['退出', 'exit', 'quit', 'q']:
+                    print("\n感謝使用 TCM-Sage！再見！")
+                    break
+
+                # 跳过空输入
+                if not user_query:
+                    print("請輸入有效問題。")
+                    continue
+
+                # 执行RAG查询
+                print("\n正在生成答案...")
+                answer = rag_chain.invoke(user_query)
+
+                # 显示答案
+                print("\n" + "=" * 60)
+                print("生成答案:")
+                print("=" * 60)
+                print(answer)
+                print("=" * 60)
+
+            except KeyboardInterrupt:
+                print("\n\n程式已中斷。感謝使用 TCM-Sage！")
+                break
+            except Exception as e:
+                print(f"\n查詢處理錯誤: {e}")
+                print("請嘗試另一個問題。")
 
     except ValueError as e:
         print(f"Configuration Error: {e}")
