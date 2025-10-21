@@ -12,7 +12,14 @@ The system supports multiple LLM providers that can be easily switched using env
 # LLM Provider Configuration
 LLM_PROVIDER=alibaba          # Provider: alibaba, openai, google, anthropic, openrouter, together
 LLM_MODEL=                    # Optional: Override default model for the provider
-LLM_TEMPERATURE=0.1           # Model temperature (0.0-1.0)
+LLM_TEMPERATURE=0.1           # Temperature for informational queries (can increase for creativity: 0.3-0.7)
+PRESCRIPTIVE_TEMPERATURE=0.0  # Temperature for prescriptive/diagnostic queries (keep at 0.0 for accuracy)
+                              # Only increase if you need more creative medical suggestions (not recommended)
+
+# Classifier LLM Configuration (for query routing)
+CLASSIFIER_LLM_PROVIDER=alibaba    # Lightweight model provider for fast query classification
+CLASSIFIER_LLM_MODEL=qwen3-0.6b    # Small, fast model (recommended: qwen3-0.6b, gpt-4o-mini)
+CLASSIFIER_LLM_TEMPERATURE=0.0     # Keep at 0.0 for consistent classification
 
 # Retrieval Configuration
 RETRIEVAL_K=5                 # Number of document chunks to retrieve (3-10 recommended)
@@ -34,6 +41,33 @@ ANTHROPIC_API_KEY=your-anthropic-api-key-here
 OPENROUTER_API_KEY=your-openrouter-api-key-here
 TOGETHER_API_KEY=your-together-api-key-here
 ```
+
+## Query Classification and Routing
+
+TCM-Sage now includes an intelligent query classification system that automatically determines the clinical severity of user questions and adjusts the response generation accordingly.
+
+### How It Works
+
+1. **Query Classification**: A lightweight classifier model analyzes each user query to determine if it's:
+   - **Informational**: General knowledge questions, definitions, or explanations (e.g., "陰陽是什麼？")
+   - **Prescriptive**: Questions asking for diagnoses, treatments, formulas, or medical advice (e.g., "頭痛應該用什麼方劑？")
+
+2. **Dynamic Temperature Adjustment**: Based on the classification:
+   - **Informational queries**: Use `LLM_TEMPERATURE` (default 0.1, can be increased for creativity)
+   - **Prescriptive queries**: Use `PRESCRIPTIVE_TEMPERATURE` (default 0.0 for maximum accuracy)
+
+### Configuration Options
+
+- **`CLASSIFIER_LLM_PROVIDER`**: Provider for the classification model (recommended: same as main provider)
+- **`CLASSIFIER_LLM_MODEL`**: Lightweight model for fast classification (recommended: `qwen3-0.6b`, `gpt-4o-mini`)
+- **`CLASSIFIER_LLM_TEMPERATURE`**: Keep at 0.0 for consistent classification
+- **`PRESCRIPTIVE_TEMPERATURE`**: Temperature for medical/prescriptive queries (keep at 0.0 unless necessary)
+
+### Best Practices
+
+- **For informational queries**: You can increase `LLM_TEMPERATURE` to 0.3-0.7 for more creative explanations
+- **For prescriptive queries**: Always keep `PRESCRIPTIVE_TEMPERATURE` at 0.0 to ensure medical accuracy
+- **Classifier model**: Use a small, fast model to minimize latency and cost
 
 ## Supported Providers
 

@@ -191,6 +191,40 @@ def format_docs(docs):
     return "\n".join(formatted_docs)
 
 
+def get_query_severity(query, classifier_llm):
+    """
+    Classify user query into severity categories.
+
+    Args:
+        query (str): User's question
+        classifier_llm: LLM instance for classification
+
+    Returns:
+        str: 'informational' or 'prescriptive'
+    """
+    classifier_template = """You are a helpful assistant for a Traditional Chinese Medicine query system. Your task is to classify the user's question into one of two categories based on its clinical severity:
+1. 'informational': For general knowledge questions, definitions, or explanations of concepts.
+2. 'prescriptive': For questions asking for diagnoses, treatments, formulas, or any advice that could directly impact a patient's health.
+
+Respond with ONLY the category name ('informational' or 'prescriptive').
+
+User Question:
+{question}
+
+Category:"""
+
+    classifier_prompt = ChatPromptTemplate.from_template(classifier_template)
+    classifier_chain = classifier_prompt | classifier_llm | StrOutputParser()
+
+    severity = classifier_chain.invoke({"question": query}).strip().lower()
+
+    # Validate and default to prescriptive if unclear
+    if severity not in ['informational', 'prescriptive']:
+        severity = 'prescriptive'
+
+    return severity
+
+
 def main():
     """
     Main function to execute the complete RAG pipeline.
@@ -212,6 +246,15 @@ def main():
         provider = os.getenv('LLM_PROVIDER', 'alibaba').lower()
         model = os.getenv('LLM_MODEL')
         temperature = float(os.getenv('LLM_TEMPERATURE', '0.1'))
+
+        # Classifier configuration
+        classifier_provider = os.getenv('CLASSIFIER_LLM_PROVIDER', provider).lower()
+        classifier_model = os.getenv('CLASSIFIER_LLM_MODEL')
+        classifier_temperature = float(os.getenv('CLASSIFIER_LLM_TEMPERATURE', '0.0'))
+
+        # Main LLM temperatures
+        informational_temperature = temperature  # from LLM_TEMPERATURE
+        prescriptive_temperature = float(os.getenv('PRESCRIPTIVE_TEMPERATURE', '0.0'))
 
         # Get retrieval configuration
         retrieval_k = int(os.getenv('RETRIEVAL_K', '5'))
@@ -257,9 +300,14 @@ After providing the answer, cite the source chapter for the information you prov
             k=retrieval_k  # Use configurable k value from environment
         )
 
-        # Initialize the language model
-        print("Initializing language model...")
-        llm = create_llm(provider, model, temperature)
+        # Initialize classifier LLM
+        print("Initializing classifier model...")
+        classifier_llm = create_llm(classifier_provider, classifier_model, classifier_temperature)
+
+        # Initialize main LLMs with different temperatures
+        print("Initializing main language models...")
+        llm_informational = create_llm(provider, model, informational_temperature)
+        llm_prescriptive = create_llm(provider, model, prescriptive_temperature)
 
         # Define the prompt template
         print("Configuring prompt template...")
@@ -275,40 +323,56 @@ Answer:
 """
         prompt = ChatPromptTemplate.from_template(template)
 
-        # Construct the RAG chain using LangChain Expression Language (LCEL)
-        print("Building RAG chain...")
-        rag_chain = (
-            {"context": retriever | format_docs, "question": RunnablePassthrough()}
-            | prompt
-            | llm
-            | StrOutputParser()
-        )
+        # RAG chain will be built dynamically in the query loop based on classification
 
         print("\nRAG pipeline initialized successfully!")
         print("TCM-Sage is ready to answer questions about Traditional Chinese Medicine!")
         print("=" * 60)
 
-        # 交互式查询循环
+        # Interactive query loop
         while True:
             try:
-                # 提示用户输入问题
+                # Prompt user for input
                 user_query = input("\n请输入您的问题 (輸入 exit 來結束): ").strip()
 
-                # 检查退出命令
+                # Check exit commands
                 if user_query.lower() in ['退出', 'exit', 'quit', 'q']:
                     print("\n感謝使用 TCM-Sage！再見！")
                     break
 
-                # 跳过空输入
+                # Skip empty input
                 if not user_query:
                     print("請輸入有效問題。")
                     continue
 
-                # 执行RAG查询
-                print("\n正在生成答案...")
+                # Classify query severity
+                print("\n正在分析問題類型...")
+                severity = get_query_severity(user_query, classifier_llm)
+
+                # Select appropriate LLM based on severity
+                if severity == 'prescriptive':
+                    selected_llm = llm_prescriptive
+                    selected_temp = prescriptive_temperature
+                else:
+                    selected_llm = llm_informational
+                    selected_temp = informational_temperature
+
+                print(f"檢測到問題類型: {severity}")
+                print(f"使用溫度: {selected_temp}")
+
+                # Build RAG chain with selected LLM
+                rag_chain = (
+                    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                    | prompt
+                    | selected_llm
+                    | StrOutputParser()
+                )
+
+                # Execute RAG query
+                print("正在生成答案...")
                 answer = rag_chain.invoke(user_query)
 
-                # 显示答案
+                # Show answer
                 print("\n" + "=" * 60)
                 print("生成答案:")
                 print("=" * 60)

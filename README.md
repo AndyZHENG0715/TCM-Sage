@@ -16,15 +16,15 @@ The system is built on a Modular RAG paradigm to handle the complexities of clas
 
 3. **Reflective Generator:** A two-layer "glass-box" generator inspired by Self-RAG ensures trustworthy answers:
 
-    - **Query Routing:** A small, fast LLM pre-classifies query severity to apply either a creative (high temperature) or strict (zero temperature) generation setting.
+    - **Query Routing:** ✅ **IMPLEMENTED** - A small, fast LLM pre-classifies query severity to apply either a creative (higher temperature) or strict (zero temperature) generation setting based on clinical severity.
 
     - **Self-Critique:** The main LLM generates an answer and then validates it against the retrieved source text, providing a direct citation to the source chapter.
 
 ## Current Status
 
-**Phase 2: MVP Implementation & Core Logic**
+**Phase 2: MVP Implementation & Core Logic** ✅ **COMPLETED**
 
-The project has successfully completed Phase 1 (Research & Data Preparation). The immediate next step is to build the core application logic in `src/main.py` to create a functional command-line MVP.
+The project has successfully completed Phase 1 (Research & Data Preparation) and Phase 2 (MVP Implementation). The core application logic in `src/main.py` is now fully functional with intelligent query classification and routing capabilities.
 
 ## Project Roadmap & Timeline
 
@@ -36,13 +36,15 @@ This plan is aligned with the official submission deadlines.
 
     - [x] First Progress Report submitted.
 
-* **Phase 2: MVP Implementation (Oct 2025 - Dec 2025)**
+* **Phase 2: MVP Implementation (Oct 2025 - Dec 2025)** ✅ **COMPLETED**
 
     - [x] Implement the core RAG chain (`src/main.py`).
 
     - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration.
 
     - [x] Build a functional Command-Line Interface (CLI).
+
+    - [x] **Implement intelligent query classification and routing system.**
 
     - [ ] Submit Source Code: End of Nov, End of Dec.
 
@@ -128,6 +130,28 @@ This plan is aligned with the official submission deadlines.
 
     The application will prompt you to enter questions. Type 'exit' to quit the program.
 
+## Key Features
+
+### 🧠 **Intelligent Query Classification**
+TCM-Sage automatically analyzes each user query to determine its clinical severity:
+- **Informational Queries**: General knowledge questions (e.g., "陰陽是什麼？") use higher temperature for creative explanations
+- **Prescriptive Queries**: Medical advice questions (e.g., "頭痛如何治療？") use zero temperature for maximum accuracy
+
+### 🔄 **Dynamic Response Generation**
+The system uses three optimized LLM instances:
+- **Classifier LLM**: Fast, lightweight model for query analysis
+- **Informational LLM**: Main model with configurable temperature for general questions
+- **Prescriptive LLM**: Main model with zero temperature for medical advice
+
+### 📚 **Evidence-Based Answers**
+All responses are backed by direct citations from the Huangdi Neijing, ensuring practitioners can verify information sources.
+
+### 🌐 **Multi-Provider Support**
+Switch between different LLM providers seamlessly:
+- Alibaba Cloud Model Studio (1M free tokens)
+- Google AI Studio (Free tier)
+- OpenAI, Anthropic, OpenRouter, Together AI
+
 ## Multi-Provider LLM Support
 
 TCM-Sage supports multiple LLM providers for flexibility and cost management:
@@ -145,7 +169,12 @@ Switch providers by simply changing `LLM_PROVIDER=google` in your `.env` file. S
 
 The main application (`src/main.py`) includes configurable parameters:
 
-- **LLM Provider**: Choose from supported providers (default: google)
+- **LLM Provider**: Choose from supported providers (default: alibaba)
 - **Model Selection**: Specify a particular model or use provider defaults
 - **Retrieval Count (`k`)**: Number of most relevant document chunks to retrieve (default: 5). Increase for broader context, decrease for faster responses.
-- **Model Temperature**: Set to 0.1 for factual, evidence-based responses from the Huangdi Neijing.
+- **Query Classification**: Configure classifier model and temperature settings for different query types
+- **Temperature Settings**:
+  - `LLM_TEMPERATURE`: For informational queries (default: 0.1, can increase for creativity)
+  - `PRESCRIPTIVE_TEMPERATURE`: For medical queries (default: 0.0 for maximum accuracy)
+
+See `docs/CONFIG.md` for detailed configuration options and setup instructions.

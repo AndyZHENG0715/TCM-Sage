@@ -67,12 +67,15 @@ The basic RAG pipeline has been successfully implemented in `src/main.py` with t
 The MVP can currently:
 - Load the persistent ChromaDB knowledge base
 - Perform semantic similarity search on classical TCM texts
+- **Automatically classify queries** by clinical severity (informational vs. prescriptive)
+- **Dynamically adjust response generation** based on query type for optimal accuracy
 - Generate evidence-backed answers using multiple LLM providers (Alibaba Cloud Model Studio, OpenAI, Google AI Studio, Anthropic, OpenRouter, Together AI)
 - Provide source citations from the Huangdi Neijing
 - Handle configuration and runtime errors gracefully
 - Switch between different LLM providers via simple environment variable configuration
 - Support Chinese language queries with proper Unicode handling on Windows
 - Use cost-effective Alibaba Cloud Model Studio with 1M free tokens for new users
+- **Route queries intelligently** using lightweight classifier models for fast processing
 
 ### 4.3 Interactive Command-Line Interface (CLI) ✅ COMPLETED
 
@@ -86,8 +89,33 @@ The interactive CLI has been successfully implemented with the following feature
 * **Keyboard Interrupt Support**: Graceful handling of Ctrl+C interruption
 * **Clear Output Formatting**: Answers are displayed with clear separators and formatting for better readability
 
-### 4.4 Next Steps
+### 4.4 Query Classification and Routing ✅ COMPLETED
 
-The immediate next steps for Phase 2 include:
-- Implementing query routing for controllable inference
-- Adding support for different query types and severity levels
+The intelligent query classification and routing system has been successfully implemented with the following features:
+
+* **Automatic Query Classification**: A lightweight classifier model analyzes each user query to determine clinical severity:
+  - **Informational**: General knowledge questions, definitions, or explanations (e.g., "陰陽是什麼？")
+  - **Prescriptive**: Questions asking for diagnoses, treatments, formulas, or medical advice (e.g., "頭痛應該用什麼方劑？")
+
+* **Dynamic Temperature Adjustment**: Based on query classification:
+  - **Informational queries**: Use configurable temperature (default 0.1, can be increased for creativity)
+  - **Prescriptive queries**: Use strict temperature (default 0.0 for maximum medical accuracy)
+
+* **Three-LLM Architecture**: The system now uses three optimized LLM instances:
+  - **Classifier LLM**: Lightweight model (e.g., `qwen3-0.6b`) for fast query classification
+  - **Informational LLM**: Main model with higher temperature for general questions
+  - **Prescriptive LLM**: Main model with zero temperature for medical advice
+
+* **Transparent Operation**: The system displays the detected query type and temperature used for user transparency
+
+* **Configuration Flexibility**: Users can configure:
+  - Classifier model provider and model selection
+  - Temperature settings for both query types
+  - Separate temperature controls for medical vs. informational queries
+
+### 4.5 Next Steps
+
+The immediate next steps for Phase 3 include:
+- Implementing Knowledge Graph (KG) search for enhanced retrieval
+- Adding hybrid retrieval combining vector search with KG navigation
+- Implementing Self-RAG framework for answer critique and verification
