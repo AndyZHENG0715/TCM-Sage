@@ -74,9 +74,20 @@ The MVP can currently:
 - Support Chinese language queries with proper Unicode handling on Windows
 - Use cost-effective Alibaba Cloud Model Studio with 1M free tokens for new users
 
-### 4.3 Next Steps
+### 4.3 Interactive Command-Line Interface (CLI) ✅ COMPLETED
+
+The interactive CLI has been successfully implemented with the following features:
+
+* **Continuous Interaction**: The application now runs in a continuous loop, allowing users to ask multiple questions in a single session
+* **User-Friendly Prompts**: Clear prompts guide users to enter questions and exit commands
+* **Multiple Exit Commands**: Support for 'exit', 'quit', 'q', and '退出' commands for user convenience
+* **Input Validation**: Empty inputs are handled gracefully with appropriate user feedback
+* **Error Handling**: Individual query errors don't crash the application; users can continue asking questions
+* **Keyboard Interrupt Support**: Graceful handling of Ctrl+C interruption
+* **Clear Output Formatting**: Answers are displayed with clear separators and formatting for better readability
+
+### 4.4 Next Steps
 
 The immediate next steps for Phase 2 include:
-- Building an interactive Command-Line Interface (CLI)
 - Implementing query routing for controllable inference
 - Adding support for different query types and severity levels

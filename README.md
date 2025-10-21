@@ -42,7 +42,7 @@ This plan is aligned with the official submission deadlines.
 
     - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration.
 
-    - [ ] Build a functional Command-Line Interface (CLI).
+    - [x] Build a functional Command-Line Interface (CLI).
 
     - [ ] Submit Source Code: End of Nov, End of Dec.
 
@@ -121,10 +121,12 @@ This plan is aligned with the official submission deadlines.
     python src/test_retriever.py
     ```
 3. **Run the Main Application:**
-    This will start the main RAG application and execute a sample query.
+    This will start the interactive RAG application. You can ask questions about Traditional Chinese Medicine and get evidence-backed answers with citations from the Huangdi Neijing.
     ```bash
     python src/main.py
     ```
+
+    The application will prompt you to enter questions. Type 'exit' to quit the program.
 
 ## Multi-Provider LLM Support
 

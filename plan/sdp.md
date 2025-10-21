@@ -151,19 +151,28 @@ This section details the concrete steps for building the MVP as outlined in the 
     - **Cost Optimization**: Default to Alibaba Cloud Model Studio (1M free tokens)
     - **Provider Flexibility**: Easy switching between 6 different LLM providers via environment variables
 
-### Task 2.2: Build a Functional Command-Line Interface (CLI)
+### Task 2.2: Build a Functional Command-Line Interface (CLI) ✅ COMPLETED
 
 * **Objective:** Turn `main.py` into an interactive application.
 
 * **Sub-tasks:**
 
-    - [ ] Add a `while True:` loop to the main function to continuously prompt the user for input.
+    - [x] Add a `while True:` loop to the main function to continuously prompt the user for input.
 
-    - [ ] Use Python's `input()` function to accept a query from the command line.
+    - [x] Use Python's `input()` function to accept a query from the command line.
 
-    - [ ] Add logic to exit the loop (e.g., if the user types "exit" or "quit").
+    - [x] Add logic to exit the loop (e.g., if the user types "exit" or "quit").
 
-    - [ ] Format the output nicely in the console, clearly separating the "Answer" from the "Sources".
+    - [x] Format the output nicely in the console, clearly separating the "Answer" from the "Sources".
+
+* **Implementation Details:**
+    - Implemented continuous interaction loop with `while True:` structure
+    - Added user-friendly prompts with clear instructions for input and exit commands
+    - Support for multiple exit commands: 'exit', 'quit', 'q', '退出' for user convenience
+    - Input validation to handle empty inputs gracefully
+    - Comprehensive error handling for individual queries without crashing the application
+    - Keyboard interrupt (Ctrl+C) support for graceful program termination
+    - Clear output formatting with separators for better readability
 
 ### Task 2.3: Implement Query Routing (Controllable Inference)
 

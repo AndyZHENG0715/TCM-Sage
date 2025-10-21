@@ -56,7 +56,7 @@ This document outlines the official timeline, key stages, and deliverables for t
 
         - Construct the prompt templates for the main generator to perform self-critique and cite sources.
 
-    - [ ] Build a simple Command-Line Interface (CLI) to interact with the MVP.
+    - [x] Build a simple Command-Line Interface (CLI) to interact with the MVP.
 
 ## Phase 3: Mid-Point Review & Enhancement
 
