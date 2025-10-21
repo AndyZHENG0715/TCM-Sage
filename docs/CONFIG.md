@@ -1,152 +1,174 @@
-# TCM-Sage Configuration Guide
+# TCM-Sage: Configuration Guide
 
-## LLM Provider Setup
+This document provides detailed setup instructions for configuring the TCM-Sage RAG system with different LLM providers.
 
-TCM-Sage supports multiple LLM providers to give you flexibility and cost options. You can switch between providers by simply changing a configuration flag.
+## LLM Provider Configuration
 
-### Step 1: Create your .env file
+The system supports multiple LLM providers that can be easily switched using environment variables. Create a `.env` file in the project root directory with the following configuration:
 
-Copy the template below to create your `.env` file in the project root:
+### Environment Variables
 
 ```bash
 # LLM Provider Configuration
-# Available providers: openai, google, anthropic, openrouter, together, alibaba
-LLM_PROVIDER=alibaba
+LLM_PROVIDER=alibaba          # Provider: alibaba, openai, google, anthropic, openrouter, together
+LLM_MODEL=                    # Optional: Override default model for the provider
+LLM_TEMPERATURE=0.1           # Model temperature (0.0-1.0)
 
-# API Keys - only fill in the key for your selected provider
+# Provider-specific API Keys (only set the one you're using)
+DASHSCOPE_API_KEY=your-alibaba-dashscope-api-key-here
 OPENAI_API_KEY=your-openai-api-key-here
-GOOGLE_API_KEY=your-google-ai-studio-api-key-here
+GOOGLE_API_KEY=your-google-api-key-here
 ANTHROPIC_API_KEY=your-anthropic-api-key-here
 OPENROUTER_API_KEY=your-openrouter-api-key-here
 TOGETHER_API_KEY=your-together-api-key-here
-DASHSCOPE_API_KEY=your-alibaba-dashscope-api-key-here
-
-# Model Configuration (optional - uses provider defaults if not specified)
-# OpenAI: gpt-4o, gpt-4o-mini, gpt-3.5-turbo
-# Google: gemini-1.5-pro, gemini-1.5-flash
-# Anthropic: claude-3-5-sonnet-20241022, claude-3-haiku-20240307
-# OpenRouter: openai/gpt-4o, anthropic/claude-3-5-sonnet, google/gemini-pro
-# Together: meta-llama/Llama-3.1-8B-Instruct-Turbo, mistralai/Mixtral-8x7B-Instruct-v0.1
-# Alibaba: qwen3-14b, qwen-plus, qwen-max, qwen-turbo
-LLM_MODEL=
-
-# Temperature setting (0.0 = deterministic, 1.0 = creative)
-LLM_TEMPERATURE=0.1
 ```
 
-### Step 2: Choose your provider and set API key
+## Supported Providers
 
-#### Alibaba Cloud Model Studio (Recommended - 1M free tokens for new users)
-```bash
-LLM_PROVIDER=alibaba
-DASHSCOPE_API_KEY=your-alibaba-dashscope-api-key-here
-```
+### 1. Alibaba Cloud Model Studio (Recommended)
 
-#### Google AI Studio
-```bash
-LLM_PROVIDER=google
-GOOGLE_API_KEY=your-google-ai-studio-api-key-here
-```
+**Default Provider** - Cost-effective with 1M free tokens for new users.
 
-#### OpenAI
+- **Provider ID**: `alibaba`
+- **Default Model**: `qwen3-14b`
+- **API Key**: `DASHSCOPE_API_KEY`
+- **Setup**:
+  1. Sign up at [Alibaba Cloud Model Studio](https://dashscope.aliyuncs.com/)
+  2. Create an API key in the DashScope console
+  3. Set `LLM_PROVIDER=alibaba` and your `DASHSCOPE_API_KEY`
+
+### 2. OpenAI
+
+- **Provider ID**: `openai`
+- **Default Model**: `gpt-4o`
+- **API Key**: `OPENAI_API_KEY`
+- **Setup**: Get API key from [OpenAI Platform](https://platform.openai.com/)
+
+### 3. Google AI Studio
+
+- **Provider ID**: `google`
+- **Default Model**: `gemini-2.5-pro`
+- **API Key**: `GOOGLE_API_KEY`
+- **Setup**: Get API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+### 4. Anthropic (Claude)
+
+- **Provider ID**: `anthropic`
+- **Default Model**: `claude-3-5-sonnet-20241022`
+- **API Key**: `ANTHROPIC_API_KEY`
+- **Setup**: Get API key from [Anthropic Console](https://console.anthropic.com/)
+
+### 5. OpenRouter
+
+- **Provider ID**: `openrouter`
+- **Default Model**: `openai/gpt-4o`
+- **API Key**: `OPENROUTER_API_KEY`
+- **Setup**: Get API key from [OpenRouter](https://openrouter.ai/)
+
+### 6. Together AI
+
+- **Provider ID**: `together`
+- **Default Model**: `meta-llama/Llama-3.1-8B-Instruct-Turbo`
+- **API Key**: `TOGETHER_API_KEY`
+- **Setup**: Get API key from [Together AI](https://together.ai/)
+
+## Model Selection
+
+### Default Models by Provider
+
+Each provider has a recommended default model that balances performance and cost:
+
+- **Alibaba Cloud**: `qwen3-14b` - Economic model with good Chinese language support
+- **OpenAI**: `gpt-4o` - High-performance model
+- **Google**: `gemini-2.5-pro` - Advanced reasoning capabilities
+- **Anthropic**: `claude-3-5-sonnet-20241022` - Strong analytical capabilities
+- **OpenRouter**: `openai/gpt-4o` - Access to OpenAI models via OpenRouter
+- **Together AI**: `meta-llama/Llama-3.1-8B-Instruct-Turbo` - Open-source model
+
+### Override Default Model
+
+To use a different model, set the `LLM_MODEL` environment variable:
+
 ```bash
 LLM_PROVIDER=openai
-OPENAI_API_KEY=your-openai-api-key-here
+LLM_MODEL=gpt-3.5-turbo  # Override default gpt-4o
 ```
 
-#### Anthropic Claude
-```bash
-LLM_PROVIDER=anthropic
-ANTHROPIC_API_KEY=your-anthropic-api-key-here
-```
+## Temperature Configuration
 
-#### OpenRouter (Access to multiple providers)
-```bash
-LLM_PROVIDER=openrouter
-OPENROUTER_API_KEY=your-openrouter-api-key-here
-```
+The temperature parameter controls the randomness of model responses:
 
-#### Together AI (Open source models)
-```bash
-LLM_PROVIDER=together
-TOGETHER_API_KEY=your-together-api-key-here
-```
+- **0.0**: Most deterministic, factual responses (recommended for TCM)
+- **0.1**: Slightly creative but mostly factual (default)
+- **0.7**: Balanced creativity and accuracy
+- **1.0**: Most creative responses
 
-### Step 3: Optional - Customize model and temperature
+## Quick Start
 
-You can specify a particular model and temperature:
+1. **Copy the example configuration**:
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-# Use a specific model
-LLM_MODEL=qwen3-14b
+2. **Edit `.env`** with your preferred provider and API key:
+   ```bash
+   LLM_PROVIDER=alibaba
+   DASHSCOPE_API_KEY=your-actual-api-key-here
+   ```
 
-# Adjust creativity (0.0 = factual, 1.0 = creative)
-LLM_TEMPERATURE=0.1
-```
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Getting API Keys
-
-### Alibaba Cloud Model Studio (1M Free Tokens - Recommended)
-1. Visit [Alibaba Cloud Model Studio](https://dashscope-intl.aliyuncs.com/)
-2. Sign up for a new account
-3. Go to the API Key management section
-4. Create a new API key
-5. Copy the key to your `.env` file
-
-**Note**: This provider uses the native DashScope SDK, so it requires the `dashscope` and `langchain-community` packages.
-
-**Available Models:**
-- `qwen3-14b` (Recommended - Economic model)
-- `qwen-plus` (Balanced performance and cost)
-- `qwen-max` (Best performance)
-- `qwen-turbo` (Fastest response)
-
-### Google AI Studio (Free)
-1. Visit [Google AI Studio](https://aistudio.google.com/)
-2. Sign in with your Google account
-3. Click "Get API Key" in the left sidebar
-4. Create a new API key
-5. Copy the key to your `.env` file
-
-### OpenAI
-1. Visit [OpenAI Platform](https://platform.openai.com/)
-2. Sign up/login and go to API Keys section
-3. Create a new secret key
-4. Add payment method (required for API usage)
-
-### Anthropic
-1. Visit [Anthropic Console](https://console.anthropic.com/)
-2. Sign up/login and go to API Keys
-3. Create a new key
-4. Add payment method
-
-### OpenRouter
-1. Visit [OpenRouter](https://openrouter.ai/)
-2. Sign up and go to API Keys
-3. Create a new key
-4. Add credits
-
-### Together AI
-1. Visit [Together AI](https://together.ai/)
-2. Sign up and go to API Keys
-3. Create a new key
-4. Add credits
+4. **Run the system**:
+   ```bash
+   python src/main.py
+   ```
 
 ## Troubleshooting
 
-- Make sure your `.env` file is in the project root directory
-- Ensure you've installed the required dependencies for your chosen provider
-- Check that your API key has sufficient credits/quota
-- Verify the provider name is spelled correctly (lowercase)
-- For Alibaba Cloud, make sure you have activated the DashScope service
+### Common Issues
 
-## Provider Comparison
+1. **"Configuration Error: API key not found"**
+   - Ensure your `.env` file is in the project root
+   - Verify the API key variable name matches your provider
+   - Check that the API key is valid and has sufficient credits
 
-| Provider | Free Tier | Cost | Models | Best For |
-|----------|-----------|------|---------|----------|
-| Alibaba Cloud | ✅ 1M tokens | Low | Qwen series | Chinese content, cost-effective |
-| Google AI Studio | ✅ Limited | Medium | Gemini series | Free usage, good quality |
-| OpenAI | ❌ No | High | GPT series | Premium quality |
-| Anthropic | ❌ No | High | Claude series | Long context, reasoning |
-| OpenRouter | ❌ No | Variable | Multiple providers | Access to many models |
-| Together AI | ❌ No | Low | Open source models | Cost-effective, privacy |
+2. **"Unsupported provider"**
+   - Verify `LLM_PROVIDER` is set to one of: `alibaba`, `openai`, `google`, `anthropic`, `openrouter`, `together`
+   - Check for typos in the provider name
+
+3. **Import errors**
+   - Run `pip install -r requirements.txt` to install all required packages
+   - Some providers require specific packages that are automatically installed
+
+4. **API connection errors**
+   - Verify your API key is valid
+   - Check your internet connection
+   - Ensure you have sufficient API credits/quota
+
+### Provider-Specific Notes
+
+- **Alibaba Cloud**: Uses the Singapore region endpoint for optimal performance
+- **OpenAI**: Requires a paid account with sufficient credits
+- **Google AI Studio**: Free tier available with usage limits
+- **Anthropic**: Free tier available with usage limits
+- **OpenRouter**: Pay-per-use pricing for various models
+- **Together AI**: Competitive pricing for open-source models
+
+## Cost Optimization
+
+For cost-effective development and testing:
+
+1. **Start with Alibaba Cloud Model Studio** (1M free tokens)
+2. **Use smaller models** when testing (e.g., `gpt-3.5-turbo` instead of `gpt-4o`)
+3. **Set lower temperature** to reduce response variability
+4. **Monitor usage** through provider dashboards
+
+## Security Notes
+
+- Never commit your `.env` file to version control
+- Use environment variables in production deployments
+- Rotate API keys regularly
+- Monitor API usage for unexpected charges

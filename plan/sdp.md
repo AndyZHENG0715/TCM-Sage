@@ -19,11 +19,13 @@ The project relies on the following core technologies and libraries:
 
 * **Vector Store:** ChromaDB (local, persistent storage)
 
-* **Primary LLM (Generator):** OpenAI `gpt-4o` (or similar high-capability model)
+* **Primary LLM (Generator):** Multi-provider support including Alibaba Cloud Model Studio (recommended), OpenAI, Google AI Studio, Anthropic, OpenRouter, and Together AI
+
+* **Default Provider:** Alibaba Cloud Model Studio with `qwen3-14b` model (1M free tokens for new users)
 
 * **Routing LLM (Classifier):** A smaller, faster model like `Gemini 2.5 Flash` or a local `Llama-3-8B-Instruct`.
 
-* **LangChain Integration:** `langchain-openai` for OpenAI API integration
+* **LangChain Integration:** Multi-provider support with `langchain-openai`, `langchain-google-genai`, `langchain-anthropic`, `dashscope`, and `langchain-community`
 
 * **Environment Management:** venv
 
@@ -144,6 +146,10 @@ This section details the concrete steps for building the MVP as outlined in the 
     - Configured retriever with k=5 for optimal context retrieval
     - Implemented proper document formatting with source metadata
     - Set model temperature to 0.1 for factual, evidence-based responses
+    - **Multi-Provider LLM Support**: Implemented flexible provider switching system
+    - **Alibaba Cloud Integration**: Native DashScope SDK integration with Singapore region endpoint
+    - **Cost Optimization**: Default to Alibaba Cloud Model Studio (1M free tokens)
+    - **Provider Flexibility**: Easy switching between 6 different LLM providers via environment variables
 
 ### Task 2.2: Build a Functional Command-Line Interface (CLI)
 

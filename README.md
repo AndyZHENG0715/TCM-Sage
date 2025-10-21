@@ -40,6 +40,8 @@ This plan is aligned with the official submission deadlines.
 
     - [x] Implement the core RAG chain (`src/main.py`).
 
+    - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration.
+
     - [ ] Build a functional Command-Line Interface (CLI).
 
     - [ ] Submit Source Code: End of Nov, End of Dec.
@@ -95,13 +97,13 @@ This plan is aligned with the official submission deadlines.
 4. **Set up Environment Variables:**
 
     - Create a `.env` file in the project root directory
-    - Configure your LLM provider and API key (see CONFIG.md for detailed instructions):
+    - Configure your LLM provider and API key (see `docs/CONFIG.md` for detailed instructions):
     ```bash
     # For Alibaba Cloud Model Studio (1M free tokens for new users - recommended)
     LLM_PROVIDER=alibaba
     DASHSCOPE_API_KEY="your-alibaba-dashscope-api-key-here"
     ```
-    For other providers (Google AI Studio, OpenAI, Anthropic, OpenRouter, Together AI), see CONFIG.md for setup instructions.
+    For other providers (Google AI Studio, OpenAI, Anthropic, OpenRouter, Together AI), see `docs/CONFIG.md` for setup instructions.
 
 
 ## How to Run the Code

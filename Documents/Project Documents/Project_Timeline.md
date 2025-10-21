@@ -46,7 +46,9 @@ This document outlines the official timeline, key stages, and deliverables for t
 
     - [x] Develop the core application script (`src/main.py`) to orchestrate the RAG pipeline.
 
-    - [ ] Implement the retriever module to perform similarity searches on the vector store.
+    - [x] Implement the retriever module to perform similarity searches on the vector store.
+
+    - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration (1M free tokens).
 
     - [ ] Implement the two-layer Reflective Generator:
 

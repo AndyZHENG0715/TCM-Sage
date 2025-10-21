@@ -67,9 +67,12 @@ The basic RAG pipeline has been successfully implemented in `src/main.py` with t
 The MVP can currently:
 - Load the persistent ChromaDB knowledge base
 - Perform semantic similarity search on classical TCM texts
-- Generate evidence-backed answers using GPT-4o
+- Generate evidence-backed answers using multiple LLM providers (Alibaba Cloud Model Studio, OpenAI, Google AI Studio, Anthropic, OpenRouter, Together AI)
 - Provide source citations from the Huangdi Neijing
 - Handle configuration and runtime errors gracefully
+- Switch between different LLM providers via simple environment variable configuration
+- Support Chinese language queries with proper Unicode handling on Windows
+- Use cost-effective Alibaba Cloud Model Studio with 1M free tokens for new users
 
 ### 4.3 Next Steps
 
