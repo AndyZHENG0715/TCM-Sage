@@ -23,6 +23,8 @@ The project relies on the following core technologies and libraries:
 
 * **Routing LLM (Classifier):** A smaller, faster model like `Gemini 2.5 Flash` or a local `Llama-3-8B-Instruct`.
 
+* **LangChain Integration:** `langchain-openai` for OpenAI API integration
+
 * **Environment Management:** venv
 
 * **Package Management:** `pip` and `requirements.txt`
@@ -120,22 +122,28 @@ This is the online, real-time process that runs when a user submits a query.
 
 This section details the concrete steps for building the MVP as outlined in the `Project_Plan.md`.
 
-### Task 2.1: Implement the Core RAG Chain (`src/main.py`)
+### Task 2.1: Implement the Core RAG Chain (`src/main.py`) ✅ COMPLETED
 * **Objective:** Create a runnable script that executes the full RAG pipeline for a single, hardcoded query.
 
 * **Sub-tasks:**
 
-    - [ ] Create `src/main.py`.
+    - [x] Create `src/main.py`.
 
-    - [ ] Implement loading of the vector store and retriever.
+    - [x] Implement loading of the vector store and retriever.
 
-    - [ ] Define the prompt template that instructs the LLM to use the context and cite sources.
+    - [x] Define the prompt template that instructs the LLM to use the context and cite sources.
 
-    - [ ] Instantiate the LLM (`ChatOpenAI`).
+    - [x] Instantiate the LLM (`ChatOpenAI`).
 
-    - [ ] Construct the chain using LangChain Expression Language (LCEL).
+    - [x] Construct the chain using LangChain Expression Language (LCEL).
 
-    - [ ] Add a simple `if __name__ == "__main__":` block to invoke the chain with a test query (e.g., "`阴阳是什么？`") and print the result.
+    - [x] Add a simple `if __name__ == "__main__":` block to invoke the chain with a test query (e.g., "`阴阳是什么？`") and print the result.
+
+* **Implementation Details:**
+    - Added comprehensive error handling for missing API keys and vector store files
+    - Configured retriever with k=5 for optimal context retrieval
+    - Implemented proper document formatting with source metadata
+    - Set model temperature to 0.1 for factual, evidence-based responses
 
 ### Task 2.2: Build a Functional Command-Line Interface (CLI)
 

@@ -44,7 +44,7 @@ This document outlines the official timeline, key stages, and deliverables for t
 
     - [ ] (Immediate Next Step) Update ingest.py to include source metadata (chapter names) for accurate citations.
 
-    - [ ] Develop the core application script (`src/main.py`) to orchestrate the RAG pipeline.
+    - [x] Develop the core application script (`src/main.py`) to orchestrate the RAG pipeline.
 
     - [ ] Implement the retriever module to perform similarity searches on the vector store.
 

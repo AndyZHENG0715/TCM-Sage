@@ -41,3 +41,39 @@
     3.  **Controllable Inference:** A routing mechanism will be implemented. A smaller, faster model will classify the query's clinical severity.
         * **Low Severity (Informational):** The query will be passed to the Generator with a higher temperature for a more nuanced, descriptive answer.
         * **High Severity (Diagnostic/Prescriptive):** The query will be passed to the Generator with a temperature of **0.0** to ensure maximum adherence to the source text.
+
+## 4. Implementation Status
+
+### 4.1 Core RAG Chain Implementation
+
+The basic RAG pipeline has been successfully implemented in `src/main.py` with the following features:
+
+* **Vector Store Integration**: The system loads the ChromaDB vector store created during the ingestion phase and performs semantic similarity search using the `all-MiniLM-L6-v2` embedding model.
+
+* **Retrieval Configuration**: The retriever is configured to return the top 5 most relevant document chunks by default, with configurable parameters for different use cases.
+
+* **Prompt Template Design**: The system uses a carefully designed prompt template that:
+  - Instructs the LLM to answer in the same language as the question
+  - Emphasizes evidence-based responses from the source text only
+  - Requires proper citation of source chapters
+  - Maintains focus on the Huangdi Neijing content
+
+* **Citation Strategy**: The system formats retrieved documents with clear source attribution, enabling the LLM to provide accurate citations to specific chapters of the Huangdi Neijing.
+
+* **Error Handling**: Comprehensive error handling for missing API keys, vector store files, and API failures ensures robust operation.
+
+### 4.2 Current Capabilities
+
+The MVP can currently:
+- Load the persistent ChromaDB knowledge base
+- Perform semantic similarity search on classical TCM texts
+- Generate evidence-backed answers using GPT-4o
+- Provide source citations from the Huangdi Neijing
+- Handle configuration and runtime errors gracefully
+
+### 4.3 Next Steps
+
+The immediate next steps for Phase 2 include:
+- Building an interactive Command-Line Interface (CLI)
+- Implementing query routing for controllable inference
+- Adding support for different query types and severity levels

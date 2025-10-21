@@ -38,7 +38,7 @@ This plan is aligned with the official submission deadlines.
 
 * **Phase 2: MVP Implementation (Oct 2025 - Dec 2025)**
 
-    - [ ] Implement the core RAG chain (`src/main.py`).
+    - [x] Implement the core RAG chain (`src/main.py`).
 
     - [ ] Build a functional Command-Line Interface (CLI).
 
@@ -94,11 +94,14 @@ This plan is aligned with the official submission deadlines.
 
 4. **Set up Environment Variables:**
 
-    - Create a file named .env in the root directory.
-    - Add your OpenAI API key to this file:
+    - Create a `.env` file in the project root directory
+    - Configure your LLM provider and API key (see CONFIG.md for detailed instructions):
     ```bash
-    OPENAI_API_KEY="your-api-key-here"
+    # For Alibaba Cloud Model Studio (1M free tokens for new users - recommended)
+    LLM_PROVIDER=alibaba
+    DASHSCOPE_API_KEY="your-alibaba-dashscope-api-key-here"
     ```
+    For other providers (Google AI Studio, OpenAI, Anthropic, OpenRouter, Together AI), see CONFIG.md for setup instructions.
 
 
 ## How to Run the Code
@@ -115,8 +118,30 @@ This plan is aligned with the official submission deadlines.
     ```bash
     python src/test_retriever.py
     ```
-3. **Run the Main Application (Future):**
-    This will start the main RAG application.
+3. **Run the Main Application:**
+    This will start the main RAG application and execute a sample query.
     ```bash
     python src/main.py
     ```
+
+## Multi-Provider LLM Support
+
+TCM-Sage supports multiple LLM providers for flexibility and cost management:
+
+- **Alibaba Cloud Model Studio** (Recommended - 1M free tokens for new users)
+- **Google AI Studio** (Free tier available)
+- **OpenAI** (GPT-4o, GPT-4o-mini)
+- **Anthropic** (Claude 3.5 Sonnet, Claude 3 Haiku)
+- **OpenRouter** (Access to multiple providers)
+- **Together AI** (Open source models)
+
+Switch providers by simply changing `LLM_PROVIDER=google` in your `.env` file. See [CONFIG.md](CONFIG.md) for detailed setup instructions.
+
+## Configuration
+
+The main application (`src/main.py`) includes configurable parameters:
+
+- **LLM Provider**: Choose from supported providers (default: google)
+- **Model Selection**: Specify a particular model or use provider defaults
+- **Retrieval Count (`k`)**: Number of most relevant document chunks to retrieve (default: 5). Increase for broader context, decrease for faster responses.
+- **Model Temperature**: Set to 0.1 for factual, evidence-based responses from the Huangdi Neijing.
