@@ -213,10 +213,23 @@ def main():
         model = os.getenv('LLM_MODEL')
         temperature = float(os.getenv('LLM_TEMPERATURE', '0.1'))
 
+        # Get retrieval configuration
+        retrieval_k = int(os.getenv('RETRIEVAL_K', '5'))
+        if retrieval_k < 1 or retrieval_k > 20:
+            print(f"Warning: RETRIEVAL_K={retrieval_k} is outside recommended range (1-20). Using default value 5.")
+            retrieval_k = 5
+
+        # Get system prompt configuration
+        system_prompt = os.getenv('SYSTEM_PROMPT', """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
+Your task is to answer questions accurately based ONLY on the provided source text.
+Your answer must be in the same language as the question.
+After providing the answer, cite the source chapter for the information you provide in a "Sources:" section.""")
+
         print(f"Using LLM provider: {provider}")
         if model:
             print(f"Using model: {model}")
         print(f"Temperature: {temperature}")
+        print(f"Retrieval K: {retrieval_k}")
 
         # Load the vector store
         print("Loading vector store...")
@@ -241,7 +254,7 @@ def main():
         # Create a retriever
         print("Setting up retriever...")
         retriever = vectorstore.as_retriever(
-            k=5  # k=5: Number of most relevant chunks to retrieve. Increase for broader context, decrease for faster responses.
+            k=retrieval_k  # Use configurable k value from environment
         )
 
         # Initialize the language model
@@ -250,17 +263,13 @@ def main():
 
         # Define the prompt template
         print("Configuring prompt template...")
-        template = """
-You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
-Your task is to answer questions accurately based ONLY on the provided source text.
-Your answer must be in the same language as the question.
-After providing the answer, cite the source chapter for the information you provide in a "Sources:" section.
+        template = f"""{system_prompt}
 
 Context:
-{context}
+{{context}}
 
 Question:
-{question}
+{{question}}
 
 Answer:
 """

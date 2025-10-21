@@ -14,6 +14,18 @@ LLM_PROVIDER=alibaba          # Provider: alibaba, openai, google, anthropic, op
 LLM_MODEL=                    # Optional: Override default model for the provider
 LLM_TEMPERATURE=0.1           # Model temperature (0.0-1.0)
 
+# Retrieval Configuration
+RETRIEVAL_K=5                 # Number of document chunks to retrieve (3-10 recommended)
+                              # Higher values: More comprehensive answers, slower responses
+                              # Lower values: Faster responses, potentially less context
+
+# System Prompt Configuration
+SYSTEM_PROMPT="You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经). Your task is to answer questions accurately based ONLY on the provided source text. Your answer must be in the same language as the question. After providing the answer, cite the source chapter for the information you provide in a \"Sources:\" section."
+
+# Output Format Configuration (Future UI Support)
+OUTPUT_FORMAT=detailed        # detailed, concise, academic
+CITATION_STYLE=chapter         # chapter, page, section (display format only, no performance impact)
+
 # Provider-specific API Keys (only set the one you're using)
 DASHSCOPE_API_KEY=your-alibaba-dashscope-api-key-here
 OPENAI_API_KEY=your-openai-api-key-here
@@ -94,6 +106,32 @@ LLM_PROVIDER=openai
 LLM_MODEL=gpt-3.5-turbo  # Override default gpt-4o
 ```
 
+## Retrieval Configuration
+
+### RETRIEVAL_K Parameter
+
+The `RETRIEVAL_K` parameter controls how many document chunks are retrieved for each query:
+
+- **3-5**: Fast responses, good for simple questions (recommended for most use cases)
+- **5-8**: Balanced performance and comprehensiveness (default: 5)
+- **8-15**: More comprehensive answers, slower responses (good for complex queries)
+- **15+**: Maximum context, slowest responses (use sparingly)
+
+**Performance Impact**: Higher values increase response time and API costs but provide more comprehensive answers.
+
+## System Prompt Configuration
+
+### SYSTEM_PROMPT Parameter
+
+The `SYSTEM_PROMPT` parameter defines how the AI assistant behaves and responds. You can customize:
+
+- **Language**: Modify to support different languages
+- **Behavior**: Change how the assistant approaches questions
+- **Citation Style**: Adjust how sources are referenced
+- **Response Format**: Customize the structure of answers
+
+**Performance Impact**: Longer prompts consume more tokens but provide more precise control over AI behavior.
+
 ## Temperature Configuration
 
 The temperature parameter controls the randomness of model responses:
@@ -109,6 +147,8 @@ The temperature parameter controls the randomness of model responses:
    ```bash
    cp .env.example .env
    ```
+
+   The `.env.example` file includes all available configuration options with detailed comments.
 
 2. **Edit `.env`** with your preferred provider and API key:
    ```bash
