@@ -18,7 +18,7 @@ PRESCRIPTIVE_TEMPERATURE=0.0  # Temperature for prescriptive/diagnostic queries 
 
 # Classifier LLM Configuration (for query routing)
 CLASSIFIER_LLM_PROVIDER=alibaba    # Lightweight model provider for fast query classification
-CLASSIFIER_LLM_MODEL=qwen3-0.6b    # Small, fast model (recommended: qwen3-0.6b, gpt-4o-mini)
+CLASSIFIER_LLM_MODEL=qwen3-0.6b    # Small, fast model (recommended: qwen3-0.6b, gemini-2.5-flash)
 CLASSIFIER_LLM_TEMPERATURE=0.0     # Keep at 0.0 for consistent classification
 
 # Retrieval Configuration
@@ -27,7 +27,7 @@ RETRIEVAL_K=5                 # Number of document chunks to retrieve (3-10 reco
                               # Lower values: Faster responses, potentially less context
 
 # System Prompt Configuration
-SYSTEM_PROMPT="You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经). Your task is to answer questions accurately based ONLY on the provided source text. Your answer must be in the same language as the question. After providing the answer, cite the source chapter for the information you provide in a \"Sources:\" section."
+SYSTEM_PROMPT="You are an expert assistant specializing in Traditional Chinese Medicine, specifically the Huangdi Neijing (黄帝内经). Your task is to answer questions accurately based ONLY on the provided source text. If a direct definition is not present, explain the concept using the information available. Your answer must be in the same language as the question. After providing the answer, cite the source chapter for the information you provide in a \"Sources:\" section."
 
 # Output Format Configuration (Future UI Support)
 OUTPUT_FORMAT=detailed        # detailed, concise, academic
@@ -59,7 +59,7 @@ TCM-Sage now includes an intelligent query classification system that automatica
 ### Configuration Options
 
 - **`CLASSIFIER_LLM_PROVIDER`**: Provider for the classification model (recommended: same as main provider)
-- **`CLASSIFIER_LLM_MODEL`**: Lightweight model for fast classification (recommended: `qwen3-0.6b`, `gpt-4o-mini`)
+- **`CLASSIFIER_LLM_MODEL`**: Lightweight model for fast classification (recommended: `qwen3-0.6b`, `gemini-2.5-flash`)
 - **`CLASSIFIER_LLM_TEMPERATURE`**: Keep at 0.0 for consistent classification
 - **`PRESCRIPTIVE_TEMPERATURE`**: Temperature for medical/prescriptive queries (keep at 0.0 unless necessary)
 
