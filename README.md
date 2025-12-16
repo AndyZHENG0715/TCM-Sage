@@ -130,6 +130,14 @@ This plan is aligned with the official submission deadlines.
 
     The application will prompt you to enter questions. Type 'exit' to quit the program.
 
+4. **Launch the Prototype UI (Optional, for demos):**
+    A lightweight Streamlit interface is available for showcasing the system to stakeholders. It reuses the same backend pipeline without modifying the CLI flow.
+    ```bash
+    streamlit run src/ui_app.py
+    ```
+
+    The UI displays the detected query severity, temperature routing, and maintains a session history. Use the sidebar to review the active configuration. Remember to configure your `.env` file before launching to avoid API errors.
+
 ## Key Features
 
 ### 🧠 **Intelligent Query Classification**

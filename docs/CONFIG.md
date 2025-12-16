@@ -69,6 +69,12 @@ TCM-Sage now includes an intelligent query classification system that automatica
 - **For prescriptive queries**: Always keep `PRESCRIPTIVE_TEMPERATURE` at 0.0 to ensure medical accuracy
 - **Classifier model**: Use a small, fast model to minimize latency and cost
 
+## Prototype UI (Optional)
+
+- The Streamlit demo (`streamlit run src/ui_app.py`) provides a quick way to showcase TCM-Sage to stakeholders without disrupting the CLI workflow.
+- It reuses all configuration options documented here, so ensure your `.env` is set up before launching.
+- The UI is meant for discovery and may be deprecated later; the CLI remains the primary interface.
+
 ## Supported Providers
 
 ### 1. Alibaba Cloud Model Studio (Recommended)
