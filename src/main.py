@@ -176,19 +176,40 @@ def format_docs(docs):
     """
     Format retrieved documents into a single string for context.
 
+    Handles both vector search results (text chunks) and graph search results
+    (knowledge graph facts) by formatting them as distinct sections.
+
     Args:
-        docs: List of Document objects from the vector store
+        docs: List of Document objects from vector store and/or knowledge graph
 
     Returns:
         str: Formatted string containing all documents with source metadata
     """
-    formatted_docs = []
-    for doc in docs:
-        # Extract source metadata (chapter name)
-        source = doc.metadata.get('source', 'Unknown Source') if doc.metadata else 'Unknown Source'
-        formatted_docs.append(f"--- Source: {source} ---\n{doc.page_content}\n")
+    vector_docs = []
+    graph_docs = []
 
-    return "\n".join(formatted_docs)
+    for doc in docs:
+        source_type = doc.metadata.get('source_type', 'vector') if doc.metadata else 'vector'
+
+        if source_type == 'graph':
+            graph_docs.append(doc.page_content)
+        else:
+            # Vector search result (text chunk)
+            source = doc.metadata.get('source', 'Unknown Source') if doc.metadata else 'Unknown Source'
+            vector_docs.append(f"--- Source: {source} ---\n{doc.page_content}\n")
+
+    # Build formatted context with sections
+    sections = []
+
+    if vector_docs:
+        sections.append("=== Text Passages ===")
+        sections.extend(vector_docs)
+
+    if graph_docs:
+        sections.append("\n=== Knowledge Graph Facts ===")
+        sections.extend(graph_docs)
+
+    return "\n".join(sections)
 
 
 def get_query_severity(query, classifier_llm):
@@ -262,6 +283,11 @@ def main():
             print(f"Warning: RETRIEVAL_K={retrieval_k} is outside recommended range (1-20). Using default value 5.")
             retrieval_k = 5
 
+        # Hybrid retrieval configuration
+        hybrid_enabled = os.getenv('HYBRID_RETRIEVAL_ENABLED', 'false').lower() == 'true'
+        graph_data_path = os.getenv('GRAPH_DATA_PATH', 'data/graph/entities.json')
+        graph_depth = int(os.getenv('GRAPH_DEPTH', '1'))
+
         # Get system prompt configuration
         system_prompt = os.getenv('SYSTEM_PROMPT', """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
 Your task is to answer questions accurately based ONLY on the provided source text.
@@ -273,6 +299,8 @@ After providing the answer, cite the source chapter for the information you prov
             print(f"Using model: {model}")
         print(f"Temperature: {temperature}")
         print(f"Retrieval K: {retrieval_k}")
+        if hybrid_enabled:
+            print(f"Hybrid Retrieval: ENABLED (graph_depth={graph_depth})")
 
         # Load the vector store
         print("Loading vector store...")
@@ -294,11 +322,33 @@ After providing the answer, cite the source chapter for the information you prov
         )
         print(f"Vector store loaded successfully from: {vectorstore_path}")
 
-        # Create a retriever
+        # Create a retriever (standard or hybrid)
         print("Setting up retriever...")
-        retriever = vectorstore.as_retriever(
-            k=retrieval_k  # Use configurable k value from environment
-        )
+
+        if hybrid_enabled:
+            # Use hybrid retriever with knowledge graph
+            try:
+                from retriever import create_hybrid_retriever
+                hybrid_retriever = create_hybrid_retriever(
+                    vectorstore_path=str(vectorstore_path),
+                    graph_data_path=graph_data_path,
+                    vector_k=retrieval_k,
+                    graph_depth=graph_depth,
+                )
+                print("Hybrid retriever initialized with knowledge graph.")
+
+                # Create a retriever function that matches LangChain's interface
+                def retriever_func(query: str):
+                    return hybrid_retriever.hybrid_search(query)
+
+                retriever = retriever_func
+            except Exception as e:
+                print(f"Warning: Failed to initialize hybrid retriever: {e}")
+                print("Falling back to standard vector retriever.")
+                hybrid_enabled = False
+                retriever = vectorstore.as_retriever(k=retrieval_k)
+        else:
+            retriever = vectorstore.as_retriever(k=retrieval_k)
 
         # Initialize classifier LLM
         print("Initializing classifier model...")
