@@ -42,6 +42,39 @@ OPENROUTER_API_KEY=your-openrouter-api-key-here
 TOGETHER_API_KEY=your-together-api-key-here
 ```
 
+## Hybrid Retrieval (Knowledge Graph)
+
+TCM-Sage supports hybrid retrieval that combines vector search with a knowledge graph for improved TCM terminology resolution.
+
+### Configuration
+
+```bash
+# Hybrid Retrieval Configuration
+HYBRID_RETRIEVAL_ENABLED=false    # Set to true to enable hybrid vector+graph retrieval
+GRAPH_DATA_PATH=data/graph/entities.json  # Path to knowledge graph JSON data
+GRAPH_DEPTH=1                     # Max traversal depth for graph search (1-2 recommended)
+```
+
+### How It Works
+
+1. **Vector Search**: Retrieves semantically similar text passages from the Huangdi Neijing
+2. **Graph Search**: Traverses the knowledge graph to find related TCM entities (symptoms, herbs, formulas)
+3. **Ensemble Context**: Both results are combined as distinct sections in the LLM prompt
+
+### Knowledge Graph Schema
+
+- **Entities**: `Symptom`, `Herb`, `Formula`
+- **Relationships**: `TREATS`, `CONTAINS`, `ASSOCIATED_WITH`
+
+Example: Query "頭痛" returns:
+
+- Vector passages mentioning headaches
+- Graph facts: "川芎 TREATS 頭痛", "天麻 TREATS 頭痛", "川芎茶調散 TREATS 頭痛"
+
+### Extending the Graph
+
+Edit `data/graph/entities.json` to add new entities and relationships:
+
 ## Query Classification and Routing
 
 TCM-Sage now includes an intelligent query classification system that automatically determines the clinical severity of user questions and adjusts the response generation accordingly.
@@ -184,6 +217,7 @@ The temperature parameter controls the randomness of model responses:
 ## Quick Start
 
 1. **Copy the example configuration**:
+
    ```bash
    cp .env.example .env
    ```
@@ -191,17 +225,20 @@ The temperature parameter controls the randomness of model responses:
    The `.env.example` file includes all available configuration options with detailed comments.
 
 2. **Edit `.env`** with your preferred provider and API key:
+
    ```bash
    LLM_PROVIDER=alibaba
    DASHSCOPE_API_KEY=your-actual-api-key-here
    ```
 
 3. **Install dependencies**:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. **Run the system**:
+
    ```bash
    python src/main.py
    ```

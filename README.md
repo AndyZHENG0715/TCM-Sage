@@ -30,49 +30,49 @@ The project has successfully completed Phase 1 (Research & Data Preparation) and
 
 This plan is aligned with the official submission deadlines.
 
-* **Phase 1: Research & Scoping (Apr 2025 - Sep 2025) - COMPLETED**
+- **Phase 1: Research & Scoping (Apr 2025 - Sep 2025) - COMPLETED**
 
-    - [x] Literature Review, Architecture Design, Data Pipeline Construction.
+  - [x] Literature Review, Architecture Design, Data Pipeline Construction.
 
-    - [x] First Progress Report submitted.
+  - [x] First Progress Report submitted.
 
-* **Phase 2: MVP Implementation (Oct 2025 - Dec 2025)** ✅ **COMPLETED**
+- **Phase 2: MVP Implementation (Oct 2025 - Dec 2025)** ✅ **COMPLETED**
 
-    - [x] Implement the core RAG chain (`src/main.py`).
+  - [x] Implement the core RAG chain (`src/main.py`).
 
-    - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration.
+  - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration.
 
-    - [x] Build a functional Command-Line Interface (CLI).
+  - [x] Build a functional Command-Line Interface (CLI).
 
-    - [x] **Implement intelligent query classification and routing system.**
+  - [x] **Implement intelligent query classification and routing system.**
 
-    - [ ] Submit Source Code: End of Nov, End of Dec.
+  - [ ] Submit Source Code: End of Nov, End of Dec.
 
-* **Phase 3: Mid-Point Review & Enhancement (Jan 2026 - Feb 2026)**
+- **Phase 3: Mid-Point Review & Enhancement (Jan 2026 - Feb 2026)**
 
-    - [ ] Prepare and deliver Mid-point Presentation & Demo (Jan 7-9).
+  - [ ] Prepare and deliver Mid-point Presentation & Demo (Jan 7-9).
 
-    - [ ] Submit Second Progress Report (Jan 5).
+  - [ ] Submit Second Progress Report (Jan 5).
 
-    - [ ] Begin Knowledge Graph development and web UI implementation.
+  - [ ] Begin Knowledge Graph development and web UI implementation.
 
-    - [ ] Submit Source Code: End of Jan, End of Feb.
+  - [ ] Submit Source Code: End of Jan, End of Feb.
 
-* **Phase 4: Pilot Testing & Evaluation (Mar 2026)**
+- **Phase 4: Pilot Testing & Evaluation (Mar 2026)**
 
-    - [ ] Conduct internal quantitative evaluation (Latency, Precision, Faithfulness).
+  - [ ] Conduct internal quantitative evaluation (Latency, Precision, Faithfulness).
 
-    - [ ] Conduct pilot testing with TCM practitioners to gather qualitative feedback.
+  - [ ] Conduct pilot testing with TCM practitioners to gather qualitative feedback.
 
-    - [ ] Submit Source Code: End of Mar.
+  - [ ] Submit Source Code: End of Mar.
 
-* **Phase 5: Final Submission (Apr 2026)**
+- **Phase 5: Final Submission (Apr 2026)**
 
-    - [ ] Submit Final Report (Apr 8).
+  - [ ] Submit Final Report (Apr 8).
 
-    - [ ] Deliver Final Presentation & Demo (Apr 10-16).
+  - [ ] Deliver Final Presentation & Demo (Apr 10-16).
 
-    - [ ] Submit complete Project Archive (Apr 23).
+  - [ ] Submit complete Project Archive (Apr 23).
 
 ## Setup and Installation
 
@@ -100,13 +100,14 @@ This plan is aligned with the official submission deadlines.
 
     - Create a `.env` file in the project root directory
     - Configure your LLM provider and API key (see `docs/CONFIG.md` for detailed instructions):
+
     ```bash
     # For Alibaba Cloud Model Studio (1M free tokens for new users - recommended)
     LLM_PROVIDER=alibaba
     DASHSCOPE_API_KEY="your-alibaba-dashscope-api-key-here"
     ```
-    For other providers (Google AI Studio, OpenAI, Anthropic, OpenRouter, Together AI), see `docs/CONFIG.md` for setup instructions.
 
+    For other providers (Google AI Studio, OpenAI, Anthropic, OpenRouter, Together AI), see `docs/CONFIG.md` for setup instructions.
 
 ## How to Run the Code
 
@@ -119,11 +120,14 @@ This plan is aligned with the official submission deadlines.
 
 2. **Test the Retriever (Optional):**
     This script runs a sample query to verify the vector store is working correctly.
+
     ```bash
     python src/test_retriever.py
     ```
+
 3. **Run the Main Application:**
     This will start the interactive RAG application. You can ask questions about Traditional Chinese Medicine and get evidence-backed answers with citations from the Huangdi Neijing.
+
     ```bash
     python src/main.py
     ```
@@ -132,6 +136,7 @@ This plan is aligned with the official submission deadlines.
 
 4. **Launch the Prototype UI (Optional, for demos):**
     A lightweight Streamlit interface is available for showcasing the system to stakeholders. It reuses the same backend pipeline without modifying the CLI flow.
+
     ```bash
     streamlit run src/ui_app.py
     ```
@@ -141,24 +146,40 @@ This plan is aligned with the official submission deadlines.
 ## Key Features
 
 ### 🧠 **Intelligent Query Classification**
+
 TCM-Sage automatically analyzes each user query to determine its clinical severity:
+
 - **Informational Queries**: General knowledge questions (e.g., "陰陽是什麼？") use higher temperature for creative explanations
 - **Prescriptive Queries**: Medical advice questions (e.g., "頭痛如何治療？") use zero temperature for maximum accuracy
 
 ### 🔄 **Dynamic Response Generation**
+
 The system uses three optimized LLM instances:
+
 - **Classifier LLM**: Fast, lightweight model for query analysis
 - **Informational LLM**: Main model with configurable temperature for general questions
 - **Prescriptive LLM**: Main model with zero temperature for medical advice
 
 ### 📚 **Evidence-Based Answers**
+
 All responses are backed by direct citations from the Huangdi Neijing, ensuring practitioners can verify information sources.
 
 ### 🌐 **Multi-Provider Support**
+
 Switch between different LLM providers seamlessly:
+
 - Alibaba Cloud Model Studio (1M free tokens)
 - Google AI Studio (Free tier)
 - OpenAI, Anthropic, OpenRouter, Together AI
+
+### 🕸️ **Knowledge Graph (Hybrid Retrieval)**
+
+Optional hybrid retrieval combines vector search with a TCM knowledge graph:
+
+- **Entity Types**: Symptoms, Herbs, Formulas
+- **Relationships**: TREATS, CONTAINS, ASSOCIATED_WITH
+- Query "頭痛" returns both text passages AND related herbs/formulas from the graph
+- Enable with `HYBRID_RETRIEVAL_ENABLED=true` in `.env`
 
 ## Multi-Provider LLM Support
 
