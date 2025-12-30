@@ -36,7 +36,7 @@ This plan is aligned with the official submission deadlines.
 
   - [x] First Progress Report submitted.
 
-- **Phase 2: MVP Implementation (Oct 2025 - Dec 2025)** ✅ **COMPLETED**
+- **Phase 2: MVP Implementation (Oct 2025 - Dec 2025) - COMPLETED**
 
   - [x] Implement the core RAG chain (`src/main.py`).
 
@@ -46,7 +46,9 @@ This plan is aligned with the official submission deadlines.
 
   - [x] **Implement intelligent query classification and routing system.**
 
-  - [ ] Submit Source Code: End of Nov, End of Dec.
+  - [x] Submit Source Code: End of Nov.
+
+  - [ ] Submit Source Code: End of Dec.
 
 - **Phase 3: Mid-Point Review & Enhancement (Jan 2026 - Feb 2026)**
 

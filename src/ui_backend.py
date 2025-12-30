@@ -19,7 +19,7 @@ from typing import Any, Dict
 from dotenv import load_dotenv
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
 
@@ -67,6 +67,12 @@ def _initialize_pipeline() -> Dict[str, Any]:
     classifier_temperature = float(os.getenv("CLASSIFIER_LLM_TEMPERATURE", "0.0"))
 
     retrieval_k = int(os.getenv("RETRIEVAL_K", "5"))
+
+    # Hybrid retrieval configuration
+    hybrid_enabled = os.getenv("HYBRID_RETRIEVAL_ENABLED", "false").lower() == "true"
+    graph_data_path = os.getenv("GRAPH_DATA_PATH", "data/graph/entities.json")
+    graph_depth = int(os.getenv("GRAPH_DEPTH", "1"))
+
     system_prompt = os.getenv(
         "SYSTEM_PROMPT",
         "You are an expert assistant specializing in Classical Chinese Medicine, "
@@ -89,7 +95,25 @@ def _initialize_pipeline() -> Dict[str, Any]:
         embedding_function=embeddings,
     )
 
-    retriever = vectorstore.as_retriever(k=retrieval_k)
+    # Create retriever (standard or hybrid)
+    if hybrid_enabled:
+        try:
+            from retriever import create_hybrid_retriever
+            hybrid_retriever = create_hybrid_retriever(
+                vectorstore_path=str(vectorstore_path),
+                graph_data_path=graph_data_path,
+                vector_k=retrieval_k,
+                graph_depth=graph_depth,
+            )
+
+            # Wrap in RunnableLambda for LangChain pipe compatibility
+            retriever = RunnableLambda(lambda query: hybrid_retriever.hybrid_search(query))
+        except Exception as e:
+            import warnings
+            warnings.warn(f"Failed to initialize hybrid retriever: {e}. Falling back to vector.")
+            retriever = vectorstore.as_retriever(k=retrieval_k)
+    else:
+        retriever = vectorstore.as_retriever(k=retrieval_k)
 
     template = f"""{system_prompt}
 

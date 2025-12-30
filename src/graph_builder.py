@@ -218,10 +218,14 @@ class TCMKnowledgeGraph:
 
     def search_by_name(self, query: str) -> list[str]:
         """
-        Search for entities whose name contains the query string.
+        Search for entities whose name appears in the query OR contains the query.
+
+        This bidirectional search enables:
+        - Exact/partial entity name matches (e.g., query "頭痛" matches entity "頭痛")
+        - Entity extraction from long queries (e.g., query "患者頭痛三十年" matches entity "頭痛")
 
         Args:
-            query: Search string.
+            query: Search string (can be a single term or a long sentence).
 
         Returns:
             List of matching entity IDs.
@@ -233,7 +237,9 @@ class TCMKnowledgeGraph:
             name = attrs.get("name", "")
             name_en = attrs.get("name_en", "").lower()
 
-            if query in name or query_lower in name_en:
+            # Check if entity name appears in query (for extracting entities from sentences)
+            # OR if query appears in entity name (for partial name searches)
+            if name in query or name_en in query_lower or query in name or query_lower in name_en:
                 matches.append(node_id)
 
         return matches

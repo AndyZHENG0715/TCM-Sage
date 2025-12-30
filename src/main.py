@@ -12,7 +12,7 @@ evidence-backed answer generation using OpenAI's GPT-4o model.
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from pathlib import Path
 import os
@@ -337,11 +337,8 @@ After providing the answer, cite the source chapter for the information you prov
                 )
                 print("Hybrid retriever initialized with knowledge graph.")
 
-                # Create a retriever function that matches LangChain's interface
-                def retriever_func(query: str):
-                    return hybrid_retriever.hybrid_search(query)
-
-                retriever = retriever_func
+                # Wrap in RunnableLambda for LangChain pipe compatibility
+                retriever = RunnableLambda(lambda query: hybrid_retriever.hybrid_search(query))
             except Exception as e:
                 print(f"Warning: Failed to initialize hybrid retriever: {e}")
                 print("Falling back to standard vector retriever.")
