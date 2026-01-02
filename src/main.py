@@ -318,6 +318,11 @@ def main():
         classifier_model = os.getenv('CLASSIFIER_LLM_MODEL')
         classifier_temperature = float(os.getenv('CLASSIFIER_LLM_TEMPERATURE', '0.0'))
 
+        # Verifier configuration
+        verifier_provider = os.getenv('VERIFIER_LLM_PROVIDER', provider).lower()
+        verifier_model = os.getenv('VERIFIER_LLM_MODEL')
+        verifier_temperature = float(os.getenv('VERIFIER_LLM_TEMPERATURE', '0.0'))
+
         # Main LLM temperatures
         informational_temperature = temperature  # from LLM_TEMPERATURE
         prescriptive_temperature = float(os.getenv('PRESCRIPTIVE_TEMPERATURE', '0.0'))
@@ -401,6 +406,10 @@ After providing the answer, cite the source chapter for the information you prov
         llm_informational = create_llm(provider, model, informational_temperature)
         llm_prescriptive = create_llm(provider, model, prescriptive_temperature)
 
+        # Initialize verifier LLM
+        print("Initializing verifier model...")
+        llm_verifier = create_llm(verifier_provider, verifier_model, verifier_temperature)
+
         # Define the prompt template
         print("Configuring prompt template...")
         template = f"""{system_prompt}
@@ -477,7 +486,7 @@ Answer:
                         question=user_query,
                         context=formatted_context,
                         answer=answer,
-                        llm=selected_llm
+                        llm=llm_verifier
                     )
                 except Exception as verify_error:
                     print(f"[Debug] Verification step encountered an issue: {verify_error}")
@@ -489,9 +498,11 @@ Answer:
                 print("=" * 60)
                 print(answer)
 
-                # Append warning if answer may contain unsupported information
+                # Append warning or confirmation based on verification result
                 if verification_result == "UNSUPPORTED":
-                    print("\n⚠️ [Self-Correction Warning]: This answer may contain information not directly supported by the provided citations.")
+                    print("\n⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
+                else:
+                    print("\n✅ [Self-Critique]: This answer has been verified against the provided citations.")
 
                 print("=" * 60)
 

@@ -45,6 +45,9 @@ class PipelineConfig:
     classifier_provider: str
     classifier_model: str | None
     classifier_temperature: float
+    verifier_provider: str
+    verifier_model: str | None
+    verifier_temperature: float
     retrieval_k: int
     system_prompt: str
 
@@ -66,6 +69,10 @@ def _initialize_pipeline() -> Dict[str, Any]:
     classifier_provider = os.getenv("CLASSIFIER_LLM_PROVIDER", provider).lower()
     classifier_model = os.getenv("CLASSIFIER_LLM_MODEL") or None
     classifier_temperature = float(os.getenv("CLASSIFIER_LLM_TEMPERATURE", "0.0"))
+
+    verifier_provider = os.getenv("VERIFIER_LLM_PROVIDER", provider).lower()
+    verifier_model = os.getenv("VERIFIER_LLM_MODEL") or None
+    verifier_temperature = float(os.getenv("VERIFIER_LLM_TEMPERATURE", "0.0"))
 
     retrieval_k = int(os.getenv("RETRIEVAL_K", "5"))
 
@@ -146,6 +153,12 @@ Answer:
         prescriptive_temperature,
     )
 
+    llm_verifier = create_llm(
+        verifier_provider,
+        verifier_model,
+        verifier_temperature,
+    )
+
     return {
         "config": PipelineConfig(
             provider=provider,
@@ -155,6 +168,9 @@ Answer:
             classifier_provider=classifier_provider,
             classifier_model=classifier_model,
             classifier_temperature=classifier_temperature,
+            verifier_provider=verifier_provider,
+            verifier_model=verifier_model,
+            verifier_temperature=verifier_temperature,
             retrieval_k=retrieval_k,
             system_prompt=system_prompt,
         ),
@@ -163,6 +179,7 @@ Answer:
         "classifier_llm": classifier_llm,
         "llm_informational": llm_informational,
         "llm_prescriptive": llm_prescriptive,
+        "llm_verifier": llm_verifier,
     }
 
 
@@ -187,6 +204,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
     retriever = pipeline["retriever"]
     llm_informational = pipeline["llm_informational"]
     llm_prescriptive = pipeline["llm_prescriptive"]
+    llm_verifier = pipeline["llm_verifier"]
     config: PipelineConfig = pipeline["config"]
 
     severity = get_query_severity(user_query, classifier_llm)
@@ -219,7 +237,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
             question=user_query,
             context=formatted_context,
             answer=answer,
-            llm=selected_llm
+            llm=llm_verifier
         )
     except Exception as verify_error:
         # Log error in background but proceed

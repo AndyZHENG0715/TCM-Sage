@@ -51,6 +51,8 @@ with st.sidebar:
 - **Prescriptive Temp:** `{config.prescriptive_temperature}`
 - **Classifier Provider:** `{config.classifier_provider}`
 - **Classifier Model:** `{config.classifier_model or "default"}`
+- **Verifier Provider:** `{config.verifier_provider}`
+- **Verifier Model:** `{config.verifier_model or "default"}`
 - **Retriever k:** `{config.retrieval_k}`
             """
         )
@@ -97,7 +99,9 @@ if st.session_state.history:
     st.markdown(f"**Model:** `{latest['model'] or 'default'}`")
     st.write(latest["answer"])
     if latest.get("verification_result") == "UNSUPPORTED":
-        st.warning("⚠️ [Self-Correction Warning]: This answer may contain information not directly supported by the provided citations.")
+        st.warning("⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
+    else:
+        st.success("✅ [Self-Critique]: This answer has been verified against the provided citations.")
 else:
     st.info("No queries yet. Ask a question to see the answer here.")
 
@@ -112,4 +116,6 @@ else:
             st.markdown(f"**Temperature:** `{item['temperature']}`")
             st.write(item["answer"])
             if item.get("verification_result") == "UNSUPPORTED":
-                st.warning("⚠️ [Self-Correction Warning]: This answer may contain information not directly supported by the provided citations.")
+                st.warning("⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
+            else:
+                st.success("✅ [Self-Critique]: This answer has been verified against the provided citations.")
