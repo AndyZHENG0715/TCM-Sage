@@ -78,12 +78,12 @@ def create_llm(provider, model=None, temperature=0.1):
 
     # Default models for each provider
     default_models = {
-        'openai': 'gpt-4o',
-        'google': 'gemini-2.5-pro',
-        'anthropic': 'claude-3-5-sonnet-20241022',
-        'openrouter': 'openai/gpt-4o',
+        'openai': 'gpt-5-2',
+        'google': 'gemini-3-pro',
+        'anthropic': 'claude-4-5-sonnet-20241022',
+        'openrouter': 'openai/gpt-5-2',
         'together': 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
-        'alibaba': 'qwen3-14b'
+        'alibaba': 'qwen3-max'
     }
 
     # Use default model if none specified
@@ -261,7 +261,21 @@ def verify_answer(question, context, answer, llm):
     Returns:
         str: 'SUPPORTED' or 'UNSUPPORTED'
     """
-    verification_template = """Based on the Context provided, does the Proposed Answer contain any factual claims NOT supported by the Context? Respond with ONLY 'SUPPORTED' or 'UNSUPPORTED'.
+    # Load prompt from environment or use default
+    sys_prompt = os.getenv('VERIFICATION_PROMPT')
+    
+    if not sys_prompt:
+        # Fallback default if not in .env
+        sys_prompt = """You are a strict verification auditor for a Traditional Chinese Medicine RAG system.
+
+Your task: Determine if the Proposed Answer is FAITHFUL to the provided Context.
+
+FAITHFULNESS CRITERIA:
+1. The answer must be based on the provided Context.
+2. ALLOWED: Synthesis, summarization, and logical inference derived from the Context.
+3. ALLOWED: Use of standard TCM terminology to explain concepts found in the Context.
+4. FORBIDDEN: Introducing external knowledge NOT supported by the Context.
+5. FORBIDDEN: Contradicting the Context.
 
 Context:
 {context}
@@ -272,9 +286,11 @@ Question:
 Proposed Answer:
 {answer}
 
+Respond with ONLY one word: 'SUPPORTED' or 'UNSUPPORTED'.
+
 Verification Result:"""
 
-    verification_prompt = ChatPromptTemplate.from_template(verification_template)
+    verification_prompt = ChatPromptTemplate.from_template(sys_prompt)
     verification_chain = verification_prompt | llm | StrOutputParser()
 
     result = verification_chain.invoke({
@@ -285,8 +301,8 @@ Verification Result:"""
 
     # Normalize response to expected values
     if result not in ['SUPPORTED', 'UNSUPPORTED']:
-        # If LLM returns unexpected format, default to SUPPORTED to avoid false warnings
-        result = 'SUPPORTED'
+        # If LLM returns unexpected format, default to UNSUPPORTED to ensure safety
+        result = 'UNSUPPORTED'
 
     return result
 
@@ -339,10 +355,12 @@ def main():
         graph_depth = int(os.getenv('GRAPH_DEPTH', '1'))
 
         # Get system prompt configuration
-        system_prompt = os.getenv('SYSTEM_PROMPT', """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
+        system_prompt = os.getenv('SYSTEM_PROMPT')
+        if not system_prompt:
+            system_prompt = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
 Your task is to answer questions accurately based ONLY on the provided source text.
 Your answer must be in the same language as the question.
-After providing the answer, cite the source chapter for the information you provide in a "Sources:" section.""")
+After providing the answer, cite the source chapter for the information you provide in a "Sources:" section."""
 
         print(f"Using LLM provider: {provider}")
         if model:
@@ -412,16 +430,7 @@ After providing the answer, cite the source chapter for the information you prov
 
         # Define the prompt template
         print("Configuring prompt template...")
-        template = f"""{system_prompt}
-
-Context:
-{{context}}
-
-Question:
-{{question}}
-
-Answer:
-"""
+        template = system_prompt + "\n\nContext:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
         prompt = ChatPromptTemplate.from_template(template)
 
         # RAG chain will be built dynamically in the query loop based on classification
@@ -502,7 +511,7 @@ Answer:
                 if verification_result == "UNSUPPORTED":
                     print("\n⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
                 else:
-                    print("\n✅ [Self-Critique]: This answer has been verified against the provided citations.")
+                    print("\n✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")
 
                 print("=" * 60)
 

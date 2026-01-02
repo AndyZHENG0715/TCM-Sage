@@ -81,14 +81,15 @@ def _initialize_pipeline() -> Dict[str, Any]:
     graph_data_path = os.getenv("GRAPH_DATA_PATH", "data/graph/entities.json")
     graph_depth = int(os.getenv("GRAPH_DEPTH", "1"))
 
-    system_prompt = os.getenv(
-        "SYSTEM_PROMPT",
-        "You are an expert assistant specializing in Classical Chinese Medicine, "
-        "specifically the Huangdi Neijing (黃帝内經). Your task is to answer questions "
-        "accurately based ONLY on the provided source text. Your answer must be in the "
-        "same language as the question. After providing the answer, cite the source "
-        'chapter for the information you provide in a "Sources:" section.',
-    )
+    system_prompt = os.getenv("SYSTEM_PROMPT")
+    if not system_prompt:
+        system_prompt = (
+            "You are an expert assistant specializing in Classical Chinese Medicine, "
+            "specifically the Huangdi Neijing (黃帝内經). Your task is to answer questions "
+            "accurately based ONLY on the provided source text. Your answer must be in the "
+            "same language as the question. After providing the answer, cite the source "
+            'chapter for the information you provide in a "Sources:" section.'
+        )
 
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore_path = Path(__file__).parent.parent / "vectorstore" / "chroma"
@@ -123,16 +124,7 @@ def _initialize_pipeline() -> Dict[str, Any]:
     else:
         retriever = vectorstore.as_retriever(k=retrieval_k)
 
-    template = f"""{system_prompt}
-
-Context:
-{{context}}
-
-Question:
-{{question}}
-
-Answer:
-"""
+    template = system_prompt + "\n\nContext:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
     prompt = ChatPromptTemplate.from_template(template)
 
     classifier_llm = create_llm(
