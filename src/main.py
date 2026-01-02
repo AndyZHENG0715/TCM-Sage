@@ -246,6 +246,51 @@ Category:"""
     return severity
 
 
+def verify_answer(question, context, answer, llm):
+    """
+    Verify if the generated answer is supported by the provided context.
+
+    Uses a self-critique prompt to detect potential hallucinations or unsupported claims.
+
+    Args:
+        question (str): The user's original question
+        context (str): The retrieved context used to generate the answer
+        answer (str): The generated answer to verify
+        llm: LLM instance for verification
+
+    Returns:
+        str: 'SUPPORTED' or 'UNSUPPORTED'
+    """
+    verification_template = """Based on the Context provided, does the Proposed Answer contain any factual claims NOT supported by the Context? Respond with ONLY 'SUPPORTED' or 'UNSUPPORTED'.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Proposed Answer:
+{answer}
+
+Verification Result:"""
+
+    verification_prompt = ChatPromptTemplate.from_template(verification_template)
+    verification_chain = verification_prompt | llm | StrOutputParser()
+
+    result = verification_chain.invoke({
+        "context": context,
+        "question": question,
+        "answer": answer
+    }).strip().upper()
+
+    # Normalize response to expected values
+    if result not in ['SUPPORTED', 'UNSUPPORTED']:
+        # If LLM returns unexpected format, default to SUPPORTED to avoid false warnings
+        result = 'SUPPORTED'
+
+    return result
+
+
 def main():
     """
     Main function to execute the complete RAG pipeline.
@@ -417,13 +462,37 @@ Answer:
 
                 # Execute RAG query
                 print("正在生成答案...")
+
+                # Retrieve context for verification
+                retrieved_docs = retriever.invoke(user_query)
+                formatted_context = format_docs(retrieved_docs)
+
                 answer = rag_chain.invoke(user_query)
+
+                # Self-critique verification step
+                verification_result = "SUPPORTED"  # Default to avoid warning on error
+                try:
+                    print("正在驗證答案...")
+                    verification_result = verify_answer(
+                        question=user_query,
+                        context=formatted_context,
+                        answer=answer,
+                        llm=selected_llm
+                    )
+                except Exception as verify_error:
+                    print(f"[Debug] Verification step encountered an issue: {verify_error}")
+                    # Proceed without verification rather than crashing
 
                 # Show answer
                 print("\n" + "=" * 60)
                 print("生成答案:")
                 print("=" * 60)
                 print(answer)
+
+                # Append warning if answer may contain unsupported information
+                if verification_result == "UNSUPPORTED":
+                    print("\n⚠️ [Self-Correction Warning]: This answer may contain information not directly supported by the provided citations.")
+
                 print("=" * 60)
 
             except KeyboardInterrupt:
