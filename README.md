@@ -46,7 +46,7 @@ This plan is aligned with the official submission deadlines.
 
     - [x] **Implement intelligent query classification and routing system.**
 
-    - [ ] Submit Source Code: End of Nov, End of Dec.
+    - [x] Submit Source Code: End of Nov, End of Dec.
 
 * **Phase 3: Mid-Point Review & Enhancement (Jan 2026 - Feb 2026)**
 
@@ -54,7 +54,7 @@ This plan is aligned with the official submission deadlines.
 
     - [ ] Submit Second Progress Report (Jan 5).
 
-    - [ ] Begin Knowledge Graph development and web UI implementation.
+    - [x] Begin Knowledge Graph development and web UI implementation.
 
     - [ ] Submit Source Code: End of Jan, End of Feb.
 
