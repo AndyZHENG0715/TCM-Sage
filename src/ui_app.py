@@ -32,11 +32,18 @@ st.caption("Discovery UI for demonstrating query routing and evidence-backed ans
 if "history" not in st.session_state:
     st.session_state.history: List[dict] = []
 
+if "query_input" not in st.session_state:
+    st.session_state.query_input = ""
+
 
 def handle_submit(query: str) -> None:
     with st.spinner("Analyzing and generating answer..."):
         result = run_query(query)
     st.session_state.history.insert(0, result)
+
+
+def set_query(q: str) -> None:
+    st.session_state.query_input = q
 
 
 with st.sidebar:
@@ -60,6 +67,14 @@ with st.sidebar:
         st.error(f"Unable to load configuration: {sidebar_error}")
 
     st.divider()
+    st.header("Sample Questions")
+    st.caption("Click to populate the search box")
+    
+    st.button("1. 阴阳是什么？ (Concepts)", on_click=set_query, args=("阴阳是什么？",), use_container_width=True)
+    st.button("2. 頭痛如何治療？ (Clinical)", on_click=set_query, args=("頭痛如何治療？",), use_container_width=True)
+    st.button("3. Neijing vs COVID-19 (Safety)", on_click=set_query, args=("黄帝内经怎么看待COVID-19",), use_container_width=True)
+
+    st.divider()
     st.markdown(
         "⚠️ This prototype runs on live APIs. Keep queries concise to control latency and cost."
     )
@@ -69,6 +84,7 @@ st.subheader("Ask a question about the Huangdi Neijing")
 query = st.text_area(
     "Your question",
     placeholder="例如：陰陽是什麼？ or 頭痛應該用什麼方劑？",
+    key="query_input",
 )
 
 col1, col2 = st.columns([1, 1])
@@ -101,7 +117,7 @@ if st.session_state.history:
     if latest.get("verification_result") == "UNSUPPORTED":
         st.warning("⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
     else:
-        st.success("✅ [Self-Critique]: This answer has been verified against the provided citations.")
+        st.success("✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")
 else:
     st.info("No queries yet. Ask a question to see the answer here.")
 
@@ -118,4 +134,4 @@ else:
             if item.get("verification_result") == "UNSUPPORTED":
                 st.warning("⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
             else:
-                st.success("✅ [Self-Critique]: This answer has been verified against the provided citations.")
+                st.success("✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")

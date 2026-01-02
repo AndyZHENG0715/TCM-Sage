@@ -15,15 +15,20 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from pathlib import Path
+import io
 import os
 import sys
 from dotenv import load_dotenv
 
-# Fix Unicode encoding issues on Windows
+# Fix Unicode encoding issues on Windows (only for CLI, not Streamlit)
 if sys.platform == "win32":
-    import codecs
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
-    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
+    try:
+        import codecs
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+        sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
+    except (AttributeError, io.UnsupportedOperation):
+        # Running in Streamlit or other context where stdout.detach() is not available
+        pass
 
 # LLM Provider imports
 try:
