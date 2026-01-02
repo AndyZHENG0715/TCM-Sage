@@ -96,6 +96,8 @@ if st.session_state.history:
     st.markdown(f"**Provider:** `{latest['provider']}`")
     st.markdown(f"**Model:** `{latest['model'] or 'default'}`")
     st.write(latest["answer"])
+    if latest.get("verification_result") == "UNSUPPORTED":
+        st.warning("⚠️ [Self-Correction Warning]: This answer may contain information not directly supported by the provided citations.")
 else:
     st.info("No queries yet. Ask a question to see the answer here.")
 
@@ -109,3 +111,5 @@ else:
         with st.expander(f"{idx}. {item['question']} — {item['severity']} @ {item['timestamp']}"):
             st.markdown(f"**Temperature:** `{item['temperature']}`")
             st.write(item["answer"])
+            if item.get("verification_result") == "UNSUPPORTED":
+                st.warning("⚠️ [Self-Correction Warning]: This answer may contain information not directly supported by the provided citations.")

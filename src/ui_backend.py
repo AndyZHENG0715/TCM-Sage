@@ -32,6 +32,7 @@ from main import (  # type: ignore  # pylint: disable=import-error
     create_llm,
     format_docs,
     get_query_severity,
+    verify_answer,
 )
 
 
@@ -197,6 +198,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
         selected_llm = llm_informational
         selected_temp = config.informational_temperature
 
+    # Build RAG chain
     rag_chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt
@@ -204,7 +206,24 @@ def run_query(user_query: str) -> Dict[str, Any]:
         | StrOutputParser()
     )
 
+    # Retrieve context for verification
+    retrieved_docs = retriever.invoke(user_query)
+    formatted_context = format_docs(retrieved_docs)
+
     answer = rag_chain.invoke(user_query)
+
+    # Self-critique verification step
+    verification_result = "SUPPORTED"
+    try:
+        verification_result = verify_answer(
+            question=user_query,
+            context=formatted_context,
+            answer=answer,
+            llm=selected_llm
+        )
+    except Exception as verify_error:
+        # Log error in background but proceed
+        print(f"[Debug] UI Backend Verification Error: {verify_error}")
 
     return {
         "question": user_query,
@@ -215,6 +234,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
         "provider": config.provider,
         "model": config.model,
         "retrieval_k": config.retrieval_k,
+        "verification_result": verification_result,
     }
 
 
