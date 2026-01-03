@@ -28,7 +28,17 @@ st.set_page_config(
 )
 
 st.title("🌿 TCM-Sage Prototype UI")
-st.caption("Discovery UI for demonstrating query routing and evidence-backed answers.")
+
+# Feedback button in header area for mobile visibility
+feedback_url = os.getenv("FEEDBACK_FORM_URL")
+if feedback_url:
+    header_cols = st.columns([4, 1])
+    with header_cols[0]:
+        st.caption("Discovery UI for demonstrating query routing and evidence-backed answers.")
+    with header_cols[1]:
+        st.link_button("📝 Feedback", feedback_url, type="primary", use_container_width=True)
+else:
+    st.caption("Discovery UI for demonstrating query routing and evidence-backed answers.")
 
 if "history" not in st.session_state:
     st.session_state.history: List[dict] = []
@@ -66,11 +76,6 @@ with st.sidebar:
         )
     except Exception as sidebar_error:  # pylint: disable=broad-except
         st.error(f"Unable to load configuration: {sidebar_error}")
-
-    feedback_url = os.getenv("FEEDBACK_FORM_URL")
-    if feedback_url:
-        st.divider()
-        st.link_button("📝 Give Feedback", feedback_url, type="primary", use_container_width=True)
 
     st.divider()
     st.header("Sample Questions")
