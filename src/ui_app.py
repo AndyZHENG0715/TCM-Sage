@@ -7,6 +7,7 @@ affecting the core CLI workflow.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import List
@@ -65,6 +66,11 @@ with st.sidebar:
         )
     except Exception as sidebar_error:  # pylint: disable=broad-except
         st.error(f"Unable to load configuration: {sidebar_error}")
+
+    feedback_url = os.getenv("FEEDBACK_FORM_URL")
+    if feedback_url:
+        st.divider()
+        st.link_button("📝 Give Feedback", feedback_url, type="primary", use_container_width=True)
 
     st.divider()
     st.header("Sample Questions")
