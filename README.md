@@ -52,7 +52,7 @@ This plan is aligned with the official submission deadlines.
 
   - [ ] Prepare and deliver Mid-point Presentation & Demo (Jan 7-9).
 
-  - [ ] Submit Second Progress Report (Jan 5).
+  - [x] Submit Second Progress Report (Jan 5).
 
   - [x] Begin Knowledge Graph development and web UI implementation.
 
