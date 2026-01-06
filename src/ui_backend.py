@@ -32,6 +32,7 @@ from main import (  # type: ignore  # pylint: disable=import-error
     create_llm,
     format_docs,
     get_query_severity,
+    verify_answer,
 )
 
 
@@ -44,6 +45,9 @@ class PipelineConfig:
     classifier_provider: str
     classifier_model: str | None
     classifier_temperature: float
+    verifier_provider: str
+    verifier_model: str | None
+    verifier_temperature: float
     retrieval_k: int
     system_prompt: str
 
@@ -66,6 +70,10 @@ def _initialize_pipeline() -> Dict[str, Any]:
     classifier_model = os.getenv("CLASSIFIER_LLM_MODEL") or None
     classifier_temperature = float(os.getenv("CLASSIFIER_LLM_TEMPERATURE", "0.0"))
 
+    verifier_provider = os.getenv("VERIFIER_LLM_PROVIDER", provider).lower()
+    verifier_model = os.getenv("VERIFIER_LLM_MODEL") or None
+    verifier_temperature = float(os.getenv("VERIFIER_LLM_TEMPERATURE", "0.0"))
+
     retrieval_k = int(os.getenv("RETRIEVAL_K", "5"))
 
     # Hybrid retrieval configuration
@@ -73,14 +81,15 @@ def _initialize_pipeline() -> Dict[str, Any]:
     graph_data_path = os.getenv("GRAPH_DATA_PATH", "data/graph/entities.json")
     graph_depth = int(os.getenv("GRAPH_DEPTH", "1"))
 
-    system_prompt = os.getenv(
-        "SYSTEM_PROMPT",
-        "You are an expert assistant specializing in Classical Chinese Medicine, "
-        "specifically the Huangdi Neijing (黃帝内經). Your task is to answer questions "
-        "accurately based ONLY on the provided source text. Your answer must be in the "
-        "same language as the question. After providing the answer, cite the source "
-        'chapter for the information you provide in a "Sources:" section.',
-    )
+    system_prompt = os.getenv("SYSTEM_PROMPT")
+    if not system_prompt:
+        system_prompt = (
+            "You are an expert assistant specializing in Classical Chinese Medicine, "
+            "specifically the Huangdi Neijing (黃帝内經). Your task is to answer questions "
+            "accurately based ONLY on the provided source text. Your answer must be in the "
+            "same language as the question. After providing the answer, cite the source "
+            'chapter for the information you provide in a "Sources:" section.'
+        )
 
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore_path = Path(__file__).parent.parent / "vectorstore" / "chroma"
@@ -115,16 +124,7 @@ def _initialize_pipeline() -> Dict[str, Any]:
     else:
         retriever = vectorstore.as_retriever(k=retrieval_k)
 
-    template = f"""{system_prompt}
-
-Context:
-{{context}}
-
-Question:
-{{question}}
-
-Answer:
-"""
+    template = system_prompt + "\n\nContext:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
     prompt = ChatPromptTemplate.from_template(template)
 
     classifier_llm = create_llm(
@@ -145,6 +145,12 @@ Answer:
         prescriptive_temperature,
     )
 
+    llm_verifier = create_llm(
+        verifier_provider,
+        verifier_model,
+        verifier_temperature,
+    )
+
     return {
         "config": PipelineConfig(
             provider=provider,
@@ -154,6 +160,9 @@ Answer:
             classifier_provider=classifier_provider,
             classifier_model=classifier_model,
             classifier_temperature=classifier_temperature,
+            verifier_provider=verifier_provider,
+            verifier_model=verifier_model,
+            verifier_temperature=verifier_temperature,
             retrieval_k=retrieval_k,
             system_prompt=system_prompt,
         ),
@@ -162,6 +171,7 @@ Answer:
         "classifier_llm": classifier_llm,
         "llm_informational": llm_informational,
         "llm_prescriptive": llm_prescriptive,
+        "llm_verifier": llm_verifier,
     }
 
 
@@ -186,6 +196,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
     retriever = pipeline["retriever"]
     llm_informational = pipeline["llm_informational"]
     llm_prescriptive = pipeline["llm_prescriptive"]
+    llm_verifier = pipeline["llm_verifier"]
     config: PipelineConfig = pipeline["config"]
 
     severity = get_query_severity(user_query, classifier_llm)
@@ -197,6 +208,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
         selected_llm = llm_informational
         selected_temp = config.informational_temperature
 
+    # Build RAG chain
     rag_chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt
@@ -204,7 +216,24 @@ def run_query(user_query: str) -> Dict[str, Any]:
         | StrOutputParser()
     )
 
+    # Retrieve context for verification
+    retrieved_docs = retriever.invoke(user_query)
+    formatted_context = format_docs(retrieved_docs)
+
     answer = rag_chain.invoke(user_query)
+
+    # Self-critique verification step
+    verification_result = "SUPPORTED"
+    try:
+        verification_result = verify_answer(
+            question=user_query,
+            context=formatted_context,
+            answer=answer,
+            llm=llm_verifier
+        )
+    except Exception as verify_error:
+        # Log error in background but proceed
+        print(f"[Debug] UI Backend Verification Error: {verify_error}")
 
     return {
         "question": user_query,
@@ -215,6 +244,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
         "provider": config.provider,
         "model": config.model,
         "retrieval_k": config.retrieval_k,
+        "verification_result": verification_result,
     }
 
 

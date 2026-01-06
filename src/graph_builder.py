@@ -223,6 +223,7 @@ class TCMKnowledgeGraph:
         This bidirectional search enables:
         - Exact/partial entity name matches (e.g., query "頭痛" matches entity "頭痛")
         - Entity extraction from long queries (e.g., query "患者頭痛三十年" matches entity "頭痛")
+        - Cross-variant Chinese matching (Simplified ↔ Traditional)
 
         Args:
             query: Search string (can be a single term or a long sentence).
@@ -233,14 +234,39 @@ class TCMKnowledgeGraph:
         matches = []
         query_lower = query.lower()
 
+        # Common Simplified ↔ Traditional mappings for TCM terms
+        simp_trad_map = {
+            "头痛": "頭痛", "头": "頭", "痛": "痛",
+            "眩晕": "眩暈", "晕": "暈",
+            "失眠": "失眠",
+            "疲劳": "疲勞", "劳": "勞",
+            "咳嗽": "咳嗽",
+            "川芎": "川芎",
+            "白芷": "白芷",
+            "天麻": "天麻",
+            "酸枣仁": "酸棗仁", "枣": "棗",
+            "黄芪": "黃芪", "黄": "黃",
+            "杏仁": "杏仁",
+        }
+
+        # Build query variants (original + converted)
+        query_variants = {query}
+        for simp, trad in simp_trad_map.items():
+            if simp in query:
+                query_variants.add(query.replace(simp, trad))
+            if trad in query:
+                query_variants.add(query.replace(trad, simp))
+
         for node_id, attrs in self.graph.nodes(data=True):
             name = attrs.get("name", "")
             name_en = attrs.get("name_en", "").lower()
 
-            # Check if entity name appears in query (for extracting entities from sentences)
-            # OR if query appears in entity name (for partial name searches)
-            if name in query or name_en in query_lower or query in name or query_lower in name_en:
-                matches.append(node_id)
+            for q in query_variants:
+                # Check if entity name appears in query (for extracting entities from sentences)
+                # OR if query appears in entity name (for partial name searches)
+                if name in q or name_en in query_lower or q in name or query_lower in name_en:
+                    matches.append(node_id)
+                    break  # Avoid duplicate matches for same entity
 
         return matches
 

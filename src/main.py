@@ -15,15 +15,20 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from pathlib import Path
+import io
 import os
 import sys
 from dotenv import load_dotenv
 
-# Fix Unicode encoding issues on Windows
+# Fix Unicode encoding issues on Windows (only for CLI, not Streamlit)
 if sys.platform == "win32":
-    import codecs
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
-    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
+    try:
+        import codecs
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+        sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
+    except (AttributeError, io.UnsupportedOperation):
+        # Running in Streamlit or other context where stdout.detach() is not available
+        pass
 
 # LLM Provider imports
 try:
@@ -78,12 +83,12 @@ def create_llm(provider, model=None, temperature=0.1):
 
     # Default models for each provider
     default_models = {
-        'openai': 'gpt-4o',
-        'google': 'gemini-2.5-pro',
-        'anthropic': 'claude-3-5-sonnet-20241022',
-        'openrouter': 'openai/gpt-4o',
+        'openai': 'gpt-5-2',
+        'google': 'gemini-3-pro',
+        'anthropic': 'claude-4-5-sonnet-20241022',
+        'openrouter': 'openai/gpt-5-2',
         'together': 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
-        'alibaba': 'qwen3-14b'
+        'alibaba': 'qwen3-max'
     }
 
     # Use default model if none specified
@@ -246,6 +251,67 @@ Category:"""
     return severity
 
 
+def verify_answer(question, context, answer, llm):
+    """
+    Verify if the generated answer is supported by the provided context.
+
+    Uses a self-critique prompt to detect potential hallucinations or unsupported claims.
+
+    Args:
+        question (str): The user's original question
+        context (str): The retrieved context used to generate the answer
+        answer (str): The generated answer to verify
+        llm: LLM instance for verification
+
+    Returns:
+        str: 'SUPPORTED' or 'UNSUPPORTED'
+    """
+    # Load prompt from environment or use default
+    sys_prompt = os.getenv('VERIFICATION_PROMPT')
+    
+    if not sys_prompt:
+        # Fallback default if not in .env
+        sys_prompt = """You are a strict verification auditor for a Traditional Chinese Medicine RAG system.
+
+Your task: Determine if the Proposed Answer is FAITHFUL to the provided Context.
+
+FAITHFULNESS CRITERIA:
+1. The answer must be based on the provided Context.
+2. ALLOWED: Synthesis, summarization, and logical inference derived from the Context.
+3. ALLOWED: Use of standard TCM terminology to explain concepts found in the Context.
+4. FORBIDDEN: Introducing external knowledge NOT supported by the Context.
+5. FORBIDDEN: Contradicting the Context.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Proposed Answer:
+{answer}
+
+Respond with ONLY one word: 'SUPPORTED' or 'UNSUPPORTED'.
+
+Verification Result:"""
+
+    verification_prompt = ChatPromptTemplate.from_template(sys_prompt)
+    verification_chain = verification_prompt | llm | StrOutputParser()
+
+    result = verification_chain.invoke({
+        "context": context,
+        "question": question,
+        "answer": answer
+    }).strip().upper()
+
+    # Normalize response to expected values
+    if result not in ['SUPPORTED', 'UNSUPPORTED']:
+        # If LLM returns unexpected format, default to UNSUPPORTED to ensure safety
+        result = 'UNSUPPORTED'
+
+    return result
+
+
 def main():
     """
     Main function to execute the complete RAG pipeline.
@@ -273,6 +339,11 @@ def main():
         classifier_model = os.getenv('CLASSIFIER_LLM_MODEL')
         classifier_temperature = float(os.getenv('CLASSIFIER_LLM_TEMPERATURE', '0.0'))
 
+        # Verifier configuration
+        verifier_provider = os.getenv('VERIFIER_LLM_PROVIDER', provider).lower()
+        verifier_model = os.getenv('VERIFIER_LLM_MODEL')
+        verifier_temperature = float(os.getenv('VERIFIER_LLM_TEMPERATURE', '0.0'))
+
         # Main LLM temperatures
         informational_temperature = temperature  # from LLM_TEMPERATURE
         prescriptive_temperature = float(os.getenv('PRESCRIPTIVE_TEMPERATURE', '0.0'))
@@ -289,10 +360,12 @@ def main():
         graph_depth = int(os.getenv('GRAPH_DEPTH', '1'))
 
         # Get system prompt configuration
-        system_prompt = os.getenv('SYSTEM_PROMPT', """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
+        system_prompt = os.getenv('SYSTEM_PROMPT')
+        if not system_prompt:
+            system_prompt = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
 Your task is to answer questions accurately based ONLY on the provided source text.
 Your answer must be in the same language as the question.
-After providing the answer, cite the source chapter for the information you provide in a "Sources:" section.""")
+After providing the answer, cite the source chapter for the information you provide in a "Sources:" section."""
 
         print(f"Using LLM provider: {provider}")
         if model:
@@ -356,18 +429,13 @@ After providing the answer, cite the source chapter for the information you prov
         llm_informational = create_llm(provider, model, informational_temperature)
         llm_prescriptive = create_llm(provider, model, prescriptive_temperature)
 
+        # Initialize verifier LLM
+        print("Initializing verifier model...")
+        llm_verifier = create_llm(verifier_provider, verifier_model, verifier_temperature)
+
         # Define the prompt template
         print("Configuring prompt template...")
-        template = f"""{system_prompt}
-
-Context:
-{{context}}
-
-Question:
-{{question}}
-
-Answer:
-"""
+        template = system_prompt + "\n\nContext:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
         prompt = ChatPromptTemplate.from_template(template)
 
         # RAG chain will be built dynamically in the query loop based on classification
@@ -417,13 +485,39 @@ Answer:
 
                 # Execute RAG query
                 print("正在生成答案...")
+
+                # Retrieve context for verification
+                retrieved_docs = retriever.invoke(user_query)
+                formatted_context = format_docs(retrieved_docs)
+
                 answer = rag_chain.invoke(user_query)
+
+                # Self-critique verification step
+                verification_result = "SUPPORTED"  # Default to avoid warning on error
+                try:
+                    print("正在驗證答案...")
+                    verification_result = verify_answer(
+                        question=user_query,
+                        context=formatted_context,
+                        answer=answer,
+                        llm=llm_verifier
+                    )
+                except Exception as verify_error:
+                    print(f"[Debug] Verification step encountered an issue: {verify_error}")
+                    # Proceed without verification rather than crashing
 
                 # Show answer
                 print("\n" + "=" * 60)
                 print("生成答案:")
                 print("=" * 60)
                 print(answer)
+
+                # Append warning or confirmation based on verification result
+                if verification_result == "UNSUPPORTED":
+                    print("\n⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
+                else:
+                    print("\n✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")
+
                 print("=" * 60)
 
             except KeyboardInterrupt:

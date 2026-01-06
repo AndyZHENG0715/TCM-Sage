@@ -113,9 +113,24 @@ The intelligent query classification and routing system has been successfully im
   - Temperature settings for both query types
   - Separate temperature controls for medical vs. informational queries
 
-### 4.5 Next Steps
+### 4.5 Knowledge Graph & Hybrid Retrieval ✅ COMPLETED
 
-The immediate next steps for Phase 3 include:
-- Implementing Knowledge Graph (KG) search for enhanced retrieval
-- Adding hybrid retrieval combining vector search with KG navigation
-- Implementing Self-RAG framework for answer critique and verification
+The Knowledge Graph integration has been successfully implemented with the following features:
+
+*   **TCM-Specific Knowledge Graph**: An in-memory graph (using NetworkX) containing key TCM entities (Symptoms, Herbs, Formulas) and relationships (TREATS, CONTAINS, ASSOCIATED_WITH).
+*   **Ensemble Context Aggregation**: A hybrid retrieval strategy that queries both the vector store and the knowledge graph independently, combining the results into distinct context sections for the LLM.
+*   **Bidirectional Search**: Robust entity extraction that finds graph nodes even when they are mentioned within long clinical case descriptions.
+*   **Feature Flag Control**: Configurable hybrid retrieval via `HYBRID_RETRIEVAL_ENABLED`, allowing the system to fall back to pure vector search if needed.
+
+## 5. Phase 3 & Post-Presentation Roadmap (Jan 6, 2026+)
+
+Following the MVP presentation, the system will undergo a dedicated optimization phase focusing on architectural standards and retrieval intelligence.
+
+### 5.1 Intelligence & Standards Refactor
+*   **LangChain-Native Retriever**: Refactor `HybridRetriever` to inherit from `langchain_core.retrievers.BaseRetriever` to support native async operations, batching, and LangChain tracing.
+*   **Advanced Entity Extraction**: Upgrade the graph search from simple string matching to "Longest Match First" or keyword-set intersection to handle complex TCM terminology and avoid overshadowing.
+*   **Shared Config Singleton**: Consolidate environment loading into a centralized `config.py` to eliminate duplication between the CLI and the Streamlit UI.
+
+### 5.2 Self-RAG Refinement
+*   **Verification Module**: Full implementation of the answer critique loop to verify factual support and relevance before delivering the final answer.
+*   **Source Citations**: Enhancing citation accuracy by cross-referencing KG facts with original text passages.
