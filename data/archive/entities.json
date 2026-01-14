@@ -1,0 +1,212 @@
+{
+    "entities": [
+        {
+            "id": "symptom_headache",
+            "type": "Symptom",
+            "name": "頭痛",
+            "name_en": "Headache",
+            "description": "疼痛發生在頭部任何部位"
+        },
+        {
+            "id": "symptom_dizziness",
+            "type": "Symptom",
+            "name": "眩暈",
+            "name_en": "Dizziness",
+            "description": "頭暈目眩"
+        },
+        {
+            "id": "symptom_insomnia",
+            "type": "Symptom",
+            "name": "失眠",
+            "name_en": "Insomnia",
+            "description": "難以入睡或保持睡眠"
+        },
+        {
+            "id": "symptom_fatigue",
+            "type": "Symptom",
+            "name": "疲勞",
+            "name_en": "Fatigue",
+            "description": "精力不足，倦怠乏力"
+        },
+        {
+            "id": "symptom_cough",
+            "type": "Symptom",
+            "name": "咳嗽",
+            "name_en": "Cough",
+            "description": "咳嗽，可能有痰"
+        },
+        {
+            "id": "herb_chuanxiong",
+            "type": "Herb",
+            "name": "川芎",
+            "name_en": "Chuanxiong",
+            "pinyin": "Chuan Xiong",
+            "description": "活血行氣，祛風止痛"
+        },
+        {
+            "id": "herb_baizhi",
+            "type": "Herb",
+            "name": "白芷",
+            "name_en": "Baizhi",
+            "pinyin": "Bai Zhi",
+            "description": "解表散寒，祛風止痛"
+        },
+        {
+            "id": "herb_tianma",
+            "type": "Herb",
+            "name": "天麻",
+            "name_en": "Tianma",
+            "pinyin": "Tian Ma",
+            "description": "平肝息風，祛風止痛"
+        },
+        {
+            "id": "herb_suanzaoren",
+            "type": "Herb",
+            "name": "酸棗仁",
+            "name_en": "Suanzaoren",
+            "pinyin": "Suan Zao Ren",
+            "description": "養心安神，歛汗"
+        },
+        {
+            "id": "herb_huangqi",
+            "type": "Herb",
+            "name": "黃芪",
+            "name_en": "Huangqi",
+            "pinyin": "Huang Qi",
+            "description": "補氣升陽，益衛固表"
+        },
+        {
+            "id": "herb_xingren",
+            "type": "Herb",
+            "name": "杏仁",
+            "name_en": "Xingren",
+            "pinyin": "Xing Ren",
+            "description": "止咳平喘，潤腸通便"
+        },
+        {
+            "id": "formula_chuanxiong_chatiao",
+            "type": "Formula",
+            "name": "川芎茶調散",
+            "name_en": "Chuanxiong Chatiao San",
+            "description": "疏風止痛，用於外感風邪頭痛"
+        },
+        {
+            "id": "formula_tianma_gouteng",
+            "type": "Formula",
+            "name": "天麻鉤藤飲",
+            "name_en": "Tianma Gouteng Yin",
+            "description": "平肝息風，用於肝陽上亢頭痛眩暈"
+        },
+        {
+            "id": "formula_suanzaoren_tang",
+            "type": "Formula",
+            "name": "酸棗仁湯",
+            "name_en": "Suanzaoren Tang",
+            "description": "養血安神，用於虛煩失眠"
+        }
+    ],
+    "relationships": [
+        {
+            "source": "herb_chuanxiong",
+            "target": "symptom_headache",
+            "type": "TREATS",
+            "description": "川芎活血行氣，治頭痛"
+        },
+        {
+            "source": "herb_baizhi",
+            "target": "symptom_headache",
+            "type": "TREATS",
+            "description": "白芷散風止痛，治頭痛"
+        },
+        {
+            "source": "herb_tianma",
+            "target": "symptom_headache",
+            "type": "TREATS",
+            "description": "天麻平肝息風，治頭痛"
+        },
+        {
+            "source": "herb_tianma",
+            "target": "symptom_dizziness",
+            "type": "TREATS",
+            "description": "天麻治眩暈"
+        },
+        {
+            "source": "herb_suanzaoren",
+            "target": "symptom_insomnia",
+            "type": "TREATS",
+            "description": "酸棗仁養心安神，治失眠"
+        },
+        {
+            "source": "herb_huangqi",
+            "target": "symptom_fatigue",
+            "type": "TREATS",
+            "description": "黃芪補氣，治疲勞"
+        },
+        {
+            "source": "herb_xingren",
+            "target": "symptom_cough",
+            "type": "TREATS",
+            "description": "杏仁止咳平喘"
+        },
+        {
+            "source": "formula_chuanxiong_chatiao",
+            "target": "herb_chuanxiong",
+            "type": "CONTAINS",
+            "description": "川芎茶調散含川芎"
+        },
+        {
+            "source": "formula_chuanxiong_chatiao",
+            "target": "herb_baizhi",
+            "type": "CONTAINS",
+            "description": "川芎茶調散含白芷"
+        },
+        {
+            "source": "formula_chuanxiong_chatiao",
+            "target": "symptom_headache",
+            "type": "TREATS",
+            "description": "川芎茶調散治頭痛"
+        },
+        {
+            "source": "formula_tianma_gouteng",
+            "target": "herb_tianma",
+            "type": "CONTAINS",
+            "description": "天麻鉤藤飲含天麻"
+        },
+        {
+            "source": "formula_tianma_gouteng",
+            "target": "symptom_headache",
+            "type": "TREATS",
+            "description": "天麻鉤藤飲治頭痛"
+        },
+        {
+            "source": "formula_tianma_gouteng",
+            "target": "symptom_dizziness",
+            "type": "TREATS",
+            "description": "天麻鉤藤飲治眩暈"
+        },
+        {
+            "source": "formula_suanzaoren_tang",
+            "target": "herb_suanzaoren",
+            "type": "CONTAINS",
+            "description": "酸棗仁湯含酸棗仁"
+        },
+        {
+            "source": "formula_suanzaoren_tang",
+            "target": "symptom_insomnia",
+            "type": "TREATS",
+            "description": "酸棗仁湯治失眠"
+        },
+        {
+            "source": "symptom_headache",
+            "target": "symptom_dizziness",
+            "type": "ASSOCIATED_WITH",
+            "description": "頭痛常伴隨眩暈"
+        },
+        {
+            "source": "symptom_insomnia",
+            "target": "symptom_fatigue",
+            "type": "ASSOCIATED_WITH",
+            "description": "失眠可導致疲勞"
+        }
+    ]
+}

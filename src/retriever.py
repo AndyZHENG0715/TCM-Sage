@@ -83,18 +83,21 @@ class HybridRetriever:
             k: Number of results (defaults to self.vector_k).
 
         Returns:
-            List of Document objects with source metadata.
+            List of Document objects with source and score metadata.
         """
         k = k or self.vector_k
-        results = self.vectorstore.similarity_search(query, k=k)
+        # Use similarity_search_with_score to capture relevance scores for debugging
+        results_with_scores = self.vectorstore.similarity_search_with_score(query, k=k)
 
-        # Add source metadata to distinguish from graph results
-        for doc in results:
+        docs = []
+        for doc, score in results_with_scores:
             if doc.metadata is None:
                 doc.metadata = {}
             doc.metadata["source_type"] = "vector"
+            doc.metadata["score"] = round(score, 3)  # Distance score (lower = better match)
+            docs.append(doc)
 
-        return results
+        return docs
 
     def graph_search(
         self,
@@ -135,12 +138,25 @@ class HybridRetriever:
                 rel_entity = item["entity"]
                 relationship = item["relationship"]
 
-                # Format as a readable fact
+                # Use original graph direction: source --> target
+                # relationship["source"] and ["target"] are the actual node IDs
+                source_id = relationship["source"]
+                target_id = relationship["target"]
+
+                # Get entity names from the graph using the original direction
+                source_entity = self.knowledge_graph.get_entity(source_id)
+                target_entity = self.knowledge_graph.get_entity(target_id)
+
+                source_name = source_entity.get("name", source_id) if source_entity else source_id
+                target_name = target_entity.get("name", target_id) if target_entity else target_id
+                target_type = target_entity.get("type", "Unknown") if target_entity else "Unknown"
+
+                # Format as a readable fact with correct direction
                 fact_text = self._format_graph_fact(
-                    source_name=entity.get("name", entity_id),
+                    source_name=source_name,
                     relationship_type=relationship["type"],
-                    target_name=rel_entity.get("name", rel_entity.get("id", "Unknown")),
-                    target_type=rel_entity.get("type", "Unknown"),
+                    target_name=target_name,
+                    target_type=target_type,
                     description=relationship.get("description", ""),
                 )
 
@@ -170,6 +186,9 @@ class HybridRetriever:
         """
         Format a graph relationship as a readable fact string.
 
+        Uses arrow notation for debug-friendly output:
+        Source --RELATIONSHIP--> Target (Type)
+
         Args:
             source_name: Name of source entity.
             relationship_type: Type of relationship.
@@ -178,19 +197,12 @@ class HybridRetriever:
             description: Optional description.
 
         Returns:
-            Formatted fact string.
+            Formatted fact string with arrow notation.
         """
-        # Create human-readable relationship text
-        rel_text_map = {
-            "TREATS": "可治療",
-            "CONTAINS": "包含",
-            "ASSOCIATED_WITH": "相關於",
-        }
-        rel_text = rel_text_map.get(relationship_type, relationship_type)
-
-        fact = f"KG Fact: {source_name} {rel_text} {target_name} ({target_type})"
+        # Use arrow notation for debug-friendly format
+        fact = f"{source_name} --{relationship_type}--> {target_name} ({target_type})"
         if description:
-            fact += f" - {description}"
+            fact += f" | {description}"
 
         return fact
 

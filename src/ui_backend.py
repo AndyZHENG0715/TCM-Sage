@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Generator, Union
 
 from dotenv import load_dotenv
 from langchain.prompts import ChatPromptTemplate
@@ -29,8 +29,10 @@ if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
 from main import (  # type: ignore  # pylint: disable=import-error
+    CITATION_INSTRUCTION,
     create_llm,
     format_docs,
+    format_docs_with_citations,
     get_query_severity,
     verify_answer,
 )
@@ -151,6 +153,10 @@ def _initialize_pipeline() -> Dict[str, Any]:
         verifier_temperature,
     )
 
+    # NOTE: Streaming LLMs are NOT created here to avoid meta tensor errors
+    # during Streamlit module import. They are created lazily in run_query_stream()
+    # when streaming is actually requested.
+
     return {
         "config": PipelineConfig(
             provider=provider,
@@ -208,19 +214,13 @@ def run_query(user_query: str) -> Dict[str, Any]:
         selected_llm = llm_informational
         selected_temp = config.informational_temperature
 
-    # Build RAG chain
-    rag_chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
-        | prompt
-        | selected_llm
-        | StrOutputParser()
-    )
-
-    # Retrieve context for verification
+    # Retrieve context with citation metadata
     retrieved_docs = retriever.invoke(user_query)
-    formatted_context = format_docs(retrieved_docs)
+    formatted_context, citations = format_docs_with_citations(retrieved_docs)
 
-    answer = rag_chain.invoke(user_query)
+    # Build RAG chain with citation-aware context
+    chain_input = {"context": formatted_context, "question": user_query}
+    answer = (prompt | selected_llm | StrOutputParser()).invoke(chain_input)
 
     # Self-critique verification step
     verification_result = "SUPPORTED"
@@ -245,6 +245,7 @@ def run_query(user_query: str) -> Dict[str, Any]:
         "model": config.model,
         "retrieval_k": config.retrieval_k,
         "verification_result": verification_result,
+        "citations": citations,
     }
 
 
@@ -255,3 +256,89 @@ def get_runtime_config() -> PipelineConfig:
 
     pipeline = _initialize_pipeline()
     return pipeline["config"]
+
+
+def run_query_stream(user_query: str) -> Generator[Union[str, Dict[str, Any]], None, None]:
+    """
+    Execute a query with streaming output.
+
+    Yields string chunks as the answer is generated, followed by a final
+    metadata dictionary containing verification results and query info.
+
+    Yields:
+        str: Token chunks as they are generated
+        Dict[str, Any]: Final metadata (last yield) with keys:
+            - type: "metadata" (to distinguish from text chunks)
+            - question, answer, severity, temperature, timestamp
+            - verification_result: "SUPPORTED" or "UNSUPPORTED"
+    """
+
+    if not user_query.strip():
+        raise ValueError("Query must not be empty.")
+
+    pipeline = _initialize_pipeline()
+    classifier_llm = pipeline["classifier_llm"]
+    prompt = pipeline["prompt"]
+    retriever = pipeline["retriever"]
+    llm_verifier = pipeline["llm_verifier"]
+    config: PipelineConfig = pipeline["config"]
+
+    # Classify query severity
+    severity = get_query_severity(user_query, classifier_llm)
+
+    if severity == "prescriptive":
+        selected_temp = config.prescriptive_temperature
+    else:
+        selected_temp = config.informational_temperature
+
+    # Create streaming LLM lazily (avoiding meta tensor error at import time)
+    selected_llm = create_llm(
+        config.provider,
+        config.model,
+        selected_temp,
+        streaming=True,
+    )
+
+    # Retrieve context with citation metadata (reused for generation and verification)
+    retrieved_docs = retriever.invoke(user_query)
+    formatted_context, citations = format_docs_with_citations(retrieved_docs)
+
+    # Build streaming chain with pre-fetched context (avoid double retrieval)
+    chain_input = {"context": formatted_context, "question": user_query}
+    generation_chain = prompt | selected_llm
+
+    # Stream the answer and collect full response
+    collected_answer = ""
+    for chunk in generation_chain.stream(chain_input):
+        # ChatTongyi returns AIMessageChunk, extract content
+        chunk_text = chunk.content if hasattr(chunk, "content") else str(chunk)
+        collected_answer += chunk_text
+        yield chunk_text
+
+    # Run verification after streaming completes
+    verification_result = "SUPPORTED"
+    try:
+        verification_result = verify_answer(
+            question=user_query,
+            context=formatted_context,
+            answer=collected_answer,
+            llm=llm_verifier
+        )
+    except Exception as verify_error:
+        print(f"[Debug] UI Backend Verification Error: {verify_error}")
+
+    # Yield final metadata (includes citations and debug context for UI display)
+    yield {
+        "type": "metadata",
+        "question": user_query,
+        "answer": collected_answer,
+        "severity": severity,
+        "temperature": selected_temp,
+        "timestamp": datetime.utcnow().isoformat(),
+        "provider": config.provider,
+        "model": config.model,
+        "retrieval_k": config.retrieval_k,
+        "verification_result": verification_result,
+        "citations": citations,
+        "debug_context": formatted_context,
+    }

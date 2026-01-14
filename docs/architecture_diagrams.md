@@ -6,54 +6,113 @@ These diagrams are designed for the FYP Mid-Point Presentation. Render them usin
 
 ## 1. System Flow Diagram
 
-This diagram shows the end-to-end query processing pipeline, highlighting the two key innovations: **Query Classification** and **Dynamic LLM Routing**.
+This diagram shows the end-to-end query processing pipeline, highlighting the three key innovations: **Query Classification**, **Dynamic LLM Routing**, and **Self-Correction Mechanism**.
 
 ```mermaid
 flowchart TD
-    subgraph INPUT["1️⃣ INPUT"]
-        A[/"User Query<br/>(e.g., '頭痛如何治療？')"/]
+
+    %% Define Global Link Style for an organic, inked feel
+    linkStyle default stroke:#5D4037,stroke-width:2px,fill:none,interpolation basis
+
+    %% --- STAGE 1: INPUT ---
+    subgraph INPUT["1️⃣ INPUT STAGE"]
+        A[/"🗣️ User Query<br/>(e.g., '頭痛如何治療？')"/]
     end
 
+    %% --- STAGE 2: CLASSIFY (Highlighted) ---
     subgraph CLASSIFY["2️⃣ QUERY CLASSIFICATION ⭐"]
-        B{{"Classifier LLM<br/>(Lightweight)"}}
-        B --> C{"Severity?"}
-        C -->|Informational| D["General Knowledge<br/>(e.g., 'What is Yin-Yang?')"]
-        C -->|Prescriptive| E["Medical Advice<br/>(e.g., 'How to treat headaches?')"]
+        B{{"🧠 Classifier LLM<br/>(Lightweight)"}}
+        B --> C{"⚖️ Severity?"}
+        C -->|Informational| D["📘 General Knowledge<br/>(e.g., 'What is Yin-Yang?')"]
+        C -->|Prescriptive| E["💊 Medical Advice<br/>(e.g., 'How to treat headaches?')"]
     end
 
+    %% --- STAGE 3: RETRIEVE ---
     subgraph RETRIEVE["3️⃣ HYBRID RETRIEVAL"]
-        F[("ChromaDB<br/>Vector Store")]
-        G[("NetworkX<br/>Knowledge Graph")]
-        H["HybridRetriever"]
+        F[("💾 ChromaDB<br/>Vector Store")]
+        G[("🕸️ NetworkX<br/>Knowledge Graph")]
+        H["🧩 HybridRetriever"]
         F --> H
         G --> H
     end
 
+    %% --- STAGE 4: SYNTHESIS (Highlighted) ---
     subgraph SYNTHESIZE["4️⃣ DYNAMIC SYNTHESIS ⭐"]
-        I["Informational LLM<br/>(temp=0.1)"]
-        J["Prescriptive LLM<br/>(temp=0.0)"]
-        K["LangChain RAG Chain"]
+        I["ℹ️ Informational LLM<br/>(temp=0.1)"]
+        J["🩺 Prescriptive LLM<br/>(temp=0.0)"]
+        K["🔗 LangChain RAG Chain"]
     end
 
-    subgraph OUTPUT["5️⃣ OUTPUT"]
-        L[/"Evidence-Backed Response<br/>with Source Citations"/]
+    %% --- STAGE 5: SELF-CORRECTION (Highlighted) ---
+    subgraph VERIFY["5️⃣ SELF-CORRECTION ⭐"]
+        M["🔍 Verifier LLM<br/>(Lightweight Auditor)"]
+        N{"✓ Faithful?<br/>Complete?"}
+        O["⚠️ Warning Flag<br/>(if needed)"]
     end
 
+    %% --- STAGE 6: OUTPUT ---
+    subgraph OUTPUT["6️⃣ OUTPUT STAGE"]
+        L[/"📄 Evidence-Backed Response<br/>with Source Citations"/]
+    end
+
+    %% --- Main Flow Connections ---
     A --> B
     D --> H
     E --> H
-    H -->|"Vector + Graph Context"| K
-    D -.->|"Route"| I
-    E -.->|"Route"| J
+    H ===>|"📦 Vector + Graph Context"| K
+
+    %% Routing indications (subtle dotted lines)
+    D -.-o|"Route Path"| I
+    E -.-o|"Route Path"| J
+
+    %% Synthesis Flow
     I --> K
     J --> K
-    K --> L
+    K ===>|"Generated Answer"| M
 
-    style CLASSIFY fill:#e6f3ff,stroke:#0066cc
-    style SYNTHESIZE fill:#e6f3ff,stroke:#0066cc
-    style B fill:#ffcc00,stroke:#996600
-    style I fill:#99ccff,stroke:#3366cc
-    style J fill:#ff9999,stroke:#cc3333
+    %% Self-Correction Flow
+    H -.->|"Context Reference"| M
+    M --> N
+    N -->|"Pass"| L
+    N -->|"Issues Detected"| O
+    O --> L
+
+    %% --- TCM Manuscript Theme Classes ---
+    %% Standard Process Node
+    classDef default fill:#FFF8E1,stroke:#5D4037,stroke-width:2px,color:#3E2723;
+
+    %% Input/Output Data (Parallelograms) - Lighter paper look
+    classDef io fill:#FAFAFA,stroke:#8D6E63,stroke-width:2px,stroke-dasharray: 5 5,color:#3E2723;
+
+    %% Decision Points/Important Logic - Cinnabar Red
+    classDef decision fill:#FFCCBC,stroke:#BF360C,stroke-width:3px,color:#BF360C,font-weight:bold;
+
+    %% Databases - Herbal Green
+    classDef db fill:#DCEDC8,stroke:#33691E,stroke-width:2px,color:#1B5E20;
+
+    %% AI/LLM Nodes - Distinct Ink Color (e.g., specialized purple/grey ink)
+    classDef ai fill:#E1BEE7,stroke:#4A148C,stroke-width:2px,color:#4A148C;
+
+    %% Warning/Alert Nodes - Amber/Yellow
+    classDef warning fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#E65100;
+
+    %% Apply Classes
+    class A,L io;
+    class C,N decision;
+    class F,G db;
+    class B,I,J,K,M ai;
+    class O warning;
+
+    %% --- Subgraph Styling ---
+    %% Standard Stages: Light parchment
+    style INPUT fill:#FFFDE7,stroke:#5D4037,stroke-width:2px,color:#3E2723,stroke-dasharray: 5 5
+    style RETRIEVE fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#3E2723
+    style OUTPUT fill:#FFFDE7,stroke:#5D4037,stroke-width:2px,color:#3E2723,stroke-dasharray: 5 5
+
+    %% Highlighted "Star" Stages: Richer tone, thicker border to emphasize FYP contribution
+    style CLASSIFY fill:#FFE0B2,stroke:#E65100,stroke-width:3px,color:#3E2723
+    style SYNTHESIZE fill:#FFE0B2,stroke:#E65100,stroke-width:3px,color:#3E2723
+    style VERIFY fill:#FFE0B2,stroke:#E65100,stroke-width:3px,color:#3E2723
 ```
 
 ---
@@ -73,7 +132,7 @@ flowchart TB
     subgraph BACKEND["⚙️ Backend Layer"]
         direction TB
         UIBackend["UI Backend<br/>(ui_backend.py)"]
-        
+
         subgraph PIPELINE["RAG Pipeline"]
             direction LR
             QueryRouter["Query Router<br/>get_query_severity()"]
@@ -84,7 +143,7 @@ flowchart TB
     subgraph RETRIEVAL["🔍 Retrieval Layer"]
         direction TB
         HybridRet["HybridRetriever<br/>(retriever.py)"]
-        
+
         subgraph SOURCES["Data Sources"]
             direction LR
             VectorDB[("ChromaDB<br/>Vector Store")]
@@ -108,15 +167,15 @@ flowchart TB
     %% Connections
     CLI --> PIPELINE
     WebUI --> UIBackend --> PIPELINE
-    
+
     QueryRouter --> ClassifierLLM
     RAGChain --> HybridRet
     RAGChain --> InfoLLM
     RAGChain --> PrescLLM
-    
+
     HybridRet --> VectorDB
     HybridRet --> KnowledgeGraph
-    
+
     RawText -.->|"ingest.py"| VectorDB
     GraphJSON -.->|"load_from_json()"| KnowledgeGraph
 
@@ -143,18 +202,18 @@ graph LR
     %% Nodes
     S1(("🤕 HEADACHE<br/>(Symptom)")):::symptom
     S2("😵 Dizziness<br/>(Related Symptom)"):::symptom
-    
+
     H1("🌿 Bo He (Mint)<br/>(Herb)"):::herb
     H2("🌿 Chuan Xiong<br/>(Herb)"):::herb
-    
+
     F1("💊 Chuan Xiong<br/>Cha Tiao San<br/>(Formula)"):::formula
 
     %% Relationships
     S1 -.->|"ASSOCIATED_WITH"| S2
-    
+
     H1 -->|"TREATS"| S1
     H2 -->|"TREATS"| S1
-    
+
     F1 -->|"TREATS"| S1
     F1 == "CONTAINS" ==> H1
     F1 == "CONTAINS" ==> H2
@@ -187,7 +246,7 @@ sequenceDiagram
 
     User->>RAGChain: "頭痛如何治療？"
     RAGChain->>Hybrid: hybrid_search(query)
-    
+
     par Parallel Retrieval
         Hybrid->>Vector: vector_search(query, k=5)
         Vector-->>Hybrid: [Text Chunks with Embeddings]
@@ -195,7 +254,7 @@ sequenceDiagram
         Hybrid->>Graph: graph_search(query, depth=1)
         Graph-->>Hybrid: [Entity Facts: Symptom→Herb→Formula]
     end
-    
+
     Hybrid-->>RAGChain: Combined Context (Vector + Graph)
     RAGChain->>LLM: Prompt with Context
     LLM-->>RAGChain: Generated Answer

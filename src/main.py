@@ -18,7 +18,12 @@ from pathlib import Path
 import io
 import os
 import sys
+from typing import TYPE_CHECKING, List, Tuple
+
 from dotenv import load_dotenv
+
+if TYPE_CHECKING:
+    from citation_types import Citation
 
 # Fix Unicode encoding issues on Windows (only for CLI, not Streamlit)
 if sys.platform == "win32":
@@ -59,25 +64,34 @@ except ImportError:
 try:
     import dashscope
     from langchain_community.llms import Tongyi
+    from langchain_community.chat_models import ChatTongyi
 except ImportError:
     dashscope = None
     Tongyi = None
+    ChatTongyi = None
 
 
-def create_llm(provider, model=None, temperature=0.1):
+def create_llm(provider, model=None, temperature=0.1, streaming=False):
     """
     Create an LLM instance based on the provider configuration.
 
     Args:
-        provider (str): The LLM provider ('openai', 'google', 'anthropic', 'openrouter', 'together')
+        provider (str): The LLM provider ('openai', 'google', 'anthropic', 'openrouter', 'together', 'alibaba')
         model (str, optional): Specific model to use
         temperature (float): Temperature for generation
+        streaming (bool): Enable streaming output (currently supported for 'alibaba' provider)
 
     Returns:
-        LLM instance
+        LLM instance (or ChatModel instance if streaming is enabled)
 
     Raises:
         ValueError: If provider is not supported or required dependencies are missing
+
+    Note:
+        TODO(streaming-multi-provider): Currently streaming is only implemented for the
+        'alibaba' provider via ChatTongyi. When users can select providers in the UI,
+        extend streaming support to: OpenAI (ChatOpenAI), Google (ChatGoogleGenerativeAI),
+        Anthropic (ChatAnthropic). All these LangChain chat models support streaming=True.
     """
     provider = provider.lower()
 
@@ -168,6 +182,15 @@ def create_llm(provider, model=None, temperature=0.1):
         # Set the API key globally for DashScope
         dashscope.api_key = api_key
 
+        # Use ChatTongyi for streaming support, fall back to Tongyi otherwise
+        if streaming:
+            if ChatTongyi is None:
+                raise ValueError("Streaming requires ChatTongyi. Ensure langchain-community is installed.")
+            return ChatTongyi(
+                model=model,
+                temperature=temperature,
+                streaming=True
+            )
         return Tongyi(
             model_name=model,
             temperature=temperature
@@ -179,42 +202,153 @@ def create_llm(provider, model=None, temperature=0.1):
 
 def format_docs(docs):
     """
-    Format retrieved documents into a single string for context.
+    Format retrieved documents into context for LLM with debug-friendly citations.
 
-    Handles both vector search results (text chunks) and graph search results
-    (knowledge graph facts) by formatting them as distinct sections.
+    Provides BOTH:
+    - Full text content for LLM processing
+    - Debug-friendly reference list with scores and depth info
+
+    Output format:
+        === Context ===
+        [Full text passages and KG facts here]
+
+        === References (Debug) ===
+        1. [Vec: 0.451] 素問·陰陽應象大論: "陰陽者，天地之道也..."
+        2. [KG: 1-hop] 頭痛 --TREATS--> 川芎 (Herb)
 
     Args:
         docs: List of Document objects from vector store and/or knowledge graph
 
     Returns:
-        str: Formatted string containing all documents with source metadata
+        str: Formatted string with full context and debug citations
     """
+    SNIPPET_LENGTH = 60  # Characters for debug citation snippets
+    
+    # Separate by source type
     vector_docs = []
     graph_docs = []
+    vector_refs = []
+    graph_refs = []
 
     for doc in docs:
         source_type = doc.metadata.get('source_type', 'vector') if doc.metadata else 'vector'
 
         if source_type == 'graph':
+            # Full content for context
             graph_docs.append(doc.page_content)
+            
+            # Debug reference
+            depth = doc.metadata.get('depth', 1) if doc.metadata else 1
+            hop_label = f"{depth}-hop" if depth == 1 else f"{depth}-hops"
+            graph_refs.append(f"[KG: {hop_label}] {doc.page_content}")
         else:
-            # Vector search result (text chunk)
-            source = doc.metadata.get('source', 'Unknown Source') if doc.metadata else 'Unknown Source'
+            source = doc.metadata.get('source', 'Unknown') if doc.metadata else 'Unknown'
+            score = doc.metadata.get('score', 0.0) if doc.metadata else 0.0
+            
+            # Full content for context
             vector_docs.append(f"--- Source: {source} ---\n{doc.page_content}\n")
+            
+            # Debug reference (truncated snippet)
+            content = doc.page_content.strip().replace('\n', ' ')
+            snippet = content[:SNIPPET_LENGTH] + "..." if len(content) > SNIPPET_LENGTH else content
+            vector_refs.append(f"[Vec: {score}] {source}: \"{snippet}\"")
 
-    # Build formatted context with sections
-    sections = []
-
+    # Build full context for LLM
+    context_sections = []
     if vector_docs:
-        sections.append("=== Text Passages ===")
-        sections.extend(vector_docs)
-
+        context_sections.append("=== Text Passages ===")
+        context_sections.extend(vector_docs)
     if graph_docs:
-        sections.append("\n=== Knowledge Graph Facts ===")
-        sections.extend(graph_docs)
+        context_sections.append("\n=== Knowledge Graph Facts ===")
+        context_sections.extend(graph_docs)
 
-    return "\n".join(sections)
+    # Build debug references
+    all_refs = vector_refs + graph_refs
+    numbered_refs = [f"{i+1}. {ref}" for i, ref in enumerate(all_refs)]
+    refs_section = "\n=== References (Debug) ===\n" + "\n".join(numbered_refs) if numbered_refs else ""
+
+    return "\n".join(context_sections) + refs_section
+
+
+# Instruction to append to system prompt for inline citation generation
+CITATION_INSTRUCTION = """
+When citing information from the context, use inline citations in the format [1], [2], etc.
+Each number corresponds to the numbered sources provided below.
+Only cite sources that are actually provided—do not invent citation numbers.
+For example: "According to the Neijing [1], yin and yang are fundamental principles."
+"""
+
+
+def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
+    """
+    Format retrieved documents with numbered citations for LLM context.
+
+    Unlike format_docs(), this function returns structured citation metadata
+    that can be included in API responses for frontend rendering.
+
+    Args:
+        docs: List of Document objects from vector store and/or knowledge graph
+
+    Returns:
+        Tuple of:
+        - str: Formatted context string with numbered sources
+        - List[dict]: Citation metadata (TextCitation or GraphCitation dicts)
+    """
+    SNIPPET_LENGTH = 100  # Characters for citation content preview
+
+    citations: List[dict] = []
+    context_parts = []
+    citation_number = 1
+
+    # Process vector (text) documents first
+    for doc in docs:
+        source_type = doc.metadata.get('source_type', 'vector') if doc.metadata else 'vector'
+
+        if source_type == 'vector':
+            source = doc.metadata.get('source', 'Unknown') if doc.metadata else 'Unknown'
+            score = doc.metadata.get('score', 0.0) if doc.metadata else 0.0
+            chunk_id = doc.metadata.get('id') if doc.metadata else None
+
+            # Add to context with citation number
+            context_parts.append(f"[{citation_number}] Source: {source}\n{doc.page_content}\n")
+
+            # Build citation metadata
+            content = doc.page_content.strip().replace('\n', ' ')
+            snippet = content[:SNIPPET_LENGTH] + "..." if len(content) > SNIPPET_LENGTH else content
+
+            citations.append({
+                "number": citation_number,
+                "type": "text",
+                "source": source,
+                "content": snippet,
+                "chunk_id": chunk_id,
+                "score": score,
+            })
+            citation_number += 1
+
+    # Process graph documents
+    for doc in docs:
+        source_type = doc.metadata.get('source_type', 'vector') if doc.metadata else 'vector'
+
+        if source_type == 'graph':
+            depth = doc.metadata.get('depth', 1) if doc.metadata else 1
+
+            # Add to context with citation number
+            context_parts.append(f"[{citation_number}] KG Fact: {doc.page_content}\n")
+
+            citations.append({
+                "number": citation_number,
+                "type": "graph",
+                "fact": doc.page_content,
+                "depth": depth,
+                "source_ref": None,  # Placeholder for future provenance
+            })
+            citation_number += 1
+
+    # Build final context
+    context = "=== Numbered Sources ===\n\n" + "\n".join(context_parts) if context_parts else ""
+
+    return context, citations
 
 
 def get_query_severity(query, classifier_llm):

@@ -1,258 +1,277 @@
 """
-TCM-Sage Complete RAG Pipeline Script
+TCM-Sage Multi-Source Ingestion Pipeline
 
 This script implements the complete data processing pipeline for the TCM-Sage RAG system:
-1. Reads the raw Huangdi Neijing text file
-2. Cleans it by removing unwanted sections (modern translations, table of contents)
-3. Splits it into semantically meaningful chunks
+1. Reads all .txt source files from data/source/
+2. Extracts book name from filename
+3. Splits into chapters with character offset tracking
 4. Generates vector embeddings using sentence transformers
-5. Stores the embeddings in a ChromaDB vector store
+5. Stores embeddings in ChromaDB vector store
 
-This creates a searchable knowledge base ready for retrieval-augmented generation.
+Supports provenance tracking with book, chapter, char_start, char_end metadata.
 """
 
 import pathlib
 import re
 import json
+from typing import List, Dict, Tuple, Optional
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_community.vectorstores import Chroma
 
 
-def clean_and_prepare_text(raw_text):
+def extract_book_name(filename: str) -> str:
     """
-    Clean and prepare the raw text by removing modern translations,
-    table of contents, and formatting issues.
-
+    Extract book name from filename.
+    
+    Examples:
+        "437-黄帝内经素问.txt" -> "黄帝内经素问"
+        "431-黄帝内经灵枢集注.txt" -> "黄帝内经灵枢集注"
+    
     Args:
-        raw_text (str): The raw text content from the source file
-
+        filename: The file basename including extension
+        
     Returns:
-        str: The cleaned and prepared text
+        The extracted book name without number prefix and extension
     """
-
-    # Step 1: Remove modern translations
-    # Remove all sections that start with a chapter title followed by "参考译文"
-    # and end before the next chapter title
-    translation_pattern = r'([^。！？]*篇第[^。！？]*参考译文.*?)(?=[^。！？]*篇第[^。！？]*[^参考译文]|$)'
-    cleaned_text = re.sub(translation_pattern, '', raw_text, flags=re.DOTALL)
-
-    # Step 2: Remove table of contents
-    # Find the first actual chapter heading and discard everything before it
-    first_chapter_pattern = r'^.*?(?=上古天真论篇第一)'
-    cleaned_text = re.sub(first_chapter_pattern, '', cleaned_text, flags=re.DOTALL)
-
-    # Step 3: Fix formatting issues
-
-    # Remove page number markers (e.g., ---------------------------002)
-    page_marker_pattern = r'-{20,}\d+'
-    cleaned_text = re.sub(page_marker_pattern, '', cleaned_text)
-
-    # Remove excessive blank lines (more than one consecutive blank line)
-    excessive_blanks_pattern = r'\n\s*\n\s*\n+'
-    cleaned_text = re.sub(excessive_blanks_pattern, '\n\n', cleaned_text)
-
-    # Remove leading/trailing whitespace from each line
-    lines = cleaned_text.split('\n')
-    cleaned_lines = [line.strip() for line in lines]
-
-    # Remove empty lines at the beginning and end
-    while cleaned_lines and not cleaned_lines[0]:
-        cleaned_lines.pop(0)
-    while cleaned_lines and not cleaned_lines[-1]:
-        cleaned_lines.pop()
-
-    # Join the lines back together
-    cleaned_text = '\n'.join(cleaned_lines)
-
-    # Additional cleanup: Remove any remaining unwanted patterns
-    # Remove any remaining reference to "参考译文" lines
-    cleaned_text = re.sub(r'.*参考译文.*\n?', '', cleaned_text)
-
-    # Remove any standalone numbers that might be page references
-    cleaned_text = re.sub(r'^\d+$', '', cleaned_text, flags=re.MULTILINE)
-
-    # Clean up any remaining excessive whitespace
-    cleaned_text = re.sub(r'\n\s*\n\s*\n+', '\n\n', cleaned_text)
-    cleaned_text = re.sub(r'[ \t]+', ' ', cleaned_text)  # Replace multiple spaces/tabs with single space
-
-    return cleaned_text
+    # Remove .txt extension
+    name = filename.replace('.txt', '')
+    # Remove numeric prefix (e.g., "437-")
+    name = re.sub(r'^\d+-', '', name)
+    return name
 
 
-def split_into_chapters(text):
+def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, int]]:
     """
-    Split the cleaned text into chapters based on chapter title patterns.
-
+    Split content into chapters while tracking character offsets.
+    
+    Supports multiple chapter title patterns found in TCM classical texts:
+    - "篇第一", "篇第二" (standard Huangdi Neijing format)
+    - "卷一", "卷二" (volume-based format)
+    - Sections separated by multiple newlines
+    
     Args:
-        text (str): The cleaned text content
-
+        content: The full text content
+        
     Returns:
-        list: List of tuples containing (chapter_title, chapter_content)
+        List of tuples: (chapter_title, chapter_content, char_start, char_end)
     """
-    # Pattern to match chapter titles like "上古天真论篇第一", "四气调神大论篇第二", etc.
-    # This pattern looks for text ending with "篇第" followed by Chinese numerals
-    chapter_pattern = r'([^。！？]*篇第[一二三四五六七八九十百千万]+)'
+    # Multiple pattern formats for different TCM texts
+    patterns = [
+        r'([^\n]*篇第[一二三四五六七八九十百千万]+)',  # 篇第X format
+        r'(卷[一二三四五六七八九十百千万]+[^\n]*)',      # 卷X format
+        r'(第[一二三四五六七八九十百千万]+章[^\n]*)',    # 第X章 format
+    ]
+    
+    chapters = []
+    
+    # Try each pattern to find chapter boundaries
+    for pattern in patterns:
+        matches = list(re.finditer(pattern, content))
+        if len(matches) >= 3:  # At least 3 chapters found
+            for i, match in enumerate(matches):
+                chapter_title = match.group(1).strip()
+                char_start = match.start()
+                
+                # End is start of next chapter or end of content
+                if i + 1 < len(matches):
+                    char_end = matches[i + 1].start()
+                else:
+                    char_end = len(content)
+                
+                chapter_content = content[char_start:char_end].strip()
+                chapters.append((chapter_title, chapter_content, char_start, char_end))
+            
+            return chapters
+    
+    # Fallback: treat entire content as single chapter
+    return [("全文", content, 0, len(content))]
 
-    # Split the text by chapter titles, keeping the titles
-    chapters = re.split(chapter_pattern, text)
 
-    # Filter out empty strings and pair titles with content
-    chapter_list = []
-    for i in range(1, len(chapters), 2):  # Start from 1, step by 2 to get title-content pairs
-        if i + 1 < len(chapters):
-            title = chapters[i].strip()
-            content = chapters[i + 1].strip()
-            if title and content:  # Only add if both title and content exist
-                chapter_list.append((title, content))
+def process_single_source(
+    file_path: pathlib.Path,
+    book_name: str,
+    text_splitter: RecursiveCharacterTextSplitter
+) -> List[Dict]:
+    """
+    Process a single source file with character offset tracking.
+    
+    Args:
+        file_path: Path to the source text file
+        book_name: Name of the book (extracted from filename)
+        text_splitter: Configured text splitter for chunking
+        
+    Returns:
+        List of chunk dictionaries with content and metadata
+    """
+    try:
+        # Try different encodings
+        for encoding in ['utf-8', 'gbk', 'gb2312', 'gb18030']:
+            try:
+                content = file_path.read_text(encoding=encoding)
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            print(f"⚠️ Could not decode {file_path.name} with any known encoding")
+            return []
+    except Exception as e:
+        print(f"❌ Error reading {file_path.name}: {e}")
+        return []
+    
+    print(f"📖 Processing: {book_name} ({len(content):,} characters)")
+    
+    # Split into chapters with offset tracking
+    chapters = split_into_chapters_with_offsets(content)
+    print(f"   📚 Found {len(chapters)} chapters")
+    
+    chunks = []
+    chunk_counter = 0
+    
+    for chapter_title, chapter_content, chapter_start, chapter_end in chapters:
+        # Split chapter into smaller chunks
+        chapter_chunks = text_splitter.split_text(chapter_content)
+        
+        # Track position within chapter for offset calculation
+        search_pos = 0
+        
+        for chunk_text in chapter_chunks:
+            # Find chunk position within chapter content
+            chunk_pos = chapter_content.find(chunk_text, search_pos)
+            if chunk_pos == -1:
+                # Fallback: use search position
+                chunk_pos = search_pos
+            
+            # Calculate absolute character offsets
+            abs_start = chapter_start + chunk_pos
+            abs_end = abs_start + len(chunk_text)
+            
+            chunk_counter += 1
+            chunks.append({
+                "id": f"{book_name}_chunk_{chunk_counter}",
+                "content": chunk_text.strip(),
+                "metadata": {
+                    "book": book_name,
+                    "source": chapter_title,  # Kept for backward compatibility
+                    "char_start": abs_start,
+                    "char_end": abs_end
+                }
+            })
+            
+            # Update search position to avoid matching same text again
+            search_pos = chunk_pos + len(chunk_text)
+    
+    return chunks
 
-    return chapter_list
+
+def ingest_all_sources(source_dir: pathlib.Path) -> List[Dict]:
+    """
+    Ingest all .txt files from the source directory.
+    
+    Args:
+        source_dir: Path to directory containing source .txt files
+        
+    Returns:
+        List of all chunks from all sources
+    """
+    # Initialize text splitter
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap=50
+    )
+    
+    all_chunks = []
+    source_files = sorted(source_dir.glob("*.txt"))
+    
+    if not source_files:
+        print(f"⚠️ No .txt files found in {source_dir}")
+        return []
+    
+    print(f"📁 Found {len(source_files)} source files")
+    
+    for file_path in source_files:
+        book_name = extract_book_name(file_path.name)
+        chunks = process_single_source(file_path, book_name, text_splitter)
+        all_chunks.extend(chunks)
+        print(f"   ✅ {book_name}: {len(chunks)} chunks")
+    
+    return all_chunks
 
 
 def main():
     """
-    Main function to process the source text file, clean it, chunk it, and save the results.
+    Main function to ingest all sources and build vector store.
     """
-
-    # Define file paths using pathlib.Path
+    # Define paths
     script_dir = pathlib.Path(__file__).parent
-    source_file_path = script_dir.parent / "data" / "source" / "huangdi_neijing.txt"
-    cleaned_file_path = script_dir.parent / "data" / "cleaned" / "cleaned_huangdi_neijing.txt"
+    source_dir = script_dir.parent / "data" / "source"
     chunks_file_path = script_dir.parent / "data" / "processed" / "chunks.json"
-
-    # Ensure the directories exist
-    cleaned_file_path.parent.mkdir(parents=True, exist_ok=True)
+    vectorstore_path = script_dir.parent / "vectorstore" / "chroma"
+    
+    # Ensure directories exist
     chunks_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-    try:
-        # Read the content from the source file
-        print("📖 Reading source text file...")
-        with open(source_file_path, 'r', encoding='utf-8') as file:
-            raw_content = file.read()
-
-        print(f"📊 Original file size: {len(raw_content)} characters")
-
-        # Clean and prepare the text
-        print("🧹 Cleaning and preparing text...")
-        cleaned_content = clean_and_prepare_text(raw_content)
-
-        print(f"📊 Cleaned file size: {len(cleaned_content)} characters")
-        print(f"📉 Text reduction: {len(raw_content) - len(cleaned_content)} characters removed")
-
-        # Write the cleaned text to the cleaned output file
-        with open(cleaned_file_path, 'w', encoding='utf-8') as file:
-            file.write(cleaned_content)
-
-        # Split text into chapters
-        print("📚 Splitting text into chapters...")
-        chapters = split_into_chapters(cleaned_content)
-        print(f"📊 Found {len(chapters)} chapters")
-
-        # Process each chapter and create chunks with metadata
-        print("✂️ Creating text splitter and processing chapters...")
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,      # Each chunk will be around 500 characters
-            chunk_overlap=50     # Each chunk will overlap with the previous one by 50 characters
-        )
-
-        # Create empty list to hold all chunks from all chapters
-        all_chunks = []
-        chunk_counter = 1
-
-        # Loop through each chapter
-        for chapter_title, chapter_content in chapters:
-            print(f"🔄 Processing chapter: {chapter_title}")
-
-            # Before splitting, prepend the chapter title to the content
-            full_chapter_text = f"{chapter_title}\n{chapter_content}"
-
-            # Split the chapter text (now including title)
-            chapter_chunks = text_splitter.split_text(full_chapter_text)
-
-            # Create chunk dictionaries with metadata for this chapter
-            for chunk in chapter_chunks:
-                chunk_dict = {
-                    "id": f"chunk_{chunk_counter}",
-                    "content": chunk.strip(),
-                    "metadata": {
-                        "source": chapter_title
-                    }
-                }
-                all_chunks.append(chunk_dict)
-                chunk_counter += 1
-
-        print(f"📊 Total chunks created: {len(all_chunks)}")
-
-        # Use all_chunks as chunk_dicts for the rest of the processing
-        chunk_dicts = all_chunks
-
-        # Save the chunks to JSON file
-        print("💾 Saving chunks to JSON file...")
-        with open(chunks_file_path, 'w', encoding='utf-8') as file:
-            json.dump(chunk_dicts, file, ensure_ascii=False, indent=4)
-
-        # Load the chunks for embedding generation
-        print("📖 Loading chunks for embedding generation...")
-        with open(chunks_file_path, 'r', encoding='utf-8') as file:
-            loaded_chunks = json.load(file)
-
-        # Instantiate embedding model
-        print("🤖 Initializing embedding model...")
-        embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-
-        # Prepare documents for ChromaDB
-        print("📝 Preparing documents for vector store...")
-        chunk_contents = [chunk['content'] for chunk in loaded_chunks]
-        chunk_ids = [chunk['id'] for chunk in loaded_chunks]
-        chunk_metadatas = [chunk['metadata'] for chunk in loaded_chunks]
-
-        # Create the vector store
-        print("🗄️ Creating ChromaDB vector store...")
-        vectorstore_path = script_dir.parent / "vectorstore" / "chroma"
-        vectorstore_path.mkdir(parents=True, exist_ok=True)
-
-        vectorstore = Chroma.from_texts(
-            texts=chunk_contents,
-            embedding=embeddings,
-            metadatas=chunk_metadatas,
-            ids=chunk_ids,
-            persist_directory=str(vectorstore_path)
-        )
-
-        # Print success message
-        print("✅ Successfully cleaned, chunked, embedded, and saved to vector store!")
-        print(f"📁 Source file: {source_file_path}")
-        print(f"📁 Cleaned file: {cleaned_file_path}")
-        print(f"📁 Chunks file: {chunks_file_path}")
-        print(f"📁 Vector store: {vectorstore_path}")
-        print(f"📊 Final cleaned file size: {len(cleaned_content)} characters")
-        print(f"📊 Total number of chunks created: {len(chunk_dicts)}")
-        print(f"📊 Vector store entries: {len(chunk_contents)}")
-
-        # Show statistics about chunk sizes
-        chunk_sizes = [len(chunk['content']) for chunk in chunk_dicts]
-        avg_chunk_size = sum(chunk_sizes) / len(chunk_sizes)
-        print(f"📊 Average chunk size: {avg_chunk_size:.1f} characters")
-        print(f"📊 Chunk size range: {min(chunk_sizes)} - {max(chunk_sizes)} characters")
-
-        # Show a preview of the first chunk
-        print("\n" + "="*60)
-        print("📖 Preview of first chunk:")
-        print("="*60)
-        if chunk_dicts:
-            first_chunk = chunk_dicts[0]
-            print(f"ID: {first_chunk['id']}")
-            print(f"Source: {first_chunk['metadata']['source']}")
-            print(f"Content: {first_chunk['content'][:200]}...")
-            print(f"Length: {len(first_chunk['content'])} characters")
-        print("="*60)
-
-    except FileNotFoundError:
-        print("❌ Error: Could not find the source text file!")
-        print(f"Expected file location: {source_file_path}")
-        print("Please ensure the file exists and the path is correct.")
-
-    except Exception as e:
-        print(f"❌ An unexpected error occurred: {e}")
+    vectorstore_path.mkdir(parents=True, exist_ok=True)
+    
+    print("=" * 60)
+    print("🚀 TCM-Sage Multi-Source Ingestion Pipeline")
+    print("=" * 60)
+    
+    # Ingest all sources
+    all_chunks = ingest_all_sources(source_dir)
+    
+    if not all_chunks:
+        print("❌ No chunks generated. Check source files.")
+        return
+    
+    print(f"\n📊 Total chunks across all sources: {len(all_chunks)}")
+    
+    # Save chunks to JSON
+    print("\n💾 Saving chunks to JSON...")
+    with open(chunks_file_path, 'w', encoding='utf-8') as f:
+        json.dump(all_chunks, f, ensure_ascii=False, indent=2)
+    print(f"   ✅ Saved to {chunks_file_path}")
+    
+    # Generate embeddings and store in ChromaDB
+    print("\n🤖 Initializing embedding model...")
+    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    
+    print("📝 Preparing documents for vector store...")
+    chunk_contents = [chunk['content'] for chunk in all_chunks]
+    chunk_ids = [chunk['id'] for chunk in all_chunks]
+    chunk_metadatas = [chunk['metadata'] for chunk in all_chunks]
+    
+    print("🗄️ Creating ChromaDB vector store...")
+    vectorstore = Chroma.from_texts(
+        texts=chunk_contents,
+        embedding=embeddings,
+        metadatas=chunk_metadatas,
+        ids=chunk_ids,
+        persist_directory=str(vectorstore_path)
+    )
+    
+    # Statistics
+    print("\n" + "=" * 60)
+    print("✅ Ingestion Complete!")
+    print("=" * 60)
+    print(f"📁 Source directory: {source_dir}")
+    print(f"📁 Chunks file: {chunks_file_path}")
+    print(f"📁 Vector store: {vectorstore_path}")
+    print(f"📊 Total chunks: {len(all_chunks)}")
+    
+    # Show chunk size stats
+    chunk_sizes = [len(c['content']) for c in all_chunks]
+    print(f"📊 Average chunk size: {sum(chunk_sizes) / len(chunk_sizes):.1f} characters")
+    print(f"📊 Chunk size range: {min(chunk_sizes)} - {max(chunk_sizes)} characters")
+    
+    # Show sample from each book
+    print("\n📖 Sample chunks by book:")
+    seen_books = set()
+    for chunk in all_chunks:
+        book = chunk['metadata']['book']
+        if book not in seen_books:
+            seen_books.add(book)
+            preview = chunk['content'][:100].replace('\n', ' ')
+            print(f"   • {book}: \"{preview}...\"")
 
 
 if __name__ == "__main__":

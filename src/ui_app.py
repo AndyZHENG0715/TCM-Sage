@@ -19,7 +19,7 @@ SRC_DIR = Path(__file__).resolve().parent
 if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
-from ui_backend import get_runtime_config, run_query  # type: ignore  # pylint: disable=import-error
+from ui_backend import get_runtime_config, run_query, run_query_stream  # type: ignore  # pylint: disable=import-error
 
 st.set_page_config(
     page_title="TCM-Sage Prototype",
@@ -48,9 +48,68 @@ if "query_input" not in st.session_state:
 
 
 def handle_submit(query: str) -> None:
-    with st.spinner("Analyzing and generating answer..."):
-        result = run_query(query)
-    st.session_state.history.insert(0, result)
+    """Handle the submission of a query with streaming output."""
+    
+    # Show initial status
+    status_placeholder = st.empty()
+    status_placeholder.info("🔍 Analyzing query and retrieving context...")
+    
+    # Placeholder for streaming answer
+    answer_container = st.container()
+    
+    with answer_container:
+        metadata_placeholder = st.empty()
+        answer_placeholder = st.empty()
+        verification_placeholder = st.empty()
+    
+    try:
+        stream = run_query_stream(query)
+        collected_answer = ""
+        metadata = None
+        
+        # Update status once streaming starts
+        first_chunk = True
+        
+        for item in stream:
+            if isinstance(item, dict) and item.get("type") == "metadata":
+                metadata = item
+            else:
+                if first_chunk:
+                    status_placeholder.info("✍️ Generating answer...")
+                    first_chunk = False
+                collected_answer += item
+                answer_placeholder.markdown(collected_answer + "▌")
+        
+        # Remove cursor and show final answer
+        answer_placeholder.markdown(collected_answer)
+        
+        # Show metadata and verification status
+        status_placeholder.empty()
+        
+        if metadata:
+            # Display metadata info above the answer
+            metadata_placeholder.markdown(
+                f"**Severity:** `{metadata['severity']}` | "
+                f"**Temperature:** `{metadata['temperature']}` | "
+                f"**Provider:** `{metadata['provider']}`"
+            )
+            
+            if metadata.get("verification_result") == "UNSUPPORTED":
+                verification_placeholder.warning("⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
+            else:
+                verification_placeholder.success("✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")
+            
+            # Display debug references in collapsible section
+            if metadata.get("debug_context"):
+                with st.expander("🔍 Debug: Retrieved Context", expanded=False):
+                    st.code(metadata["debug_context"], language=None)
+            
+            # Store in history
+            st.session_state.history.insert(0, metadata)
+    
+    except Exception as e:
+        status_placeholder.empty()
+        st.error(f"Error during streaming: {e}")
 
 
 def set_query(q: str) -> None:
@@ -115,8 +174,9 @@ if submit_clicked:
         except Exception as submit_error:  # pylint: disable=broad-except
             st.error(f"Unable to generate answer: {submit_error}")
 
-
-if st.session_state.history:
+# Only show "Latest Answer" section if we didn't just submit (to avoid duplicate with streaming output)
+# The streaming output already shows the answer inline above
+if st.session_state.history and not submit_clicked:
     latest = st.session_state.history[0]
     st.divider()
     st.subheader("Latest Answer")
@@ -129,7 +189,7 @@ if st.session_state.history:
         st.warning("⚠️ [Self-Critique Warning]: This answer may contain information not directly supported by the provided citations.")
     else:
         st.success("✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")
-else:
+elif not st.session_state.history:
     st.info("No queries yet. Ask a question to see the answer here.")
 
 
