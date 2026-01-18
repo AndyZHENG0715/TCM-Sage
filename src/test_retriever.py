@@ -7,7 +7,7 @@ relevant text chunks from the Huangdi Neijing.
 """
 
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from pathlib import Path
 
 
@@ -25,7 +25,10 @@ def main():
     try:
         # Load the vector store
         print("📂 Loading vector store from disk...")
-        embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+        embeddings = HuggingFaceEmbeddings(
+            model_name="nomic-ai/nomic-embed-text-v1.5",
+            model_kwargs={'trust_remote_code': True}
+        )
         vectorstore = Chroma(
             persist_directory=str(vectorstore_path),
             embedding_function=embeddings

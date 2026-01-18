@@ -16,8 +16,71 @@ import re
 import json
 from typing import List, Dict, Tuple, Optional
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
+
+
+# Embedding model configuration
+EMBEDDING_MODEL = "nomic-ai/nomic-embed-text-v1.5"
+
+
+class SentenceAwareChineseTextSplitter:
+    """
+    Text splitter that respects Chinese sentence boundaries.
+    
+    Splits at sentence endings (。；！？) before applying character limits,
+    ensuring chunks contain complete sentences rather than cut-off text.
+    """
+    
+    def __init__(self, chunk_size: int = 500, chunk_overlap: int = 50):
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        # Chinese sentence terminators
+        self.sentence_endings = re.compile(r'([。；！？\n]+)')
+    
+    def split_text(self, text: str) -> List[str]:
+        """Split text into chunks respecting sentence boundaries."""
+        # First split by sentence endings, keeping the delimiters
+        parts = self.sentence_endings.split(text)
+        
+        # Recombine sentences with their endings
+        sentences = []
+        i = 0
+        while i < len(parts):
+            sentence = parts[i]
+            # Check if next part is a delimiter
+            if i + 1 < len(parts) and self.sentence_endings.match(parts[i + 1]):
+                sentence += parts[i + 1]
+                i += 2
+            else:
+                i += 1
+            if sentence.strip():
+                sentences.append(sentence)
+        
+        # Now combine sentences into chunks
+        chunks = []
+        current_chunk = ""
+        
+        for sentence in sentences:
+            # If adding this sentence exceeds chunk_size
+            if len(current_chunk) + len(sentence) > self.chunk_size:
+                # Save current chunk if it has content
+                if current_chunk.strip():
+                    chunks.append(current_chunk.strip())
+                # Start new chunk with overlap from previous
+                if self.chunk_overlap > 0 and current_chunk:
+                    # Take last chunk_overlap characters as overlap
+                    current_chunk = current_chunk[-self.chunk_overlap:] + sentence
+                else:
+                    current_chunk = sentence
+            else:
+                current_chunk += sentence
+        
+        # Don't forget the last chunk
+        if current_chunk.strip():
+            chunks.append(current_chunk.strip())
+        
+        return chunks
 
 
 def extract_book_name(filename: str) -> str:
@@ -174,8 +237,8 @@ def ingest_all_sources(source_dir: pathlib.Path) -> List[Dict]:
     Returns:
         List of all chunks from all sources
     """
-    # Initialize text splitter
-    text_splitter = RecursiveCharacterTextSplitter(
+    # Initialize sentence-aware Chinese text splitter
+    text_splitter = SentenceAwareChineseTextSplitter(
         chunk_size=500,
         chunk_overlap=50
     )
@@ -232,8 +295,11 @@ def main():
     print(f"   ✅ Saved to {chunks_file_path}")
     
     # Generate embeddings and store in ChromaDB
-    print("\n🤖 Initializing embedding model...")
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    print(f"\n🤖 Initializing embedding model ({EMBEDDING_MODEL})...")
+    embeddings = HuggingFaceEmbeddings(
+        model_name=EMBEDDING_MODEL,
+        model_kwargs={'trust_remote_code': True}
+    )
     
     print("📝 Preparing documents for vector store...")
     chunk_contents = [chunk['content'] for chunk in all_chunks]

@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
 # Ensure we can import from the existing CLI module without restructuring.
@@ -93,7 +93,10 @@ def _initialize_pipeline() -> Dict[str, Any]:
             'chapter for the information you provide in a "Sources:" section.'
         )
 
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(
+        model_name="nomic-ai/nomic-embed-text-v1.5",
+        model_kwargs={'trust_remote_code': True}
+    )
     vectorstore_path = Path(__file__).parent.parent / "vectorstore" / "chroma"
     if not vectorstore_path.exists():
         raise FileNotFoundError(

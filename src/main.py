@@ -10,7 +10,7 @@ evidence-backed answer generation using OpenAI's GPT-4o model.
 """
 
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
@@ -520,7 +520,10 @@ After providing the answer, cite the source chapter for the information you prov
             )
 
         # Initialize embeddings (must match the model used during ingestion)
-        embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+        embeddings = HuggingFaceEmbeddings(
+            model_name="nomic-ai/nomic-embed-text-v1.5",
+            model_kwargs={'trust_remote_code': True}
+        )
 
         # Load the persistent ChromaDB
         vectorstore = Chroma(

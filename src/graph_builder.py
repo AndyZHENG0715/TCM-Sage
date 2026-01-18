@@ -31,9 +31,15 @@ class TCMKnowledgeGraph:
         graph: NetworkX DiGraph containing entities as nodes and relationships as edges.
     """
 
-    # Valid entity and relationship types
-    ENTITY_TYPES = {"Symptom", "Herb", "Formula"}
-    RELATIONSHIP_TYPES = {"TREATS", "CONTAINS", "ASSOCIATED_WITH"}
+    # Valid entity and relationship types (expanded for Neijing content)
+    ENTITY_TYPES = {
+        "Symptom", "Pattern", "Herb", "Formula", "TreatmentMethod",
+        "Meridian", "Acupoint", "BodyPart", "Substance"
+    }
+    RELATIONSHIP_TYPES = {
+        "TREATS", "CONTAINS", "INDICATES", "APPLIES_TO", "LOCATED_ON",
+        "ORIGINATES_FROM", "FLOWS_THROUGH", "DERIVED_FROM", "ENTERS", "GOVERNS"
+    }
 
     def __init__(self):
         """Initialize an empty knowledge graph."""
@@ -260,13 +266,18 @@ class TCMKnowledgeGraph:
         for node_id, attrs in self.graph.nodes(data=True):
             name = attrs.get("name", "")
             name_en = attrs.get("name_en", "").lower()
+            
+            # Skip empty names (would match everything due to "" in q being True)
+            if not name and not name_en:
+                continue
 
             for q in query_variants:
                 # Check if entity name appears in query (for extracting entities from sentences)
                 # OR if query appears in entity name (for partial name searches)
-                if name in q or name_en in query_lower or q in name or query_lower in name_en:
+                if (name and (name in q or q in name)) or (name_en and (name_en in query_lower or query_lower in name_en)):
                     matches.append(node_id)
                     break  # Avoid duplicate matches for same entity
+
 
         return matches
 
@@ -288,22 +299,52 @@ class TCMKnowledgeGraph:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Load entities
+        # Load entities (support both old 'name' and new 'mention' format)
         for entity in data.get("entities", []):
-            entity_id = entity.pop("id")
-            entity_type = entity.pop("type")
-            name = entity.pop("name")
+            entity = entity.copy()  # Avoid modifying original
+            
+            # Get the name FIRST before any pops (new format uses 'mention')
+            name = entity.get("name") or entity.get("mention", "")
+            
+            entity_id = entity.pop("id", f"entity_{name}" if name else "unknown")
+            entity_type = entity.pop("type", "Unknown")
+            
+            # Clean up fields we've already extracted
+            entity.pop("name", None)
+            entity.pop("mention", None)
             name_en = entity.pop("name_en", "")
-            self.add_entity(entity_id, entity_type, name, name_en, **entity)
+            
+            # Skip entities with no name
+            if not name:
+                continue
+            
+            try:
+                self.graph.add_node(
+                    entity_id,
+                    type=entity_type,
+                    name=name,
+                    name_en=name_en,
+                    **{k: v for k, v in entity.items() if k not in ('source_ref',)}
+                )
+            except Exception:
+                pass  # Skip malformed entries
 
-        # Load relationships
+        # Load relationships (support both old and new format)
         for rel in data.get("relationships", []):
-            self.add_relationship(
-                source_id=rel["source"],
-                target_id=rel["target"],
-                relationship_type=rel["type"],
-                description=rel.get("description", ""),
-            )
+            try:
+                source_id = rel.get("source") or rel.get("head", "")
+                target_id = rel.get("target") or rel.get("tail", "")
+                rel_type = rel.get("type") or rel.get("relation", "RELATED_TO")
+                
+                if source_id in self.graph and target_id in self.graph:
+                    self.graph.add_edge(
+                        source_id,
+                        target_id,
+                        type=rel_type,
+                        description=rel.get("description", rel.get("evidence", "")),
+                    )
+            except Exception:
+                pass  # Skip malformed relationships
 
     def save_graph(self, pickle_path: str) -> None:
         """

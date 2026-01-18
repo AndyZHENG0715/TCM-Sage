@@ -4,8 +4,13 @@ Quick test script for KG extractor on 10 sample chunks.
 from kg_extractor import extract_kg_batch
 import json
 
-# Load first 10 chunks
-with open('../data/processed/chunks.json', encoding='utf-8') as f:
+import os
+
+# Load first 10 chunks relative to this script
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CHUNKS_PATH = os.path.join(SCRIPT_DIR, '../data/processed/chunks.json')
+
+with open(CHUNKS_PATH, encoding='utf-8') as f:
     chunks = json.load(f)
 
 print(f"Testing with {len(chunks[:10])} sample chunks...\n")

@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
@@ -41,7 +41,7 @@ class HybridRetriever:
         self,
         vectorstore_path: str,
         graph_data_path: str,
-        embedding_model: str = "all-MiniLM-L6-v2",
+        embedding_model: str = "nomic-ai/nomic-embed-text-v1.5",
         vector_k: int = 5,
         graph_depth: int = 1,
     ):
@@ -65,7 +65,10 @@ class HybridRetriever:
         if not Path(vectorstore_path).exists():
             raise FileNotFoundError(f"Vector store not found: {vectorstore_path}")
 
-        embeddings = SentenceTransformerEmbeddings(model_name=embedding_model)
+        embeddings = HuggingFaceEmbeddings(
+            model_name=embedding_model,
+            model_kwargs={'trust_remote_code': True}
+        )
         self.vectorstore = Chroma(
             persist_directory=str(vectorstore_path),
             embedding_function=embeddings,
@@ -164,7 +167,7 @@ class HybridRetriever:
                     Document(
                         page_content=fact_text,
                         metadata={
-                            "source_type": "graph",
+                            "source_type": "knowledge_graph",
                             "entity_id": rel_entity.get("id"),
                             "entity_type": rel_entity.get("type"),
                             "relationship_type": relationship["type"],
