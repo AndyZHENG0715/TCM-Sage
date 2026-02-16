@@ -212,6 +212,7 @@ class TCMKnowledgeGraph:
                         "description": edge_attrs.get("description", ""),
                         "source": source,
                         "target": target,
+                        "source_ref": edge_attrs.get("source_ref"),  # Provenance data
                     },
                     "depth": depth,
                 })
@@ -342,6 +343,7 @@ class TCMKnowledgeGraph:
                         target_id,
                         type=rel_type,
                         description=rel.get("description", rel.get("evidence", "")),
+                        source_ref=rel.get("source_ref"),  # Provenance for citations
                     )
             except Exception:
                 pass  # Skip malformed relationships

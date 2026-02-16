@@ -172,6 +172,7 @@ class HybridRetriever:
                             "entity_type": rel_entity.get("type"),
                             "relationship_type": relationship["type"],
                             "depth": item["depth"],
+                            "source_ref": relationship.get("source_ref"),  # Provenance
                         },
                     )
                 )
