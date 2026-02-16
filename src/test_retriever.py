@@ -52,17 +52,18 @@ def main():
         for i, result in enumerate(results, 1):
             print(f"\n--- Result {i} ---")
             
-            # Try to get the chunk ID from metadata
-            chunk_id = "Unknown"
+            # Display metadata fields
             if hasattr(result, 'metadata') and result.metadata:
-                chunk_id = result.metadata.get('id', 'Unknown')
-            elif hasattr(result, 'metadata') and 'id' in str(result.metadata):
-                # Try to extract ID from string representation
-                metadata_str = str(result.metadata)
-                if 'chunk_' in metadata_str:
-                    chunk_id = metadata_str.split('chunk_')[1].split("'")[0] if "'" in metadata_str else "Unknown"
+                meta = result.metadata
+                book = meta.get('book', 'Unknown')
+                chapter = meta.get('source', 'Unknown')
+                chunk_idx = meta.get('chunk_index', 'N/A')
+                print(f"Book: {book}")
+                print(f"Chapter: {chapter}")
+                print(f"Chunk Index: {chunk_idx}")
+            else:
+                print("Metadata: Not available")
             
-            print(f"Chunk ID: {chunk_id}")
             print(f"Content: {result.page_content}")
             print("-" * 40)
         
@@ -76,12 +77,13 @@ def main():
         for i, result in enumerate(results2, 1):
             print(f"\n--- Additional Result {i} ---")
             
-            # Try to get the chunk ID from metadata
-            chunk_id = "Unknown"
+            # Display metadata fields
             if hasattr(result, 'metadata') and result.metadata:
-                chunk_id = result.metadata.get('id', 'Unknown')
+                meta = result.metadata
+                book = meta.get('book', 'Unknown')
+                chunk_idx = meta.get('chunk_index', 'N/A')
+                print(f"Book: {book} | Chunk Index: {chunk_idx}")
             
-            print(f"Chunk ID: {chunk_id}")
             print(f"Content: {result.page_content[:200]}...")  # Show first 200 chars
             print("-" * 40)
         
