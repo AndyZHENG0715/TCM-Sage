@@ -332,6 +332,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
 
         if source_type == 'graph':
             depth = doc.metadata.get('depth', 1) if doc.metadata else 1
+            source_ref = doc.metadata.get('source_ref') if doc.metadata else None
 
             # Add to context with citation number
             context_parts.append(f"[{citation_number}] KG Fact: {doc.page_content}\n")
@@ -341,7 +342,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
                 "type": "graph",
                 "fact": doc.page_content,
                 "depth": depth,
-                "source_ref": None,  # Placeholder for future provenance
+                "source_ref": source_ref,  # Provenance from KG relationship
             })
             citation_number += 1
 
@@ -349,6 +350,39 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
     context = "=== Numbered Sources ===\n\n" + "\n".join(context_parts) if context_parts else ""
 
     return context, citations
+
+
+def verify_citation_bounds(answer: str, max_citation: int) -> dict:
+    """
+    Verify that LLM-generated citation numbers are within valid bounds.
+
+    Scans the answer text for inline citations [n] and checks if any
+    reference numbers exceed the number of provided sources.
+
+    Args:
+        answer: The LLM-generated response text.
+        max_citation: Maximum valid citation number (total sources provided).
+
+    Returns:
+        Dict with:
+        - is_valid: bool - True if all citations are in bounds
+        - out_of_range: list[int] - Citation numbers that exceed max_citation
+        - found_citations: list[int] - All citation numbers found in answer
+    """
+    import re
+
+    # Find all citation markers [n] where n is a number
+    citation_pattern = r'\[(\d+)\]'
+    matches = re.findall(citation_pattern, answer)
+
+    found_citations = [int(m) for m in matches]
+    out_of_range = [n for n in found_citations if n > max_citation or n < 1]
+
+    return {
+        "is_valid": len(out_of_range) == 0,
+        "out_of_range": sorted(set(out_of_range)),
+        "found_citations": sorted(set(found_citations)),
+    }
 
 
 def get_query_severity(query, classifier_llm):
