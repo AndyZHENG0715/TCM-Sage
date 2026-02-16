@@ -8,7 +8,7 @@ This script implements the complete data processing pipeline for the TCM-Sage RA
 4. Generates vector embeddings using sentence transformers
 5. Stores embeddings in ChromaDB vector store
 
-Supports provenance tracking with book, chapter, char_start, char_end metadata.
+Supports provenance tracking with book, chapter, chunk_index, char_start, char_end metadata.
 """
 
 import pathlib
@@ -216,6 +216,7 @@ def process_single_source(
                 "metadata": {
                     "book": book_name,
                     "source": chapter_title,  # Kept for backward compatibility
+                    "chunk_index": chunk_counter,  # 1-based index per book
                     "char_start": abs_start,
                     "char_end": abs_end
                 }
