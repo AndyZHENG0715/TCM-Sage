@@ -50,7 +50,7 @@ TCM-Sage supports hybrid retrieval that combines vector search with a knowledge 
 
 ```bash
 # Hybrid Retrieval Configuration
-HYBRID_RETRIEVAL_ENABLED=false    # Set to true to enable hybrid vector+graph retrieval
+HYBRID_RETRIEVAL_ENABLED=true     # Hybrid vector+graph retrieval (default: true)
 GRAPH_DATA_PATH=data/graph/entities.json  # Path to knowledge graph JSON data
 GRAPH_DEPTH=1                     # Max traversal depth for graph search (1-2 recommended)
 ```

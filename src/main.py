@@ -523,7 +523,7 @@ def main():
             retrieval_k = 5
 
         # Hybrid retrieval configuration
-        hybrid_enabled = os.getenv('HYBRID_RETRIEVAL_ENABLED', 'false').lower() == 'true'
+        hybrid_enabled = os.getenv('HYBRID_RETRIEVAL_ENABLED', 'true').lower() == 'true'
         graph_data_path = os.getenv('GRAPH_DATA_PATH', 'data/graph/entities.json')
         graph_depth = int(os.getenv('GRAPH_DEPTH', '1'))
 

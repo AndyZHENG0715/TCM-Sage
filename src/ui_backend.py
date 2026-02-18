@@ -79,7 +79,7 @@ def _initialize_pipeline() -> Dict[str, Any]:
     retrieval_k = int(os.getenv("RETRIEVAL_K", "5"))
 
     # Hybrid retrieval configuration
-    hybrid_enabled = os.getenv("HYBRID_RETRIEVAL_ENABLED", "false").lower() == "true"
+    hybrid_enabled = os.getenv("HYBRID_RETRIEVAL_ENABLED", "true").lower() == "true"
     graph_data_path = os.getenv("GRAPH_DATA_PATH", "data/graph/entities.json")
     graph_depth = int(os.getenv("GRAPH_DEPTH", "1"))
 
@@ -127,7 +127,19 @@ def _initialize_pipeline() -> Dict[str, Any]:
             warnings.warn(f"Failed to initialize hybrid retriever: {e}. Falling back to vector.")
             retriever = vectorstore.as_retriever(k=retrieval_k)
     else:
-        retriever = vectorstore.as_retriever(k=retrieval_k)
+        def _vector_search_with_scores(query: str) -> list:
+            """Standard vector search that injects distance scores into metadata."""
+            results = vectorstore.similarity_search_with_score(query, k=retrieval_k)
+            docs = []
+            for doc, score in results:
+                if doc.metadata is None:
+                    doc.metadata = {}
+                doc.metadata["source_type"] = "vector"
+                doc.metadata["score"] = round(score, 3)
+                docs.append(doc)
+            return docs
+
+        retriever = RunnableLambda(_vector_search_with_scores)
 
     template = system_prompt + "\n\nContext:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
     prompt = ChatPromptTemplate.from_template(template)
