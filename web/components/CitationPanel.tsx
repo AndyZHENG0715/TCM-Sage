@@ -1,8 +1,10 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { Citation, TextCitation, GraphCitation } from "@/lib/types";
 import { cleanSourceLabel } from "@/lib/citations";
-import { X, BookOpen, ExternalLink } from "lucide-react";
+import { X, BookOpen, ExternalLink, Loader2 } from "lucide-react";
+import { fetchChunkContext, ChunkContext } from "@/lib/api";
 
 interface CitationPanelProps {
     citation: Citation | null;
@@ -10,9 +12,35 @@ interface CitationPanelProps {
 }
 
 export function CitationPanel({ citation, onClose }: CitationPanelProps) {
+    const [context, setContext] = useState<ChunkContext | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const prevCitationRef = useRef(citation);
+    useEffect(() => {
+        if (citation !== prevCitationRef.current) {
+            setContext(null);
+            setError(null);
+            prevCitationRef.current = citation;
+        }
+    }, [citation]);
+
     if (!citation) return null;
 
     const isText = citation.type === "text";
+
+    async function handleViewContext(chunkId: string) {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await fetchChunkContext(chunkId);
+            setContext(data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load context");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] lg:w-[450px] bg-parchment shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col border-l border-[#dcd3b8]">
@@ -48,17 +76,90 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                 )}
             </div>
 
+            {/* Full context viewer (conditionally shown) */}
+            {context && <FullContextViewer context={context} />}
+
+            {/* Error message */}
+            {error && (
+                <div className="px-6 py-2 bg-red-50 border-t border-red-200">
+                    <p className="text-sm text-red-600">{error}</p>
+                </div>
+            )}
+
             {/* Footer */}
             <div className="p-6 border-t border-[#dcd3b8] bg-[#ebe5d5]">
-                <button
-                    disabled
-                    title="Coming Soon — Full context viewer is under development"
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary/40 text-background-dark/60 font-sans font-bold rounded-lg cursor-not-allowed shadow-sm"
-                >
-                    <ExternalLink size={18} />
-                    {isText ? "View Full Context" : "View Graph"}
-                </button>
-                <p className="text-xs text-center text-[#8c8578] mt-2">Coming Soon</p>
+                {isText && (citation as TextCitation).chunk_id ? (
+                    <button
+                        onClick={() =>
+                            context
+                                ? setContext(null)
+                                : handleViewContext((citation as TextCitation).chunk_id!)
+                        }
+                        disabled={loading}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white font-sans font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-sm disabled:opacity-50"
+                    >
+                        {loading ? (
+                            <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                            <ExternalLink size={18} />
+                        )}
+                        {context ? "Close Full Context" : "View Full Context"}
+                    </button>
+                ) : (
+                    <button
+                        disabled
+                        title={isText ? "No chunk ID available" : "Graph visualization coming soon"}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary/40 text-background-dark/60 font-sans font-bold rounded-lg cursor-not-allowed shadow-sm"
+                    >
+                        <ExternalLink size={18} />
+                        {isText ? "View Full Context" : "View Graph"}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function FullContextViewer({ context }: { context: ChunkContext }) {
+    const markRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        if (markRef.current) {
+            markRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [context]);
+
+    const before = context.full_chapter_text.slice(0, context.highlight_start);
+    const highlighted = context.full_chapter_text.slice(
+        context.highlight_start,
+        context.highlight_end
+    );
+    const after = context.full_chapter_text.slice(context.highlight_end);
+
+    return (
+        <div className="border-t border-[#dcd3b8] bg-white/30">
+            {/* Chapter header */}
+            <div className="px-6 py-3 bg-[#ebe5d5]/50 border-b border-[#dcd3b8]">
+                <p className="font-sans text-xs font-semibold text-[#8c8578] uppercase">
+                    Full Chapter Context
+                </p>
+                <p className="font-serif text-sm text-parchment-text">
+                    {context.book} — {context.chapter}
+                </p>
+                <p className="font-sans text-xs text-[#8c8578] mt-1">
+                    Chunk {context.chunk_index} of {context.total_chunks_in_chapter}
+                </p>
+            </div>
+
+            {/* Scrollable full text with highlight */}
+            <div className="px-6 py-4 max-h-[50vh] overflow-y-auto">
+                <p className="font-serif text-base text-parchment-text leading-relaxed whitespace-pre-wrap">
+                    {before}
+                    <mark ref={markRef} className="bg-primary/20 text-parchment-text px-0.5 rounded">
+                        {highlighted}
+                    </mark>
+                    {after}
+                </p>
             </div>
         </div>
     );
