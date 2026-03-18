@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #19e6d4;
+  --color-primary-dark: #14b8aa;
+  --color-background-dark: #112120;
+  --color-sidebar-dark: #0d1918;
+  --color-parchment: #F3EFE0;
+  --color-parchment-text: #2C2825;
+  
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-noto-serif-sc);
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+body {
+  @apply bg-background-dark text-parchment;
+}
