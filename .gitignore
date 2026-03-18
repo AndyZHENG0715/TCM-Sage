@@ -217,3 +217,8 @@ AGENTS.md
 # TCM Ancient Books source clone
 temp_tcm_books/
 endpoint_test.json
+
+# Design artifacts
+stitch/
+# Local vectorstore database
+vectorstore/
