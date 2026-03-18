@@ -167,7 +167,7 @@ class HybridRetriever:
                     Document(
                         page_content=fact_text,
                         metadata={
-                            "source_type": "knowledge_graph",
+                            "source_type": "graph",
                             "entity_id": rel_entity.get("id"),
                             "entity_type": rel_entity.get("type"),
                             "relationship_type": relationship["type"],
