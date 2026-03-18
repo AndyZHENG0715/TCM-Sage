@@ -193,6 +193,7 @@ def _initialize_pipeline() -> Dict[str, Any]:
         "llm_informational": llm_informational,
         "llm_prescriptive": llm_prescriptive,
         "llm_verifier": llm_verifier,
+        "vectorstore": vectorstore,
     }
 
 
@@ -271,6 +272,14 @@ def get_runtime_config() -> PipelineConfig:
 
     pipeline = _initialize_pipeline()
     return pipeline["config"]
+
+
+def get_shared_vectorstore() -> Chroma:
+    """
+    Expose the shared vectorstore instance to avoid reloading embeddings.
+    """
+    pipeline = _initialize_pipeline()
+    return pipeline["vectorstore"]
 
 
 def run_query_stream(user_query: str) -> Generator[Union[str, Dict[str, Any]], None, None]:

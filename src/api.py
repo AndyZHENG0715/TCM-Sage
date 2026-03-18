@@ -24,13 +24,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from functools import lru_cache
 
 # Ensure we can import from the existing CLI module
 SRC_DIR = Path(__file__).resolve().parent
 if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
-from ui_backend import get_runtime_config, run_query_stream, PipelineConfig
+from ui_backend import get_runtime_config, run_query_stream, PipelineConfig, get_shared_vectorstore
 
 load_dotenv()
 
@@ -240,6 +241,116 @@ async def query(request: QueryRequest) -> StreamingResponse:
             "X-Accel-Buffering": "no",  # Disable nginx buffering
         },
     )
+
+
+@app.get("/source/{chunk_id}/context")
+async def get_chunk_context(chunk_id: str) -> Dict[str, Any]:
+    """
+    Get the full chapter context for a specific chunk.
+    
+    Args:
+        chunk_id: The ID of the chunk to retrieve context for.
+        
+    Returns:
+        JSON object with book, chapter, full text, and highlight offsets.
+    """
+    try:
+        # 1. Initialize VectorStore (reuse shared instance)
+        vectorstore = get_shared_vectorstore()
+        
+        # 2. Get chunk metadata from VectorStore
+        # include=["metadatas"] is enough, we don't need embeddings
+        result = vectorstore._collection.get(ids=[chunk_id], include=["metadatas"])
+        
+        if not result or not result["ids"]:
+            raise HTTPException(status_code=404, detail=f"Chunk {chunk_id} not found in VectorStore")
+            
+        metadata = result["metadatas"][0]
+        
+        # Ingest.py stores: metadata={"book": book_name, "source": chapter_title, ...}
+        book = metadata.get("book")
+        chapter = metadata.get("source") # 'source' is the chapter title
+        
+        if not book or not chapter:
+             # Fallback or strict error? 
+             # If ingest changed, we might need to handle it.
+             pass
+
+        # 3. Load all chunks to reconstruct the chapter
+        chunks_data = load_chunks_data()
+        
+        # 4. Filter and sort chunks for this chapter (check nested metadata)
+        chapter_chunks = [
+            c for c in chunks_data 
+            if c.get("metadata", {}).get("book") == book and c.get("metadata", {}).get("source") == chapter
+        ]
+        
+        if not chapter_chunks:
+            # Should not happen if vectorstore has it, but maybe chunks.json is out of sync
+            raise HTTPException(status_code=404, detail=f"Chapter chunks not found in data store for {book} - {chapter}")
+            
+        # Sort by chunk_index
+        chapter_chunks.sort(key=lambda x: x.get("metadata", {}).get("chunk_index", 0))
+        
+        # 5. Construct full text and find offsets
+        full_text = ""
+        highlight_start = 0
+        highlight_end = 0
+        found_chunk = False
+        
+        for chunk in chapter_chunks:
+            chunk_content = chunk.get("content", "")
+            current_start = len(full_text)
+            
+            # Append content (assuming ingest preserves exact content, usually strict concatenation involves checking overlap
+            # but for this simple RAG, we likely just concatenated or split. 
+            # If chunks.json has 'content', we join them.
+            # We might need a separator if they were split without overlap? 
+            # Looking at chunks.json sample: "content": "<ç¯‡å>è¥å«ç”Ÿä¼šç¯‡ç¬¬åå…«\n\nå..."
+            # It seems to be raw text.
+            full_text += chunk_content
+            
+            if chunk.get("id") == chunk_id:
+                highlight_start = current_start
+                highlight_end = len(full_text)
+                found_chunk = True
+                
+        if not found_chunk:
+             # Fallback if ID matching failed (e.g. slight mismatch in ID format?)
+             # But exact ID match is expected.
+             pass
+
+        return {
+            "chunk_id": chunk_id,
+            "book": book,
+            "chapter": chapter,
+            "chunk_index": metadata.get("chunk_index"),
+            "full_chapter_text": full_text,
+            "highlight_start": highlight_start,
+            "highlight_end": highlight_end,
+            "total_chunks_in_chapter": len(chapter_chunks)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Helper functions for data loading
+
+@lru_cache(maxsize=1)
+def load_chunks_data() -> list[dict]:
+    """Load and cache the chunks.json file."""
+    chunks_path = Path(__file__).parent.parent / "data" / "processed" / "chunks.json"
+    if not chunks_path.exists():
+        raise RuntimeError(f"Chunks data not found at {chunks_path}")
+        
+    import json
+    with open(chunks_path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 if __name__ == "__main__":
