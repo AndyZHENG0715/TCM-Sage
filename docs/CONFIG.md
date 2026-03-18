@@ -157,6 +157,31 @@ TCM-Sage now includes an intelligent query classification system that automatica
 - **API Key**: `TOGETHER_API_KEY`
 - **Setup**: Get API key from [Together AI](https://together.ai/)
 
+### 7. Ollama (Local)
+
+- **Provider ID**: `ollama`
+- **Default Model**: `qwen3:8b`
+- **API Key**: Not required
+- **Base URL**: `OLLAMA_BASE_URL` (default: `http://localhost:11434/v1`)
+- **Setup**:
+  1. Install Ollama from [ollama.ai](https://ollama.ai/)
+  2. Pull a model: `ollama pull qwen3:8b`
+  3. Set `LLM_PROVIDER=ollama` in `.env`
+  4. Optionally set `LLM_MODEL` to any model you've pulled
+
+### 8. LM Studio (Local)
+
+- **Provider ID**: `lmstudio`
+- **Default Model**: `qwen3-8b`
+- **API Key**: Not required
+- **Base URL**: `LMSTUDIO_BASE_URL` (default: `http://localhost:1234/v1`)
+- **Setup**:
+  1. Download LM Studio from [lmstudio.ai](https://lmstudio.ai/)
+  2. Load a model in the LM Studio UI
+  3. Start the local server (LM Studio → Local Server tab)
+  4. Set `LLM_PROVIDER=lmstudio` in `.env`
+  5. Set `LLM_MODEL` to match the loaded model name
+
 ## Model Selection
 
 ### Default Models by Provider
@@ -273,15 +298,18 @@ The temperature parameter controls the randomness of model responses:
 - **Anthropic**: Free tier available with usage limits
 - **OpenRouter**: Pay-per-use pricing for various models
 - **Together AI**: Competitive pricing for open-source models
+- **Ollama**: Ensure Ollama is running (`ollama serve`). Check with `curl http://localhost:11434/v1/models`
+- **LM Studio**: Ensure the local server is started and a model is loaded. Check the LM Studio server tab for the port
 
 ## Cost Optimization
 
 For cost-effective development and testing:
 
-1. **Start with Alibaba Cloud Model Studio** (1M free tokens)
-2. **Use smaller models** when testing (e.g., `gpt-3.5-turbo` instead of `gpt-4o`)
-3. **Set lower temperature** to reduce response variability
-4. **Monitor usage** through provider dashboards
+1. **Use Ollama or LM Studio** for free local inference (requires GPU recommended)
+2. **Start with Alibaba Cloud Model Studio** (1M free tokens for cloud)
+3. **Use smaller models** when testing (e.g., `gpt-3.5-turbo` instead of `gpt-4o`)
+4. **Set lower temperature** to reduce response variability
+5. **Monitor usage** through provider dashboards
 
 ## Security Notes
 

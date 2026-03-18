@@ -76,7 +76,7 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
     Create an LLM instance based on the provider configuration.
 
     Args:
-        provider (str): The LLM provider ('openai', 'google', 'anthropic', 'openrouter', 'together', 'alibaba')
+        provider (str): The LLM provider ('openai', 'google', 'anthropic', 'openrouter', 'together', 'alibaba', 'ollama', 'lmstudio')
         model (str, optional): Specific model to use
         temperature (float): Temperature for generation
         streaming (bool): Enable streaming output (currently supported for 'alibaba' provider)
@@ -89,9 +89,10 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
 
     Note:
         TODO(streaming-multi-provider): Currently streaming is only implemented for the
-        'alibaba' provider via ChatTongyi. When users can select providers in the UI,
-        extend streaming support to: OpenAI (ChatOpenAI), Google (ChatGoogleGenerativeAI),
-        Anthropic (ChatAnthropic). All these LangChain chat models support streaming=True.
+        'alibaba' provider via ChatTongyi, as well as 'ollama' and 'lmstudio' via ChatOpenAI.
+        When users can select providers in the UI, extend streaming support to: OpenAI (ChatOpenAI), 
+        Google (ChatGoogleGenerativeAI), Anthropic (ChatAnthropic). All these LangChain chat models 
+        support streaming=True.
     """
     provider = provider.lower()
 
@@ -102,7 +103,9 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         'anthropic': 'claude-4-5-sonnet-20241022',
         'openrouter': 'openai/gpt-5-2',
         'together': 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
-        'alibaba': 'qwen3-max'
+        'alibaba': 'qwen3-max',
+        'ollama': 'qwen3:8b',          # Popular local model with CJK support
+        'lmstudio': 'qwen3-8b',       # LM Studio uses simple model names
     }
 
     # Use default model if none specified
@@ -196,8 +199,32 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
             temperature=temperature
         )
 
+    elif provider == 'ollama':
+        if ChatOpenAI is None:
+            raise ValueError("Ollama provider requires 'langchain-openai' package. Install with: pip install langchain-openai")
+        base_url = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434/v1')
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            base_url=base_url,
+            api_key='ollama',  # Ollama doesn't need a real key but ChatOpenAI requires one
+            streaming=streaming,
+        )
+
+    elif provider == 'lmstudio':
+        if ChatOpenAI is None:
+            raise ValueError("LM Studio provider requires 'langchain-openai' package. Install with: pip install langchain-openai")
+        base_url = os.getenv('LMSTUDIO_BASE_URL', 'http://localhost:1234/v1')
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            base_url=base_url,
+            api_key='lm-studio',  # LM Studio doesn't need a real key but ChatOpenAI requires one
+            streaming=streaming,
+        )
+
     else:
-        raise ValueError(f"Unsupported provider: {provider}. Supported providers: openai, google, anthropic, openrouter, together, alibaba")
+        raise ValueError(f"Unsupported provider: {provider}. Supported providers: openai, google, anthropic, openrouter, together, alibaba, ollama, lmstudio")
 
 
 def format_docs(docs):
