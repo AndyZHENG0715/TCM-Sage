@@ -129,6 +129,7 @@ export default function Home() {
     <div className="flex h-screen overflow-hidden bg-background-dark text-parchment font-sans selection:bg-primary/30">
       {/* Sidebar */}
       <Sidebar
+        sessions={sessions}
         currentSessionId={currentSessionId}
         onSelectSession={handleSelectSession}
         onNewChat={handleNewChat}

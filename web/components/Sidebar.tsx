@@ -1,6 +1,5 @@
 "use client";
 
-import { useHistory } from "@/hooks/useHistory";
 import { ChatSession } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -15,6 +14,7 @@ import {
 import { useState } from "react";
 
 interface SidebarProps {
+    sessions: ChatSession[];
     currentSessionId: string | null;
     onSelectSession: (session: ChatSession) => void;
     onNewChat: () => void;
@@ -24,6 +24,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
+    sessions,
     currentSessionId,
     onSelectSession,
     onNewChat,
@@ -31,7 +32,6 @@ export function Sidebar({
     onOpenSettings,
     className,
 }: SidebarProps) {
-    const { sessions } = useHistory();
     const [collapsed, setCollapsed] = useState(false);
 
     const handleDelete = (e: React.MouseEvent, sessionId: string) => {
