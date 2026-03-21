@@ -92,12 +92,18 @@ export function SettingsModal({
                                     onChange={(e) => handleChange("llmProvider", e.target.value)}
                                     className="w-full px-3 py-2 bg-background-dark border border-white/10 rounded-lg focus:border-primary/50 outline-none text-parchment transition-colors"
                                 >
-                                    <option value="alibaba">Alibaba Cloud (Qwen)</option>
-                                    <option value="openai">OpenAI</option>
-                                    <option value="anthropic">Anthropic</option>
-                                    <option value="google">Google Gemini</option>
-                                    <option value="openrouter">OpenRouter</option>
-                                    <option value="together">Together AI</option>
+                                    <optgroup label="Cloud Providers">
+                                        <option value="alibaba">Alibaba Cloud (Qwen)</option>
+                                        <option value="openai">OpenAI</option>
+                                        <option value="anthropic">Anthropic</option>
+                                        <option value="google">Google Gemini</option>
+                                        <option value="openrouter">OpenRouter</option>
+                                        <option value="together">Together AI</option>
+                                    </optgroup>
+                                    <optgroup label="Local (No API Key)">
+                                        <option value="ollama">Ollama (Local)</option>
+                                        <option value="lmstudio">LM Studio (Local)</option>
+                                    </optgroup>
                                 </select>
                             </div>
 
@@ -161,15 +167,23 @@ export function SettingsModal({
                                     <span className="text-sm font-medium block">Knowledge Graph</span>
                                     <span className="text-xs text-gray-400">Enable hybrid retrieval with KG facts</span>
                                 </div>
-                                <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                    <input
-                                        type="checkbox"
-                                        checked={localSettings.hybridRetrieval}
-                                        onChange={(e) => handleChange("hybridRetrieval", e.target.checked)}
-                                        className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer peer checked:right-0 right-6"
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={localSettings.hybridRetrieval}
+                                    onClick={() => handleChange("hybridRetrieval", !localSettings.hybridRetrieval)}
+                                    className={cn(
+                                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                                        localSettings.hybridRetrieval ? "bg-primary" : "bg-gray-600"
+                                    )}
+                                >
+                                    <span
+                                        className={cn(
+                                            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200",
+                                            localSettings.hybridRetrieval ? "translate-x-6" : "translate-x-1"
+                                        )}
                                     />
-                                    <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer peer-checked:bg-primary"></label>
-                                </div>
+                                </button>
                             </div>
 
                             {localSettings.hybridRetrieval && (
