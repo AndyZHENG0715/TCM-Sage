@@ -341,7 +341,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
 
             # Build citation metadata
             content = doc.page_content.strip().replace('\n', ' ')
-            snippet = content[:SNIPPET_LENGTH] + "..." if len(content) > SNIPPET_LENGTH else content
+            snippet = content  # No truncation for passages
 
             citations.append({
                 "number": citation_number,

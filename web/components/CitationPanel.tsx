@@ -5,6 +5,7 @@ import { Citation, TextCitation, GraphCitation } from "@/lib/types";
 import { cleanSourceLabel } from "@/lib/citations";
 import { X, BookOpen, ExternalLink, Loader2 } from "lucide-react";
 import { fetchChunkContext, ChunkContext } from "@/lib/api";
+import Link from "next/link";
 
 interface CitationPanelProps {
     citation: Citation | null;
@@ -22,25 +23,21 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
             setContext(null);
             setError(null);
             prevCitationRef.current = citation;
+            
+            if (citation && citation.type === "text" && (citation as TextCitation).chunk_id) {
+                const chunkId = (citation as TextCitation).chunk_id!;
+                setLoading(true);
+                fetchChunkContext(chunkId)
+                    .then(data => setContext(data))
+                    .catch(err => setError(err instanceof Error ? err.message : "Failed to load context"))
+                    .finally(() => setLoading(false));
+            }
         }
     }, [citation]);
 
     if (!citation) return null;
 
     const isText = citation.type === "text";
-
-    async function handleViewContext(chunkId: string) {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await fetchChunkContext(chunkId);
-            setContext(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to load context");
-        } finally {
-            setLoading(false);
-        }
-    }
 
     return (
         <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] lg:w-[450px] bg-parchment shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col border-l border-[#dcd3b8]">
@@ -70,14 +67,11 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
                 {isText ? (
-                    <TextCitationContent citation={citation as TextCitation} />
+                    <TextCitationContent citation={citation as TextCitation} context={context} loading={loading} />
                 ) : (
                     <GraphCitationContent citation={citation as GraphCitation} />
                 )}
             </div>
-
-            {/* Full context viewer (conditionally shown) */}
-            {context && <FullContextViewer context={context} />}
 
             {/* Error message */}
             {error && (
@@ -89,13 +83,9 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
             {/* Footer */}
             <div className="p-6 border-t border-[#dcd3b8] bg-[#ebe5d5]">
                 {isText && (citation as TextCitation).chunk_id ? (
-                    <button
-                        onClick={() =>
-                            context
-                                ? setContext(null)
-                                : handleViewContext((citation as TextCitation).chunk_id!)
-                        }
-                        disabled={loading}
+                    <Link
+                        href={`/source/${(citation as TextCitation).chunk_id}`}
+                        target="_blank"
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white font-sans font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-sm disabled:opacity-50"
                     >
                         {loading ? (
@@ -103,8 +93,8 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                         ) : (
                             <ExternalLink size={18} />
                         )}
-                        {context ? "Close Full Context" : "View Full Context"}
-                    </button>
+                        View Full Context
+                    </Link>
                 ) : (
                     <button
                         disabled
@@ -120,58 +110,48 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
     );
 }
 
-function FullContextViewer({ context }: { context: ChunkContext }) {
-    const markRef = useRef<HTMLElement>(null);
-
-    useEffect(() => {
-        if (markRef.current) {
-            markRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-    }, [context]);
-
-    const before = context.full_chapter_text.slice(0, context.highlight_start);
-    const highlighted = context.full_chapter_text.slice(
-        context.highlight_start,
-        context.highlight_end
-    );
-    const after = context.full_chapter_text.slice(context.highlight_end);
-
-    return (
-        <div className="border-t border-[#dcd3b8] bg-white/30">
-            {/* Chapter header */}
-            <div className="px-6 py-3 bg-[#ebe5d5]/50 border-b border-[#dcd3b8]">
-                <p className="font-sans text-xs font-semibold text-[#8c8578] uppercase">
-                    Full Chapter Context
-                </p>
-                <p className="font-serif text-sm text-parchment-text">
-                    {context.book} — {context.chapter}
-                </p>
-                <p className="font-sans text-xs text-[#8c8578] mt-1">
-                    Chunk {context.chunk_index} of {context.total_chunks_in_chapter}
-                </p>
+function TextCitationContent({ citation, context, loading }: { citation: TextCitation, context: ChunkContext | null, loading: boolean }) {
+    let passageContent = <>{citation.content}</>;
+    
+    if (loading) {
+        passageContent = (
+            <div className="flex items-center gap-2 text-[#8c8578]">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="text-sm italic">Loading full paragraph context...</span>
             </div>
+        );
+    } else if (context) {
+        const { full_chapter_text, highlight_start, highlight_end } = context;
+        const before = full_chapter_text.slice(0, highlight_start);
+        const highlighted = full_chapter_text.slice(highlight_start, highlight_end);
+        const after = full_chapter_text.slice(highlight_end);
+        
+        const paraStart = before.lastIndexOf("\n") + 1;
+        let paraEnd = after.indexOf("\n");
+        if (paraEnd === -1) paraEnd = after.length;
+        
+        const paragraphBefore = before.slice(paraStart);
+        const paragraphAfter = after.slice(0, paraEnd);
+        
+        passageContent = (
+            <>
+                {paragraphBefore}
+                <mark className="bg-primary/20 text-parchment-text px-0.5 rounded">
+                    {highlighted}
+                </mark>
+                {paragraphAfter}
+            </>
+        );
+    }
 
-            {/* Scrollable full text with highlight */}
-            <div className="px-6 py-4 max-h-[50vh] overflow-y-auto">
-                <p className="font-serif text-base text-parchment-text leading-relaxed whitespace-pre-wrap">
-                    {before}
-                    <mark ref={markRef} className="bg-primary/20 text-parchment-text px-0.5 rounded">
-                        {highlighted}
-                    </mark>
-                    {after}
-                </p>
-            </div>
-        </div>
-    );
-}
+    const sourceDisplay = context ? `${context.book} — ${context.chapter}` : cleanSourceLabel(citation.source);
 
-function TextCitationContent({ citation }: { citation: TextCitation }) {
     return (
         <div className="space-y-6">
             <div className="space-y-2">
                 <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">Source Chapter</h3>
                 <p className="font-serif text-2xl text-parchment-text border-b-2 border-primary/20 pb-2 inline-block">
-                    {cleanSourceLabel(citation.source)}
+                    {sourceDisplay}
                 </p>
             </div>
 
@@ -180,14 +160,14 @@ function TextCitationContent({ citation }: { citation: TextCitation }) {
                 <div className="relative pl-6">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/50 rounded-full" />
                     <p className="font-serif text-lg text-parchment-text leading-loose whitespace-pre-wrap">
-                        {citation.content}
+                        {passageContent}
                     </p>
                 </div>
             </div>
 
             <div className="flex gap-2">
                 <span className="inline-flex items-center px-2 py-1 rounded bg-[#dcd3b8]/50 text-[#5c5548] text-xs font-medium">
-                    Rel: {(Math.exp(-citation.score / 1000) * 100).toFixed(1)}%
+                    Rel: {Math.max(0, (1 - citation.score / 4) * 100).toFixed(1)}%
                 </span>
             </div>
         </div>
