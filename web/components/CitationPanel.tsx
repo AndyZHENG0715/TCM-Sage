@@ -6,6 +6,7 @@ import { cleanSourceLabel } from "@/lib/citations";
 import { X, BookOpen, ExternalLink, Loader2 } from "lucide-react";
 import { fetchChunkContext, ChunkContext } from "@/lib/api";
 import Link from "next/link";
+import { KGViewer } from "./KGViewer";
 
 interface CitationPanelProps {
     citation: Citation | null;
@@ -179,9 +180,7 @@ function GraphCitationContent({ citation }: { citation: GraphCitation }) {
         <div className="space-y-6">
             <div className="space-y-2">
                 <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">Fact Relationship</h3>
-                <p className="font-serif text-xl text-parchment-text p-4 bg-white/50 rounded-lg border border-[#dcd3b8] text-center">
-                    {citation.fact}
-                </p>
+                <KGViewer citation={citation} />
             </div>
 
             <div className="space-y-3">
