@@ -34,7 +34,8 @@ export function Sidebar({
 }: SidebarProps) {
     const [collapsed, setCollapsed] = useState(false);
 
-    const handleDelete = (e: React.MouseEvent, sessionId: string) => {
+    const handleDelete = (e: React.MouseEvent<HTMLButtonElement>, sessionId: string) => {
+        e.preventDefault();
         e.stopPropagation();
         if (window.confirm("Delete this conversation? This cannot be undone.")) {
             onDeleteSession(sessionId);
@@ -44,16 +45,18 @@ export function Sidebar({
     // Group sessions
     const groupedSessions = sessions.reduce((acc, session) => {
         const date = new Date(session.updatedAt);
-        const now = new Date();
-        const isToday = date.toDateString() === now.toDateString();
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        const isToday = date.toDateString() === today.toDateString();
         const isYesterday =
-            new Date(now.setDate(now.getDate() - 1)).toDateString() ===
-            date.toDateString();
+            yesterday.toDateString() === date.toDateString();
 
         let group = "Older";
         if (isToday) group = "Today";
         else if (isYesterday) group = "Yesterday";
-        else if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000)
+        else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000)
             group = "Last Week";
 
         if (!acc[group]) acc[group] = [];
@@ -145,25 +148,29 @@ export function Sidebar({
                                         <div
                                             key={session.id}
                                             className={cn(
-                                                "group flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors",
+                                                "group flex items-center gap-2 rounded-lg transition-colors",
                                                 currentSessionId === session.id
                                                     ? "bg-white/10 text-parchment"
                                                     : "text-gray-400 hover:bg-white/5 hover:text-parchment"
                                             )}
-                                            onClick={() => onSelectSession(session)}
                                         >
-                                            <div className="flex items-center gap-3 overflow-hidden">
-                                                {/* <MessageSquare size={16} className="shrink-0" /> */}
+                                            <button
+                                                type="button"
+                                                onClick={() => onSelectSession(session)}
+                                                className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden p-2 text-left"
+                                            >
                                                 <span className="text-sm truncate font-medium">
                                                     {session.title || "New Chat"}
                                                 </span>
-                                            </div>
+                                            </button>
 
-                                            {/* Delete button (visible on hover) */}
                                             <button
+                                                type="button"
+                                                onPointerDown={(e) => e.stopPropagation()}
                                                 onClick={(e) => handleDelete(e, session.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition-opacity"
+                                                className="shrink-0 rounded p-2 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
                                                 title="Delete chat"
+                                                aria-label={`Delete ${session.title || "chat"}`}
                                             >
                                                 <Trash2 size={14} />
                                             </button>
@@ -178,7 +185,7 @@ export function Sidebar({
 
             {/* Footer / User Profile */}
             <div className="p-4 border-t border-white/5">
-                <button className={cn(
+                <div className={cn(
                     "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left",
                     collapsed ? "justify-center" : ""
                 )}>
@@ -192,17 +199,18 @@ export function Sidebar({
                         </div>
                     )}
                     {!collapsed && (
-                        <div
+                        <button
+                            type="button"
                             onClick={(e) => {
-                                e.stopPropagation(); // prevent profile click
+                                e.stopPropagation();
                                 onOpenSettings();
                             }}
-                            className="p-2 text-gray-400 hover:text-parchment hover:rotate-90 transition-all cursor-pointer"
+                            className="p-2 text-gray-400 hover:text-parchment hover:rotate-90 transition-all"
                         >
                             <Settings size={18} />
-                        </div>
+                        </button>
                     )}
-                </button>
+                </div>
             </div>
         </div>
     );
