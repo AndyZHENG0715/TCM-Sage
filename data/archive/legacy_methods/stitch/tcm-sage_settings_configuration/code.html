@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TCM-Sage Settings</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Noto+Serif+SC:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#19e6d4",
+                        "primary-hover": "#14b8aa",
+                        "primary-dark": "#0f766e",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#112120",
+                        "surface-dark": "#1a2c2b",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Noto Serif SC", "serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom range slider styling for Webkit/Blink */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #19e6d4;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(25, 230, 212, 0.5);
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #2d4a48;
+            border-radius: 2px;
+        }
+
+        /* Scrollbar styling for the modal content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1); 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d4a48; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #19e6d4; 
+        }
+
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #19e6d4;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #19e6d4;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-display min-h-screen relative overflow-hidden flex items-center justify-center">
+<!-- Background Pattern/Content (Blurred for Context) -->
+<div class="absolute inset-0 z-0 pointer-events-none opacity-20 dark:opacity-10" data-alt="Abstract blurry botanical background representing TCM herbs" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA-vadqCgiLwFdvBL7vWfc4PSVBUNHOP0Ez5miJHUlbZ3nSB2ASNroyNGGiqS5bTmV3aPwygmNVIK6nejbqEHAULtK6BVO-gDXfciuVDd0r2xrgTKuhybDGoEqYdLgIO0nMUQ0ckYNX76pcBs0MyH8gpryC6Q-3vorYTmwsXB7XdAH92GREEv6gRwhbn_fqnzX4mO3YIM9tE96v0nQDh57485MaZDZNdV5535bZgJC-6dmCpVlyN56OIcBU_4jfAMkS0xmkkbomauU'); background-size: cover; background-position: center;">
+</div>
+<!-- Main Content Mockup (Blurred) -->
+<div aria-hidden="true" class="absolute inset-0 z-0 flex flex-col blur-sm pointer-events-none">
+<header class="h-16 border-b border-slate-200 dark:border-white/10 flex items-center px-6">
+<div class="font-serif font-bold text-xl tracking-wide text-primary">TCM-Sage</div>
+</header>
+<div class="flex-1 flex">
+<aside class="w-64 border-r border-slate-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark/50"></aside>
+<main class="flex-1 p-8">
+<div class="max-w-3xl mx-auto space-y-6">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-icons-round">smart_toy</span>
+</div>
+<div class="flex-1 p-4 rounded-lg bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-white/10 shadow-sm">
+<p class="text-sm opacity-50 mb-2 font-serif">Diagnosis Analysis</p>
+<div class="h-2 bg-slate-200 dark:bg-white/10 rounded w-3/4 mb-2"></div>
+<div class="h-2 bg-slate-200 dark:bg-white/10 rounded w-1/2"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="relative z-50 w-full max-w-2xl mx-4 animate-fade-in-up">
+<!-- Modal Card -->
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+<!-- Header -->
+<div class="px-8 py-6 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-white dark:bg-[#152625]">
+<div>
+<h2 class="font-serif text-2xl font-bold text-slate-900 dark:text-white tracking-wide">Configuration</h2>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-serif italic">Customize your research assistant parameters</p>
+</div>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons-round text-2xl">close</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8">
+<!-- Section: Model Parameters -->
+<section>
+<div class="flex items-center gap-2 mb-4 text-primary">
+<span class="material-icons-round text-lg">psychology</span>
+<h3 class="font-serif font-semibold text-lg tracking-wide uppercase text-slate-700 dark:text-slate-200 text-xs">Model Parameters</h3>
+<div class="h-px bg-primary/20 flex-1 ml-2"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Provider -->
+<div class="space-y-2">
+<label class="block text-sm font-serif font-medium text-slate-600 dark:text-slate-300">LLM Provider</label>
+<div class="relative">
+<select class="w-full bg-slate-50 dark:bg-[#112120] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 pr-10 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none transition-shadow text-sm">
+<option>Alibaba Cloud (Qwen-Max)</option>
+<option>OpenAI (GPT-4)</option>
+<option>Anthropic (Claude 3.5)</option>
+<option>Local (Llama 3)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+<span class="material-icons-round text-sm">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Model Name -->
+<div class="space-y-2">
+<label class="block text-sm font-serif font-medium text-slate-600 dark:text-slate-300">Specific Model ID</label>
+<input class="w-full bg-slate-50 dark:bg-[#112120] border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder-slate-400 text-sm font-mono" placeholder="e.g. gpt-4-turbo" type="text" value="qwen-max-longcontext"/>
+</div>
+<!-- Temperature -->
+<div class="col-span-1 md:col-span-2 space-y-3 mt-2">
+<div class="flex justify-between items-center">
+<label class="flex items-center gap-2 text-sm font-serif font-medium text-slate-600 dark:text-slate-300">
+                                    Temperature
+                                    <span class="material-icons-round text-slate-400 text-sm cursor-help" title="Controls randomness: Lower is deterministic, higher is creative.">info</span>
+</label>
+<span class="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">0.3</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-xs text-slate-400 font-serif">Precise</span>
+<input class="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer" max="1" min="0" step="0.1" type="range" value="0.3"/>
+<span class="text-xs text-slate-400 font-serif">Creative</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Retrieval & Knowledge -->
+<section>
+<div class="flex items-center gap-2 mb-4 text-primary">
+<span class="material-icons-round text-lg">library_books</span>
+<h3 class="font-serif font-semibold text-lg tracking-wide uppercase text-slate-700 dark:text-slate-200 text-xs">Retrieval &amp; Knowledge</h3>
+<div class="h-px bg-primary/20 flex-1 ml-2"></div>
+</div>
+<div class="grid grid-cols-1 gap-6">
+<!-- Retrieval Sources Count -->
+<div class="bg-slate-50 dark:bg-[#112120] p-4 rounded-lg border border-slate-200 dark:border-white/5">
+<div class="flex justify-between items-center mb-3">
+<label class="text-sm font-serif font-medium text-slate-600 dark:text-slate-300">Retrieval Sources Depth</label>
+<span class="font-mono text-xs text-white bg-slate-600 dark:bg-white/10 px-2 py-0.5 rounded">8 Texts</span>
+</div>
+<input class="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer" max="15" min="3" step="1" type="range" value="8"/>
+<div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono uppercase tracking-widest">
+<span>Min (3)</span>
+<span>Max (15)</span>
+</div>
+</div>
+<!-- Knowledge Graph Toggle -->
+<div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-[#1c2e2d] transition-colors group cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-colors">
+<span class="material-icons-round text-lg">hub</span>
+</div>
+<div>
+<div class="text-sm font-serif font-medium text-slate-700 dark:text-slate-200">Knowledge Graph Visualization</div>
+<div class="text-xs text-slate-400">Display relationships between herbs, meridians, and symptoms</div>
+</div>
+</div>
+<!-- Toggle -->
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 ease-in-out left-0 top-0 border-slate-300 dark:border-slate-500 checked:bg-white checked:border-primary" id="toggle-kg" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 dark:bg-slate-700 cursor-pointer" for="toggle-kg"></label>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Output Preferences -->
+<section>
+<div class="flex items-center gap-2 mb-4 text-primary">
+<span class="material-icons-round text-lg">description</span>
+<h3 class="font-serif font-semibold text-lg tracking-wide uppercase text-slate-700 dark:text-slate-200 text-xs">Output Preferences</h3>
+<div class="h-px bg-primary/20 flex-1 ml-2"></div>
+</div>
+<div class="space-y-6">
+<!-- Output Format Toggle -->
+<div class="space-y-2">
+<label class="block text-sm font-serif font-medium text-slate-600 dark:text-slate-300 mb-2">Response Style</label>
+<div class="grid grid-cols-3 p-1 bg-slate-100 dark:bg-[#112120] rounded-lg border border-slate-200 dark:border-white/5">
+<button class="py-1.5 text-xs font-medium rounded text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">Concise</button>
+<button class="py-1.5 text-xs font-medium rounded bg-white dark:bg-primary dark:text-black text-primary shadow-sm ring-1 ring-black/5 dark:ring-0">Detailed</button>
+<button class="py-1.5 text-xs font-medium rounded text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">Academic</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Citation Style -->
+<div class="space-y-2">
+<label class="block text-sm font-serif font-medium text-slate-600 dark:text-slate-300">Citation Format</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer group">
+<div class="relative flex items-center justify-center w-4 h-4 rounded-full border border-slate-400 dark:border-slate-500 group-hover:border-primary">
+<input class="peer appearance-none w-full h-full rounded-full checked:bg-primary checked:border-primary transition-all" name="citation" type="radio"/>
+</div>
+<span class="text-sm text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Chapter / Verse</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<div class="relative flex items-center justify-center w-4 h-4 rounded-full border border-slate-400 dark:border-slate-500 group-hover:border-primary">
+<input checked="" class="peer appearance-none w-full h-full rounded-full checked:bg-primary checked:border-primary transition-all" name="citation" type="radio"/>
+</div>
+<span class="text-sm text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Modern Section</span>
+</label>
+</div>
+</div>
+<!-- Theme Toggle -->
+<div class="space-y-2 flex flex-col justify-end">
+<div class="flex items-center justify-between">
+<label class="text-sm font-serif font-medium text-slate-600 dark:text-slate-300">Theme Mode</label>
+<div class="flex items-center bg-slate-100 dark:bg-[#112120] rounded-full p-1 border border-slate-200 dark:border-white/5">
+<button class="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-orange-500 transition-colors">
+<span class="material-icons-round text-sm">light_mode</span>
+</button>
+<button class="w-7 h-7 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-primary">
+<span class="material-icons-round text-sm">dark_mode</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<div class="px-8 py-5 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#152625] flex justify-between items-center">
+<button class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium transition-colors">
+                    Reset to Defaults
+                </button>
+<div class="flex gap-3">
+<button class="px-5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-colors">
+                        Cancel
+                    </button>
+<button class="px-6 py-2 rounded-lg text-sm font-bold text-black bg-primary hover:bg-primary-hover shadow-[0_0_15px_rgba(25,230,212,0.3)] transition-all">
+                        Save Configuration
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

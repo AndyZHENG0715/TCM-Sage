@@ -46,12 +46,16 @@
 **Standard RAG Query:**
 
 1. **User Query**: Received via `/query` endpoint in `src/api.py`.
-2. **Classification**: Query is classified as "informational" or "prescriptive" in `src/ui_backend.py` to set LLM temperature.
+2. **Classification**: Query is classified as "informational" or "prescriptive" in `src/ui_backend.py`.
+   - **Informational**: General knowledge; uses higher temperature (default 0.1).
+   - **Prescriptive**: Diagnostic/medical advice; uses **strict temperature (0.0)** for maximum accuracy.
 3. **Hybrid Retrieval**: `HybridRetriever` fetches semantic chunks from `ChromaDB` and related facts from the Knowledge Graph.
 4. **Context Formatting**: Retrieved docs are formatted into a context string with numeric citations in `src/main.py`.
-5. **Generation**: LLM (Qwen/OpenAI) generates an answer using the context and chat history, streamed via SSE.
-6. **Verification**: Post-hoc verification check (`src/verifier.py`) ensures the answer is supported by the context.
-7. **Metadata Injection**: Citations and verification results are appended to the stream as a final JSON metadata event.
+5. **Reflective Generation**: 
+   - LLM generates an answer using the context and chat history.
+   - **Verification Loop**: Post-hoc check (`src/verifier.py`) ensures the answer is strictly supported by the context before delivery.
+6. **SSE Streaming**: Answer is streamed in real-time via Server-Sent Events.
+7. **Metadata Injection**: Citations and verification results are appended as a final JSON event.
 
 **State Management:**
 - **Backend**: Stateless API; chat history is passed in each request from the frontend.

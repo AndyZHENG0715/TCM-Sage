@@ -225,3 +225,6 @@ endpoint_test.json
 stitch/
 # Local vectorstore database
 vectorstore/
+
+.gemini/
+gha-creds-*.json

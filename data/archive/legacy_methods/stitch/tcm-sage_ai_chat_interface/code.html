@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TCM-Sage AI Chat Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Serif+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#19e6d4",
+                        "primary-dark": "#14b8aa",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#112120",
+                        "sidebar-dark": "#0d1918",
+                        "parchment": "#F3EFE0",
+                        "parchment-text": "#2C2825",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif-sc": ["Noto Serif SC", "serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(25, 230, 212, 0.1); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(25, 230, 212, 0.3); 
+        }
+        .parchment-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .citation-highlight {
+            background-color: rgba(25, 230, 212, 0.15);
+            border-bottom: 2px solid #19e6d4;
+            color: #e2e8f0;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-display h-screen w-screen overflow-hidden flex selection:bg-primary selection:text-background-dark">
+<aside class="w-64 flex-shrink-0 bg-white dark:bg-sidebar-dark border-r border-slate-200 dark:border-white/5 flex flex-col h-full z-20">
+<div class="p-5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-background-dark">
+<span class="material-icons-round text-xl">spa</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">TCM-Sage</h1>
+</div>
+<button class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 transition-colors">
+<span class="material-icons-round text-xl">menu_open</span>
+</button>
+</div>
+<div class="px-4 mb-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary transition-all duration-200 py-2.5 px-4 rounded-lg font-medium text-sm group">
+<span class="material-icons-round text-lg group-hover:rotate-90 transition-transform">add</span>
+                New Research Chat
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto px-2 space-y-6">
+<div>
+<h3 class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-2">Today</h3>
+<ul class="space-y-1">
+<li>
+<button class="w-full text-left px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-200 text-sm font-medium border-l-4 border-primary truncate transition-colors">
+                            Liver Qi Stagnation Analysis
+                        </button>
+</li>
+<li>
+<button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 text-sm truncate transition-colors">
+                            Formulas for Insomnia
+                        </button>
+</li>
+</ul>
+</div>
+<div>
+<h3 class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Yesterday</h3>
+<ul class="space-y-1">
+<li>
+<button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 text-sm truncate transition-colors">
+                            Shang Han Lun: Tai Yang
+                        </button>
+</li>
+<li>
+<button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 text-sm truncate transition-colors">
+                            Acupuncture points for nausea
+                        </button>
+</li>
+<li>
+<button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 text-sm truncate transition-colors">
+                            Yin-Yang Theory basics
+                        </button>
+</li>
+</ul>
+</div>
+<div>
+<h3 class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Last Week</h3>
+<ul class="space-y-1">
+<li>
+<button class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400 text-sm truncate transition-colors">
+                            Contraindications of Ma Huang
+                        </button>
+</li>
+</ul>
+</div>
+</div>
+<div class="p-4 border-t border-slate-200 dark:border-white/5">
+<button class="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-left">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-500"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium text-slate-700 dark:text-white truncate">Dr. Emily Chen</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">Pro Plan Active</p>
+</div>
+<span class="material-icons-round text-slate-400 text-lg">settings</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full relative z-10 overflow-hidden">
+<div class="h-16 border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-6 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm sticky top-0 z-10">
+<h2 class="text-lg font-medium text-slate-700 dark:text-slate-200">Liver Qi Stagnation &amp; Insomnia</h2>
+<div class="flex items-center gap-3">
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons-round">ios_share</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons-round">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8 pb-40" id="chat-container">
+<div class="flex justify-center">
+<span class="text-xs text-slate-400 dark:text-slate-500 bg-slate-200 dark:bg-white/5 px-3 py-1 rounded-full">Today, 9:41 AM</span>
+</div>
+<div class="flex justify-end w-full">
+<div class="max-w-2xl bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white px-5 py-4 rounded-2xl rounded-tr-sm">
+<p class="font-display leading-relaxed">Explain the relationship between Liver Qi Stagnation and insomnia, specifically focusing on the Hun (Ethereal Soul) disturbance.</p>
+</div>
+</div>
+<div class="flex justify-start w-full gap-4">
+<div class="w-8 h-8 rounded-lg bg-primary flex-shrink-0 flex items-center justify-center text-background-dark mt-1">
+<span class="material-icons-round text-lg">auto_awesome</span>
+</div>
+<div class="max-w-3xl flex flex-col gap-2">
+<div class="bg-parchment text-parchment-text px-6 py-5 rounded-2xl rounded-tl-sm parchment-shadow relative border border-amber-900/10">
+<div class="font-serif-sc text-lg leading-relaxed space-y-4">
+<p>
+                                In Traditional Chinese Medicine, the Liver is responsible for the smooth flow of Qi and stores the Blood. The <strong>Hun (魂)</strong>, or Ethereal Soul, is housed within the Liver Blood.
+                            </p>
+<p>
+                                When Liver Qi stagnates, it can turn into Fire or simply fail to nourish the Blood adequately. If the Liver Blood is deficient or agitated by Heat, the Hun loses its residence and wanders at night, leading to insomnia characterized by dream-disturbed sleep, difficulty falling asleep, or waking at specific times (1-3 AM) <button class="inline-flex items-center justify-center bg-primary/20 hover:bg-primary/40 text-teal-800 font-bold text-[10px] px-1.5 py-0.5 rounded ml-1 align-super transition-colors cursor-pointer border border-primary/30">[1]</button>.
+                            </p>
+<p>
+                                Classical texts describe this as "The Liver stores the Blood, and the Blood houses the Soul. When the Liver is affected by evils, the Soul is unsettled" <button class="inline-flex items-center justify-center bg-primary/20 hover:bg-primary/40 text-teal-800 font-bold text-[10px] px-1.5 py-0.5 rounded ml-1 align-super transition-colors cursor-pointer border border-primary/30">[2]</button>.
+                            </p>
+</div>
+<div class="mt-6 pt-3 border-t border-amber-900/10 flex items-center justify-between text-xs font-display">
+<div class="flex items-center gap-1.5 text-amber-700">
+<span class="material-icons-round text-sm">warning</span>
+<span class="font-medium uppercase tracking-wide">Clinical Context</span>
+</div>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-amber-900/5 rounded text-amber-800/60 hover:text-amber-800 transition-colors">
+<span class="material-icons-outlined text-sm">thumb_up</span>
+</button>
+<button class="p-1 hover:bg-amber-900/5 rounded text-amber-800/60 hover:text-amber-800 transition-colors">
+<span class="material-icons-outlined text-sm">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex gap-2 pl-2">
+<span class="text-xs text-slate-500 dark:text-slate-400">Sources:</span>
+<span class="text-xs text-primary cursor-pointer hover:underline">Yellow Emperor's Inner Canon</span>
+</div>
+</div>
+</div>
+<div class="flex justify-end w-full">
+<div class="max-w-2xl bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white px-5 py-4 rounded-2xl rounded-tr-sm">
+<p class="font-display leading-relaxed">What herbal formulas are typically recommended for this pattern?</p>
+</div>
+</div>
+<div class="flex justify-start w-full gap-4">
+<div class="w-8 h-8 rounded-lg bg-primary flex-shrink-0 flex items-center justify-center text-background-dark mt-1 opacity-50">
+<span class="material-icons-round text-lg animate-pulse">auto_awesome</span>
+</div>
+<div class="flex items-center gap-1 mt-3">
+<div class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 animate-bounce" style="animation-delay: 0s"></div>
+<div class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 animate-bounce" style="animation-delay: 0.2s"></div>
+<div class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 animate-bounce" style="animation-delay: 0.4s"></div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent pt-12">
+<div class="max-w-4xl mx-auto space-y-3">
+<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+<button class="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-colors">
+                        陰陽是什麼？
+                    </button>
+<button class="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-colors">
+                        Suan Zao Ren Tang dosage
+                    </button>
+<button class="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-colors">
+                        Comparison: Liver Fire vs. Qi Stagnation
+                    </button>
+</div>
+<div class="relative bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl shadow-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
+<textarea class="w-full bg-transparent border-none text-slate-800 dark:text-white placeholder-slate-400 focus:ring-0 resize-none py-3 pl-4 pr-12 rounded-xl" placeholder="Ask TCM-Sage about classics, formulas, or clinical cases..." rows="2"></textarea>
+<div class="absolute bottom-2 left-2 flex items-center">
+<button class="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors">
+<span class="material-icons-outlined">attach_file</span>
+</button>
+</div>
+<div class="absolute bottom-2 right-2">
+<button class="p-2 bg-primary hover:bg-primary-dark text-background-dark rounded-lg transition-colors shadow-sm">
+<span class="material-icons-round text-lg">arrow_upward</span>
+</button>
+</div>
+</div>
+<div class="text-center text-[10px] text-slate-400 dark:text-slate-600">
+                    TCM-Sage can make mistakes. Verify important clinical information with standard texts.
+                </div>
+</div>
+</div>
+</main>
+<aside class="w-96 bg-white dark:bg-sidebar-dark border-l border-slate-200 dark:border-white/5 flex flex-col h-full z-20 shadow-2xl">
+<div class="p-5 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined text-primary">menu_book</span>
+<h3 class="font-bold text-slate-800 dark:text-white text-sm">Source Citation [1]</h3>
+</div>
+<button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-icons-round">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-0">
+<div class="relative h-48 w-full bg-slate-900 mb-6 group flex flex-col justify-end p-5">
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+<p class="text-primary text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Classic Text</p>
+<h2 class="text-white font-serif-sc text-xl font-bold leading-tight relative z-10">Yellow Emperor's Inner Canon</h2>
+<p class="text-slate-300 text-sm mt-1 relative z-10">Su Wen (Plain Questions)</p>
+</div>
+<div class="px-5 flex flex-wrap gap-2 mb-6">
+<span class="px-2 py-1 bg-slate-100 dark:bg-white/5 rounded text-xs text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">Chapter 2</span>
+<span class="px-2 py-1 bg-slate-100 dark:bg-white/5 rounded text-xs text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10">Warring States Period</span>
+<span class="px-2 py-1 bg-primary/10 rounded text-xs text-primary border border-primary/20 cursor-pointer hover:bg-primary/20">View Full Chapter</span>
+</div>
+<div class="px-6 pb-10">
+<div class="prose prose-sm dark:prose-invert">
+<h4 class="text-slate-900 dark:text-white font-serif-sc font-bold mb-4">Section: The Four Qi and Tuning the Spirit</h4>
+<p class="text-slate-600 dark:text-slate-300 font-serif-sc leading-loose mb-4">
+                        The three months of spring are called "wasting and unfolding". Heaven and earth are born together; the ten thousand things typically flourish. Night bed, early rising, broad strides in the courtyard...
+                    </p>
+<div class="relative pl-4 border-l-2 border-primary my-6">
+<p class="text-slate-800 dark:text-slate-100 font-serif-sc text-lg leading-relaxed italic bg-gradient-to-r from-primary/10 to-transparent p-4 rounded-r-lg">
+                            "The Liver stores the blood and the blood houses the soul (Hun). When the liver is affected by pathogenic heat or constrained qi, the soul is unsettled and wanders, causing wakefulness."
+                        </p>
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-background-light dark:bg-sidebar-dark border-2 border-primary"></div>
+<div class="absolute -left-[9px] bottom-0 w-4 h-4 rounded-full bg-background-light dark:bg-sidebar-dark border-2 border-primary"></div>
+</div>
+<p class="text-slate-600 dark:text-slate-300 font-serif-sc leading-loose">
+                        To generate without killing, to give without taking, to reward without punishing. This is the correspondence to the qi of spring and the way to nourish life. Contrary to this harms the liver...
+                    </p>
+<p class="text-slate-600 dark:text-slate-300 font-serif-sc leading-loose mt-4">
+                        夫肝者，將軍之官，謀慮出焉。肝藏血，血舍魂。
+                    </p>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
+<button class="w-full py-2 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+<span class="material-icons-outlined text-base">bookmark_border</span>
+                Save to Research Library
+            </button>
+</div>
+</aside>
+
+</body></html>
