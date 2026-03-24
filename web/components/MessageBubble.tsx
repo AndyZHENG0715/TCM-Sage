@@ -63,24 +63,28 @@ function stripTrailingReferenceSection(content: string): string {
 
 function normalizeQuotedBoldMarkdown(content: string): string {
     return content
-        // Remove spaces inside bold markers: ** text ** -> **text**
-        .replace(/\*\*\s+/g, "**")
-        .replace(/\s+\*\*/g, "**")
+        // Normalize bold/italic markers: remove spaces inside: ** text ** -> **text**
+        .replace(/(\*\*\*?)\s+/g, "$1")
+        .replace(/\s+(\*\*\*?)/g, "$1")
+        // Handle mismatched markers like ***text：** or **text：***
+        .replace(/\*\*\*(.*?)\*\*/g, "**$1**")
+        .replace(/\*\*(.*?)\*\*\*/g, "**$1**")
         // Ensure no spaces between bold markers and common Chinese/English quotes
         .replace(/\*\*(?=["“「『])/g, "**")
         .replace(/(?<=[”」』"])\*\*/g, "**")
-        // Re-insert single space OUTSIDE bold markers if they are adjacent to other text 
-        // (but only for English text to avoid breaking Chinese rendering which doesn't need spaces)
-        // Actually, let's keep it simple as per the plan's focus on quotes.
+        // Chinese character robustness: ensure bold markers work with Chinese punctuation like '：'
         .replace(/([“「『])\*\*/g, "$1**")
         .replace(/\*\*([”」』])/g, "**$1");
 }
 
 function postProcessAssistantContent(content: string): string {
-    return normalizeQuotedBoldMarkdown(stripTrailingReferenceSection(content)).replace(
-        /\[(\d+)\]/g,
-        (_match, number) => `\`${CITE_PREFIX}${number}${CITE_SUFFIX}\``
-    );
+    return normalizeQuotedBoldMarkdown(stripTrailingReferenceSection(content))
+        .replace(/\n(\d+\.\s)/g, "\n\n$1") // Ensure numbered lists have two newlines before them
+        .replace(/\n([-*]\s)/g, "\n\n$1") // Ensure bullet points starting with - or * have two newlines before them
+        .replace(
+            /\[(\d+)\]/g,
+            (_match, number) => `\`${CITE_PREFIX}${number}${CITE_SUFFIX}\``
+        );
 }
 
 export function MessageBubble({
