@@ -1,80 +1,99 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { ChatSession } from "@/lib/types";
 
 const HISTORY_KEY = "tcm-sage-history";
 
-export function useHistory() {
-    const [sessions, setSessions] = useState<ChatSession[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+function areSessionsEquivalent(a: ChatSession, b: ChatSession) {
+    return (
+        a.id === b.id &&
+        a.title === b.title &&
+        a.createdAt === b.createdAt &&
+        JSON.stringify(a.messages) === JSON.stringify(b.messages)
+    );
+}
 
-    useEffect(() => {
-        const stored = localStorage.getItem(HISTORY_KEY);
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                // Sort by updatedAt desc
-                // eslint-disable-next-line
-                setSessions(
-                    parsed.sort(
-                        (a: ChatSession, b: ChatSession) => b.updatedAt - a.updatedAt
-                    )
-                );
-            } catch (e) {
-                console.error("Failed to parse history", e);
-            }
+function generateUUID() {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback for non-secure contexts (HTTP)
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
+
+export function useHistory() {
+    const [sessions, setSessions] = useState<ChatSession[]>(() => {
+        if (typeof window === "undefined") {
+            return [];
         }
-        setIsLoaded(true);
+
+        const stored = localStorage.getItem(HISTORY_KEY);
+        if (!stored) {
+            return [];
+        }
+
+        try {
+            const parsed = JSON.parse(stored) as ChatSession[];
+            return parsed.sort((a, b) => b.updatedAt - a.updatedAt);
+        } catch (error) {
+            console.error("Failed to parse history", error);
+            return [];
+        }
+    });
+    const isLoaded = true;
+
+    const saveSession = useCallback((session: ChatSession) => {
+        setSessions((prev) => {
+            const existingIndex = prev.findIndex((item) => item.id === session.id);
+            const existingSession = existingIndex >= 0 ? prev[existingIndex] : null;
+
+            if (existingSession && areSessionsEquivalent(existingSession, session)) {
+                return prev;
+            }
+
+            const next = existingIndex >= 0 ? [...prev] : [session, ...prev];
+            if (existingIndex >= 0) {
+                next[existingIndex] = session;
+            }
+
+            next.sort((a, b) => b.updatedAt - a.updatedAt);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+            return next;
+        });
     }, []);
 
-    const saveSession = (session: ChatSession) => {
+    const deleteSession = useCallback((id: string) => {
         setSessions((prev) => {
-            const existingIndex = prev.findIndex((s) => s.id === session.id);
-            let newSessions;
-            if (existingIndex >= 0) {
-                newSessions = [...prev];
-                newSessions[existingIndex] = session;
-            } else {
-                newSessions = [session, ...prev];
+            const next = prev.filter((session) => session.id !== id);
+            if (next.length === prev.length) {
+                return prev;
             }
-            // Sort again
-            newSessions.sort((a, b) => b.updatedAt - a.updatedAt);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(newSessions));
-            return newSessions;
+
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+            return next;
         });
-    };
+    }, []);
 
-    const deleteSession = (id: string) => {
-        setSessions((prev) => {
-            const newSessions = prev.filter((s) => s.id !== id);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(newSessions));
-            return newSessions;
-        });
-    };
-
-    const getSession = (id: string) => {
-        return sessions.find((s) => s.id === id);
-    };
-
-    const createSession = (): ChatSession => {
-        const newSession: ChatSession = {
-            id: crypto.randomUUID(),
+    const createSession = useCallback(
+        (): ChatSession => ({
+            id: generateUUID(),
             title: "New Research Chat",
             messages: [],
             createdAt: Date.now(),
             updatedAt: Date.now(),
-        };
-        // We don't save it immediately to avoid empty chats clunking up history
-        // It will be saved when first message is sent
-        return newSession;
-    };
+        }),
+        []
+    );
 
     return {
         sessions,
         saveSession,
         deleteSession,
-        getSession,
         createSession,
         isLoaded,
     };
