@@ -17,10 +17,14 @@ from langchain_core.output_parsers import StrOutputParser
 from pathlib import Path
 import io
 import os
+import re
 import sys
 from typing import TYPE_CHECKING, List, Tuple
 
 from dotenv import load_dotenv
+
+# Load environment variables at the earliest possible moment
+load_dotenv()
 
 if TYPE_CHECKING:
     from citation_types import Citation
@@ -62,13 +66,29 @@ except ImportError:
     Together = None
 
 try:
-    import dashscope
     from langchain_community.llms import Tongyi
     from langchain_community.chat_models import ChatTongyi
 except ImportError:
-    dashscope = None
     Tongyi = None
     ChatTongyi = None
+
+
+DEFAULT_SYSTEM_PROMPT = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
+Your task is to answer questions accurately based ONLY on the provided source text.
+Your answer must be in the same language as the question.
+Avoid excessive or nested markdown formatting to reduce rendering artifacts.
+Use markdown formatting (bold, lists) conservatively to ensure clean rendering."""
+
+_SOURCES_DIRECTIVE_PATTERNS = [
+    re.compile(
+        r'After providing the answer,\s*cite the source chapter for the information you provide in a ["“]?Sources:?["”]?\s*section\.?',
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r'After providing the answer,.*?["“]?Sources:?["”]?\s*section\.?',
+        re.IGNORECASE,
+    ),
+]
 
 
 def create_llm(provider, model=None, temperature=0.1, streaming=False):
@@ -90,20 +110,20 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
     Note:
         TODO(streaming-multi-provider): Currently streaming is only implemented for the
         'alibaba' provider via ChatTongyi, as well as 'ollama' and 'lmstudio' via ChatOpenAI.
-        When users can select providers in the UI, extend streaming support to: OpenAI (ChatOpenAI), 
-        Google (ChatGoogleGenerativeAI), Anthropic (ChatAnthropic). All these LangChain chat models 
+        When users can select providers in the UI, extend streaming support to: OpenAI (ChatOpenAI),
+        Google (ChatGoogleGenerativeAI), Anthropic (ChatAnthropic). All these LangChain chat models
         support streaming=True.
     """
     provider = provider.lower()
 
     # Default models for each provider
     default_models = {
-        'openai': 'gpt-5-2',
-        'google': 'gemini-3-pro',
-        'anthropic': 'claude-4-5-sonnet-20241022',
-        'openrouter': 'openai/gpt-5-2',
+        'openai': 'gpt-5-4',
+        'google': 'gemini-3-1-pro',
+        'anthropic': 'claude-4-6-sonnet',
+        'openrouter': 'openai/gpt-5-4',
         'together': 'meta-llama/Llama-3.1-8B-Instruct-Turbo',
-        'alibaba': 'qwen3-max',
+        'alibaba': 'qwen-plus',
         'ollama': 'qwen3:8b',          # Popular local model with CJK support
         'lmstudio': 'qwen3-8b',       # LM Studio uses simple model names
     }
@@ -173,30 +193,34 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         )
 
     elif provider == 'alibaba':
-        if Tongyi is None or dashscope is None:
+        if ChatTongyi is None:
             raise ValueError("Alibaba provider requires 'dashscope' and 'langchain-community' packages. Install with: pip install dashscope langchain-community")
+        
+        import dashscope
         api_key = os.getenv('DASHSCOPE_API_KEY')
         if not api_key or api_key == 'your-alibaba-api-key-here':
             raise ValueError("Alibaba API key not found. Please set DASHSCOPE_API_KEY in your .env file.")
 
-        # Set the base URL for Singapore region (international)
+        # Hardened authentication for DashScope
         dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
-
-        # Set the API key globally for DashScope
         dashscope.api_key = api_key
 
-        # Use ChatTongyi for streaming support, fall back to Tongyi otherwise
-        if streaming:
-            if ChatTongyi is None:
-                raise ValueError("Streaming requires ChatTongyi. Ensure langchain-community is installed.")
+        # Use ChatTongyi for newer qwen models and streaming support
+        if model.startswith('qwen') or streaming:
             return ChatTongyi(
                 model=model,
                 temperature=temperature,
-                streaming=True
+                streaming=streaming,
+                dashscope_api_key=api_key
             )
+
+        # Fallback to legacy Tongyi for non-qwen models if needed
+        if Tongyi is None:
+            raise ValueError("Tongyi class not found. Ensure langchain-community is installed.")
         return Tongyi(
             model_name=model,
-            temperature=temperature
+            temperature=temperature,
+            dashscope_api_key=api_key
         )
 
     elif provider == 'ollama':
@@ -250,7 +274,7 @@ def format_docs(docs):
         str: Formatted string with full context and debug citations
     """
     SNIPPET_LENGTH = 60  # Characters for debug citation snippets
-    
+
     # Separate by source type
     vector_docs = []
     graph_docs = []
@@ -263,7 +287,7 @@ def format_docs(docs):
         if source_type == 'graph':
             # Full content for context
             graph_docs.append(doc.page_content)
-            
+
             # Debug reference
             depth = doc.metadata.get('depth', 1) if doc.metadata else 1
             hop_label = f"{depth}-hop" if depth == 1 else f"{depth}-hops"
@@ -271,10 +295,10 @@ def format_docs(docs):
         else:
             source = doc.metadata.get('source', 'Unknown') if doc.metadata else 'Unknown'
             score = doc.metadata.get('score', 0.0) if doc.metadata else 0.0
-            
+
             # Full content for context
             vector_docs.append(f"--- Source: {source} ---\n{doc.page_content}\n")
-            
+
             # Debug reference (truncated snippet)
             content = doc.page_content.strip().replace('\n', ' ')
             snippet = content[:SNIPPET_LENGTH] + "..." if len(content) > SNIPPET_LENGTH else content
@@ -306,6 +330,88 @@ For example: "According to the Neijing [1], yin and yang are fundamental princip
 """
 
 
+CITATION_INSTRUCTION = """
+Use inline citations in the format [1], [2], etc.
+Each number corresponds to the numbered sources provided in the context below.
+Do not add a trailing Sources/References section.
+Only cite sources that are actually provided.
+"""
+
+
+def strip_sources_directive(system_prompt: str) -> str:
+    """Remove legacy instructions that force a trailing Sources section."""
+
+    cleaned_prompt = system_prompt
+    for pattern in _SOURCES_DIRECTIVE_PATTERNS:
+        cleaned_prompt = pattern.sub("", cleaned_prompt)
+
+    cleaned_prompt = re.sub(r"\n{3,}", "\n\n", cleaned_prompt).strip()
+    return cleaned_prompt or DEFAULT_SYSTEM_PROMPT
+
+
+def build_prompt_template(system_prompt: str) -> ChatPromptTemplate:
+    """Build the shared RAG prompt with inline-citation guidance."""
+
+    normalized_prompt = strip_sources_directive(system_prompt)
+    template = (
+        f"{normalized_prompt}\n\n"
+        f"{CITATION_INSTRUCTION.strip()}\n\n"
+        "Context:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
+    )
+    return ChatPromptTemplate.from_template(template)
+
+
+def build_verification_payload(status: str) -> dict:
+    """Normalize verification output for downstream UIs."""
+
+    explanation = (
+        "The answer appears supported by the retrieved citations."
+        if status == "SUPPORTED"
+        else "The answer may include claims not directly supported by the retrieved citations."
+    )
+    return {"status": status, "explanation": explanation}
+
+
+def apply_relevance_percentages(citations: List[dict]) -> None:
+    """Attach a response-local relevance percentage to text citations."""
+
+    text_citations = [citation for citation in citations if citation.get("type") == "text"]
+    if not text_citations:
+        return
+
+    if len(text_citations) == 1:
+        text_citations[0]["relevance_percent"] = 95.0
+        return
+
+    scores = [float(citation.get("score", 0.0)) for citation in text_citations]
+    best_score = min(scores)
+    worst_score = max(scores)
+
+    if best_score == worst_score:
+        for citation in text_citations:
+            citation["relevance_percent"] = 95.0
+        return
+
+    score_span = worst_score - best_score
+    for citation in text_citations:
+        normalized = (float(citation.get("score", 0.0)) - best_score) / score_span
+        citation["relevance_percent"] = round(95.0 - (normalized * 35.0), 1)
+
+
+def vector_search_with_scores(vectorstore: Chroma, query: str, k: int) -> list:
+    """Run vector search and persist distance scores into document metadata."""
+
+    results = vectorstore.similarity_search_with_score(query, k=k)
+    docs = []
+    for doc, score in results:
+        if doc.metadata is None:
+            doc.metadata = {}
+        doc.metadata["source_type"] = "vector"
+        doc.metadata["score"] = round(score, 3)
+        docs.append(doc)
+    return docs
+
+
 def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
     """
     Format retrieved documents with numbered citations for LLM context.
@@ -321,8 +427,6 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
         - str: Formatted context string with numbered sources
         - List[dict]: Citation metadata (TextCitation or GraphCitation dicts)
     """
-    SNIPPET_LENGTH = 100  # Characters for citation content preview
-
     citations: List[dict] = []
     context_parts = []
     citation_number = 1
@@ -334,7 +438,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
         if source_type == 'vector':
             source = doc.metadata.get('source', 'Unknown') if doc.metadata else 'Unknown'
             score = doc.metadata.get('score', 0.0) if doc.metadata else 0.0
-            chunk_id = doc.metadata.get('id') if doc.metadata else None
+            chunk_id = getattr(doc, "id", None) or (doc.metadata.get('id') if doc.metadata else None)
 
             # Add to context with citation number
             context_parts.append(f"[{citation_number}] Source: {source}\n{doc.page_content}\n")
@@ -350,6 +454,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
                 "content": snippet,
                 "chunk_id": chunk_id,
                 "score": score,
+                "relevance_percent": 95.0,
             })
             citation_number += 1
 
@@ -375,6 +480,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
 
     # Build final context
     context = "=== Numbered Sources ===\n\n" + "\n".join(context_parts) if context_parts else ""
+    apply_relevance_percentages(citations)
 
     return context, citations
 
@@ -463,7 +569,7 @@ def verify_answer(question, context, answer, llm):
     """
     # Load prompt from environment or use default
     sys_prompt = os.getenv('VERIFICATION_PROMPT')
-    
+
     if not sys_prompt:
         # Fallback default if not in .env
         sys_prompt = """You are a strict verification auditor for a Traditional Chinese Medicine RAG system.
@@ -520,10 +626,6 @@ def main():
     temperature = 0.1
 
     try:
-        # Load environment variables
-        print("Loading environment configuration...")
-        load_dotenv()
-
         # Get provider configuration
         provider = os.getenv('LLM_PROVIDER', 'alibaba').lower()
         model = os.getenv('LLM_MODEL')
@@ -560,7 +662,13 @@ def main():
             system_prompt = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
 Your task is to answer questions accurately based ONLY on the provided source text.
 Your answer must be in the same language as the question.
+Avoid excessive or nested markdown formatting to reduce rendering artifacts.
+Use markdown formatting (bold, lists) conservatively to ensure clean rendering.
 After providing the answer, cite the source chapter for the information you provide in a "Sources:" section."""
+
+        if not system_prompt:
+            system_prompt = DEFAULT_SYSTEM_PROMPT
+        system_prompt = strip_sources_directive(system_prompt)
 
         print(f"Using LLM provider: {provider}")
         if model:
@@ -614,9 +722,13 @@ After providing the answer, cite the source chapter for the information you prov
                 print(f"Warning: Failed to initialize hybrid retriever: {e}")
                 print("Falling back to standard vector retriever.")
                 hybrid_enabled = False
-                retriever = vectorstore.as_retriever(k=retrieval_k)
+                retriever = RunnableLambda(
+                    lambda query: vector_search_with_scores(vectorstore, query, retrieval_k)
+                )
         else:
-            retriever = vectorstore.as_retriever(k=retrieval_k)
+            retriever = RunnableLambda(
+                lambda query: vector_search_with_scores(vectorstore, query, retrieval_k)
+            )
 
         # Initialize classifier LLM
         print("Initializing classifier model...")
@@ -633,8 +745,7 @@ After providing the answer, cite the source chapter for the information you prov
 
         # Define the prompt template
         print("Configuring prompt template...")
-        template = system_prompt + "\n\nContext:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
-        prompt = ChatPromptTemplate.from_template(template)
+        prompt = build_prompt_template(system_prompt)
 
         # RAG chain will be built dynamically in the query loop based on classification
 
