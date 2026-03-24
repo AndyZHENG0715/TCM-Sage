@@ -65,12 +65,6 @@ try:
 except ImportError:
     Together = None
 
-try:
-    from langchain_community.llms import Tongyi
-    from langchain_community.chat_models import ChatTongyi
-except ImportError:
-    Tongyi = None
-    ChatTongyi = None
 
 
 DEFAULT_SYSTEM_PROMPT = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
@@ -108,8 +102,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         ValueError: If provider is not supported or required dependencies are missing
 
     Note:
-        TODO(streaming-multi-provider): Currently streaming is only implemented for the
-        'alibaba' provider via ChatTongyi, as well as 'ollama' and 'lmstudio' via ChatOpenAI.
+        TODO(streaming-multi-provider): Currently streaming is implemented for the
+        'alibaba', 'ollama' and 'lmstudio' providers via ChatOpenAI.
         When users can select providers in the UI, extend streaming support to: OpenAI (ChatOpenAI),
         Google (ChatGoogleGenerativeAI), Anthropic (ChatAnthropic). All these LangChain chat models
         support streaming=True.
@@ -193,34 +187,19 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         )
 
     elif provider == 'alibaba':
-        if ChatTongyi is None:
-            raise ValueError("Alibaba provider requires 'dashscope' and 'langchain-community' packages. Install with: pip install dashscope langchain-community")
+        if ChatOpenAI is None:
+            raise ValueError("Alibaba provider in OpenAI-compatible mode requires 'langchain-openai' package. Install with: pip install langchain-openai")
         
-        import dashscope
         api_key = os.getenv('DASHSCOPE_API_KEY')
         if not api_key or api_key == 'your-alibaba-api-key-here':
-            raise ValueError("Alibaba API key not found. Please set DASHSCOPE_API_KEY in your .env file.")
+            raise ValueError("Alibaba API key (DASHSCOPE_API_KEY) not found. Please set it in your .env file.")
 
-        # Hardened authentication for DashScope
-        dashscope.base_http_api_url = 'https://dashscope-intl.aliyuncs.com/api/v1'
-        dashscope.api_key = api_key
-
-        # Use ChatTongyi for newer qwen models and streaming support
-        if model.startswith('qwen') or streaming:
-            return ChatTongyi(
-                model=model,
-                temperature=temperature,
-                streaming=streaming,
-                dashscope_api_key=api_key
-            )
-
-        # Fallback to legacy Tongyi for non-qwen models if needed
-        if Tongyi is None:
-            raise ValueError("Tongyi class not found. Ensure langchain-community is installed.")
-        return Tongyi(
-            model_name=model,
+        return ChatOpenAI(
+            model=model,
             temperature=temperature,
-            dashscope_api_key=api_key
+            streaming=streaming,
+            api_key=api_key,
+            base_url='https://dashscope-intl.aliyuncs.com/compatible-mode/v1'
         )
 
     elif provider == 'ollama':
@@ -432,13 +411,17 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
     citation_number = 1
 
     # Process vector (text) documents first
-    for doc in docs:
+    for i, doc in enumerate(docs):
         source_type = doc.metadata.get('source_type', 'vector') if doc.metadata else 'vector'
 
         if source_type == 'vector':
             source = doc.metadata.get('source', 'Unknown') if doc.metadata else 'Unknown'
             score = doc.metadata.get('score', 0.0) if doc.metadata else 0.0
             chunk_id = getattr(doc, "id", None) or (doc.metadata.get('id') if doc.metadata else None)
+
+            # Fallback if chunk_id is missing
+            if chunk_id is None:
+                chunk_id = f"{source}_{i}"
 
             # Add to context with citation number
             context_parts.append(f"[{citation_number}] Source: {source}\n{doc.page_content}\n")
