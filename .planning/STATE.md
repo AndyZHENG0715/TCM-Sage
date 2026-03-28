@@ -27,6 +27,7 @@ Remaining issues after recent fixes:
 2. **Mobile Background Streaming Limitation**: Android/iOS can drop active streaming when device locks or tab is backgrounded (browser/OS behavior; defer unless architecture change is approved).
 
 ## Recent Activity
+- Completed **Phase 02 plan 2-02** (SymMap KG adapter): `2-02-SUMMARY.md`, `scripts/import_symmap_kg.py` (legacy SM/HM + `rel_*` edge typing), `data/graph/symmap_entities.json` from `data/symmap_sample/` (160 nodes, 230 edges; `TCMKnowledgeGraph.load_from_json` verified).
 - Completed **Phase 02 plan 2-01** (SymMap 2.0 research & mapping): `2-01-SUMMARY.md`, mapping doc column examples, `graph_builder` docstring alignment with `SYMMAP_MAPPING.md`.
 - Fixed full-context citation chain end-to-end:
   - canonical chunk ID reconstruction in `src/main.py`

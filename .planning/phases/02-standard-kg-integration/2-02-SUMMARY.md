@@ -61,7 +61,7 @@ completed: 2026-03-28
 1. **Task 2.2.1: Implement SymMap Data Adapter script** - `0ca1145` (feat)
 2. **Task 2.2.2: Generate symmap_entities.json** - `2939bb5` (chore)
 
-**Plan metadata:** _(pending — docs commit hash below)_
+**Plan metadata:** `9cf73ab` (docs: complete plan)
 
 ## Files Created/Modified
 
