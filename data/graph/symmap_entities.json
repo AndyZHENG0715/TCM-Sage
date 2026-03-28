@@ -1,0 +1,2566 @@
+{
+  "entities": [
+    {
+      "id": "SMTS000001",
+      "type": "Symptom",
+      "name": "頭痛",
+      "name_en": "headache",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000002",
+      "type": "Symptom",
+      "name": "眩暈",
+      "name_en": "vertigo",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000003",
+      "type": "Symptom",
+      "name": "失眠",
+      "name_en": "insomnia",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000004",
+      "type": "Symptom",
+      "name": "示例症狀4",
+      "name_en": "symptom_4",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000005",
+      "type": "Symptom",
+      "name": "示例症狀5",
+      "name_en": "symptom_5",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000006",
+      "type": "Symptom",
+      "name": "示例症狀6",
+      "name_en": "symptom_6",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000007",
+      "type": "Symptom",
+      "name": "示例症狀7",
+      "name_en": "symptom_7",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000008",
+      "type": "Symptom",
+      "name": "示例症狀8",
+      "name_en": "symptom_8",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000009",
+      "type": "Symptom",
+      "name": "示例症狀9",
+      "name_en": "symptom_9",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000010",
+      "type": "Symptom",
+      "name": "示例症狀10",
+      "name_en": "symptom_10",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000011",
+      "type": "Symptom",
+      "name": "示例症狀11",
+      "name_en": "symptom_11",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000012",
+      "type": "Symptom",
+      "name": "示例症狀12",
+      "name_en": "symptom_12",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000013",
+      "type": "Symptom",
+      "name": "示例症狀13",
+      "name_en": "symptom_13",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000014",
+      "type": "Symptom",
+      "name": "示例症狀14",
+      "name_en": "symptom_14",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000015",
+      "type": "Symptom",
+      "name": "示例症狀15",
+      "name_en": "symptom_15",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000016",
+      "type": "Symptom",
+      "name": "示例症狀16",
+      "name_en": "symptom_16",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000017",
+      "type": "Symptom",
+      "name": "示例症狀17",
+      "name_en": "symptom_17",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000018",
+      "type": "Symptom",
+      "name": "示例症狀18",
+      "name_en": "symptom_18",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000019",
+      "type": "Symptom",
+      "name": "示例症狀19",
+      "name_en": "symptom_19",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000020",
+      "type": "Symptom",
+      "name": "示例症狀20",
+      "name_en": "symptom_20",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000021",
+      "type": "Symptom",
+      "name": "示例症狀21",
+      "name_en": "symptom_21",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000022",
+      "type": "Symptom",
+      "name": "示例症狀22",
+      "name_en": "symptom_22",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000023",
+      "type": "Symptom",
+      "name": "示例症狀23",
+      "name_en": "symptom_23",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000024",
+      "type": "Symptom",
+      "name": "示例症狀24",
+      "name_en": "symptom_24",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000025",
+      "type": "Symptom",
+      "name": "示例症狀25",
+      "name_en": "symptom_25",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000026",
+      "type": "Symptom",
+      "name": "示例症狀26",
+      "name_en": "symptom_26",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000027",
+      "type": "Symptom",
+      "name": "示例症狀27",
+      "name_en": "symptom_27",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000028",
+      "type": "Symptom",
+      "name": "示例症狀28",
+      "name_en": "symptom_28",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000029",
+      "type": "Symptom",
+      "name": "示例症狀29",
+      "name_en": "symptom_29",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000030",
+      "type": "Symptom",
+      "name": "示例症狀30",
+      "name_en": "symptom_30",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000031",
+      "type": "Symptom",
+      "name": "示例症狀31",
+      "name_en": "symptom_31",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000032",
+      "type": "Symptom",
+      "name": "示例症狀32",
+      "name_en": "symptom_32",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000033",
+      "type": "Symptom",
+      "name": "示例症狀33",
+      "name_en": "symptom_33",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000034",
+      "type": "Symptom",
+      "name": "示例症狀34",
+      "name_en": "symptom_34",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTS000035",
+      "type": "Symptom",
+      "name": "示例症狀35",
+      "name_en": "symptom_35",
+      "symmap_component": "SMTS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000001",
+      "type": "Herb",
+      "name": "示例藥材1",
+      "name_en": "herb_1",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000002",
+      "type": "Herb",
+      "name": "示例藥材2",
+      "name_en": "herb_2",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000003",
+      "type": "Herb",
+      "name": "示例藥材3",
+      "name_en": "herb_3",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000004",
+      "type": "Herb",
+      "name": "示例藥材4",
+      "name_en": "herb_4",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000005",
+      "type": "Herb",
+      "name": "示例藥材5",
+      "name_en": "herb_5",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000006",
+      "type": "Herb",
+      "name": "示例藥材6",
+      "name_en": "herb_6",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000007",
+      "type": "Herb",
+      "name": "示例藥材7",
+      "name_en": "herb_7",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000008",
+      "type": "Herb",
+      "name": "示例藥材8",
+      "name_en": "herb_8",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000009",
+      "type": "Herb",
+      "name": "示例藥材9",
+      "name_en": "herb_9",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000010",
+      "type": "Herb",
+      "name": "示例藥材10",
+      "name_en": "herb_10",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000011",
+      "type": "Herb",
+      "name": "示例藥材11",
+      "name_en": "herb_11",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000012",
+      "type": "Herb",
+      "name": "示例藥材12",
+      "name_en": "herb_12",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000013",
+      "type": "Herb",
+      "name": "示例藥材13",
+      "name_en": "herb_13",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000014",
+      "type": "Herb",
+      "name": "示例藥材14",
+      "name_en": "herb_14",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000015",
+      "type": "Herb",
+      "name": "示例藥材15",
+      "name_en": "herb_15",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000016",
+      "type": "Herb",
+      "name": "示例藥材16",
+      "name_en": "herb_16",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000017",
+      "type": "Herb",
+      "name": "示例藥材17",
+      "name_en": "herb_17",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000018",
+      "type": "Herb",
+      "name": "示例藥材18",
+      "name_en": "herb_18",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000019",
+      "type": "Herb",
+      "name": "示例藥材19",
+      "name_en": "herb_19",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000020",
+      "type": "Herb",
+      "name": "示例藥材20",
+      "name_en": "herb_20",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000021",
+      "type": "Herb",
+      "name": "示例藥材21",
+      "name_en": "herb_21",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000022",
+      "type": "Herb",
+      "name": "示例藥材22",
+      "name_en": "herb_22",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000023",
+      "type": "Herb",
+      "name": "示例藥材23",
+      "name_en": "herb_23",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000024",
+      "type": "Herb",
+      "name": "示例藥材24",
+      "name_en": "herb_24",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000025",
+      "type": "Herb",
+      "name": "示例藥材25",
+      "name_en": "herb_25",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000026",
+      "type": "Herb",
+      "name": "示例藥材26",
+      "name_en": "herb_26",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000027",
+      "type": "Herb",
+      "name": "示例藥材27",
+      "name_en": "herb_27",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000028",
+      "type": "Herb",
+      "name": "示例藥材28",
+      "name_en": "herb_28",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000029",
+      "type": "Herb",
+      "name": "示例藥材29",
+      "name_en": "herb_29",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000030",
+      "type": "Herb",
+      "name": "示例藥材30",
+      "name_en": "herb_30",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000031",
+      "type": "Herb",
+      "name": "示例藥材31",
+      "name_en": "herb_31",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000032",
+      "type": "Herb",
+      "name": "示例藥材32",
+      "name_en": "herb_32",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000033",
+      "type": "Herb",
+      "name": "示例藥材33",
+      "name_en": "herb_33",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000034",
+      "type": "Herb",
+      "name": "示例藥材34",
+      "name_en": "herb_34",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMHB000035",
+      "type": "Herb",
+      "name": "示例藥材35",
+      "name_en": "herb_35",
+      "symmap_component": "SMHB",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000001",
+      "type": "Ingredient",
+      "name": "成分1",
+      "name_en": "ingredient_1",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000002",
+      "type": "Ingredient",
+      "name": "成分2",
+      "name_en": "ingredient_2",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000003",
+      "type": "Ingredient",
+      "name": "成分3",
+      "name_en": "ingredient_3",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000004",
+      "type": "Ingredient",
+      "name": "成分4",
+      "name_en": "ingredient_4",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000005",
+      "type": "Ingredient",
+      "name": "成分5",
+      "name_en": "ingredient_5",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000006",
+      "type": "Ingredient",
+      "name": "成分6",
+      "name_en": "ingredient_6",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000007",
+      "type": "Ingredient",
+      "name": "成分7",
+      "name_en": "ingredient_7",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000008",
+      "type": "Ingredient",
+      "name": "成分8",
+      "name_en": "ingredient_8",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000009",
+      "type": "Ingredient",
+      "name": "成分9",
+      "name_en": "ingredient_9",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000010",
+      "type": "Ingredient",
+      "name": "成分10",
+      "name_en": "ingredient_10",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000011",
+      "type": "Ingredient",
+      "name": "成分11",
+      "name_en": "ingredient_11",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000012",
+      "type": "Ingredient",
+      "name": "成分12",
+      "name_en": "ingredient_12",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000013",
+      "type": "Ingredient",
+      "name": "成分13",
+      "name_en": "ingredient_13",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000014",
+      "type": "Ingredient",
+      "name": "成分14",
+      "name_en": "ingredient_14",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000015",
+      "type": "Ingredient",
+      "name": "成分15",
+      "name_en": "ingredient_15",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000016",
+      "type": "Ingredient",
+      "name": "成分16",
+      "name_en": "ingredient_16",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000017",
+      "type": "Ingredient",
+      "name": "成分17",
+      "name_en": "ingredient_17",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000018",
+      "type": "Ingredient",
+      "name": "成分18",
+      "name_en": "ingredient_18",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000019",
+      "type": "Ingredient",
+      "name": "成分19",
+      "name_en": "ingredient_19",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000020",
+      "type": "Ingredient",
+      "name": "成分20",
+      "name_en": "ingredient_20",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000021",
+      "type": "Ingredient",
+      "name": "成分21",
+      "name_en": "ingredient_21",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000022",
+      "type": "Ingredient",
+      "name": "成分22",
+      "name_en": "ingredient_22",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000023",
+      "type": "Ingredient",
+      "name": "成分23",
+      "name_en": "ingredient_23",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000024",
+      "type": "Ingredient",
+      "name": "成分24",
+      "name_en": "ingredient_24",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000025",
+      "type": "Ingredient",
+      "name": "成分25",
+      "name_en": "ingredient_25",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000026",
+      "type": "Ingredient",
+      "name": "成分26",
+      "name_en": "ingredient_26",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000027",
+      "type": "Ingredient",
+      "name": "成分27",
+      "name_en": "ingredient_27",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000028",
+      "type": "Ingredient",
+      "name": "成分28",
+      "name_en": "ingredient_28",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000029",
+      "type": "Ingredient",
+      "name": "成分29",
+      "name_en": "ingredient_29",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000030",
+      "type": "Ingredient",
+      "name": "成分30",
+      "name_en": "ingredient_30",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000031",
+      "type": "Ingredient",
+      "name": "成分31",
+      "name_en": "ingredient_31",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000032",
+      "type": "Ingredient",
+      "name": "成分32",
+      "name_en": "ingredient_32",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000033",
+      "type": "Ingredient",
+      "name": "成分33",
+      "name_en": "ingredient_33",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000034",
+      "type": "Ingredient",
+      "name": "成分34",
+      "name_en": "ingredient_34",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMIT000035",
+      "type": "Ingredient",
+      "name": "成分35",
+      "name_en": "ingredient_35",
+      "symmap_component": "SMIT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000001",
+      "type": "Target",
+      "name": "GENE1",
+      "name_en": "protein_target_1",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000002",
+      "type": "Target",
+      "name": "GENE2",
+      "name_en": "protein_target_2",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000003",
+      "type": "Target",
+      "name": "GENE3",
+      "name_en": "protein_target_3",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000004",
+      "type": "Target",
+      "name": "GENE4",
+      "name_en": "protein_target_4",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000005",
+      "type": "Target",
+      "name": "GENE5",
+      "name_en": "protein_target_5",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000006",
+      "type": "Target",
+      "name": "GENE6",
+      "name_en": "protein_target_6",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000007",
+      "type": "Target",
+      "name": "GENE7",
+      "name_en": "protein_target_7",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000008",
+      "type": "Target",
+      "name": "GENE8",
+      "name_en": "protein_target_8",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000009",
+      "type": "Target",
+      "name": "GENE9",
+      "name_en": "protein_target_9",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000010",
+      "type": "Target",
+      "name": "GENE10",
+      "name_en": "protein_target_10",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000011",
+      "type": "Target",
+      "name": "GENE11",
+      "name_en": "protein_target_11",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000012",
+      "type": "Target",
+      "name": "GENE12",
+      "name_en": "protein_target_12",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000013",
+      "type": "Target",
+      "name": "GENE13",
+      "name_en": "protein_target_13",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000014",
+      "type": "Target",
+      "name": "GENE14",
+      "name_en": "protein_target_14",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000015",
+      "type": "Target",
+      "name": "GENE15",
+      "name_en": "protein_target_15",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000016",
+      "type": "Target",
+      "name": "GENE16",
+      "name_en": "protein_target_16",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000017",
+      "type": "Target",
+      "name": "GENE17",
+      "name_en": "protein_target_17",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000018",
+      "type": "Target",
+      "name": "GENE18",
+      "name_en": "protein_target_18",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000019",
+      "type": "Target",
+      "name": "GENE19",
+      "name_en": "protein_target_19",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000020",
+      "type": "Target",
+      "name": "GENE20",
+      "name_en": "protein_target_20",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000021",
+      "type": "Target",
+      "name": "GENE21",
+      "name_en": "protein_target_21",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000022",
+      "type": "Target",
+      "name": "GENE22",
+      "name_en": "protein_target_22",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000023",
+      "type": "Target",
+      "name": "GENE23",
+      "name_en": "protein_target_23",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000024",
+      "type": "Target",
+      "name": "GENE24",
+      "name_en": "protein_target_24",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMTT000025",
+      "type": "Target",
+      "name": "GENE25",
+      "name_en": "protein_target_25",
+      "symmap_component": "SMTT",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000001",
+      "type": "Disease",
+      "name": "疾病1",
+      "name_en": "disease_1",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000002",
+      "type": "Disease",
+      "name": "疾病2",
+      "name_en": "disease_2",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000003",
+      "type": "Disease",
+      "name": "疾病3",
+      "name_en": "disease_3",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000004",
+      "type": "Disease",
+      "name": "疾病4",
+      "name_en": "disease_4",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000005",
+      "type": "Disease",
+      "name": "疾病5",
+      "name_en": "disease_5",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000006",
+      "type": "Disease",
+      "name": "疾病6",
+      "name_en": "disease_6",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000007",
+      "type": "Disease",
+      "name": "疾病7",
+      "name_en": "disease_7",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000008",
+      "type": "Disease",
+      "name": "疾病8",
+      "name_en": "disease_8",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000009",
+      "type": "Disease",
+      "name": "疾病9",
+      "name_en": "disease_9",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000010",
+      "type": "Disease",
+      "name": "疾病10",
+      "name_en": "disease_10",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000011",
+      "type": "Disease",
+      "name": "疾病11",
+      "name_en": "disease_11",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000012",
+      "type": "Disease",
+      "name": "疾病12",
+      "name_en": "disease_12",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000013",
+      "type": "Disease",
+      "name": "疾病13",
+      "name_en": "disease_13",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000014",
+      "type": "Disease",
+      "name": "疾病14",
+      "name_en": "disease_14",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000015",
+      "type": "Disease",
+      "name": "疾病15",
+      "name_en": "disease_15",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000016",
+      "type": "Disease",
+      "name": "疾病16",
+      "name_en": "disease_16",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000017",
+      "type": "Disease",
+      "name": "疾病17",
+      "name_en": "disease_17",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000018",
+      "type": "Disease",
+      "name": "疾病18",
+      "name_en": "disease_18",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000019",
+      "type": "Disease",
+      "name": "疾病19",
+      "name_en": "disease_19",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000020",
+      "type": "Disease",
+      "name": "疾病20",
+      "name_en": "disease_20",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000021",
+      "type": "Disease",
+      "name": "疾病21",
+      "name_en": "disease_21",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000022",
+      "type": "Disease",
+      "name": "疾病22",
+      "name_en": "disease_22",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000023",
+      "type": "Disease",
+      "name": "疾病23",
+      "name_en": "disease_23",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000024",
+      "type": "Disease",
+      "name": "疾病24",
+      "name_en": "disease_24",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMDE000025",
+      "type": "Disease",
+      "name": "疾病25",
+      "name_en": "disease_25",
+      "symmap_component": "SMDE",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000001",
+      "type": "Syndrome",
+      "name": "證候1",
+      "name_en": "syndrome_1",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000002",
+      "type": "Syndrome",
+      "name": "證候2",
+      "name_en": "syndrome_2",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000003",
+      "type": "Syndrome",
+      "name": "證候3",
+      "name_en": "syndrome_3",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000004",
+      "type": "Syndrome",
+      "name": "證候4",
+      "name_en": "syndrome_4",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000005",
+      "type": "Syndrome",
+      "name": "證候5",
+      "name_en": "syndrome_5",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000006",
+      "type": "Syndrome",
+      "name": "證候6",
+      "name_en": "syndrome_6",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000007",
+      "type": "Syndrome",
+      "name": "證候7",
+      "name_en": "syndrome_7",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000008",
+      "type": "Syndrome",
+      "name": "證候8",
+      "name_en": "syndrome_8",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000009",
+      "type": "Syndrome",
+      "name": "證候9",
+      "name_en": "syndrome_9",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMYS000010",
+      "type": "Syndrome",
+      "name": "證候10",
+      "name_en": "syndrome_10",
+      "symmap_component": "SMYS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000001",
+      "type": "Symptom",
+      "name": "MM症狀1",
+      "name_en": "mm_symptom_1",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000002",
+      "type": "Symptom",
+      "name": "MM症狀2",
+      "name_en": "mm_symptom_2",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000003",
+      "type": "Symptom",
+      "name": "MM症狀3",
+      "name_en": "mm_symptom_3",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000004",
+      "type": "Symptom",
+      "name": "MM症狀4",
+      "name_en": "mm_symptom_4",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000005",
+      "type": "Symptom",
+      "name": "MM症狀5",
+      "name_en": "mm_symptom_5",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000006",
+      "type": "Symptom",
+      "name": "MM症狀6",
+      "name_en": "mm_symptom_6",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000007",
+      "type": "Symptom",
+      "name": "MM症狀7",
+      "name_en": "mm_symptom_7",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000008",
+      "type": "Symptom",
+      "name": "MM症狀8",
+      "name_en": "mm_symptom_8",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000009",
+      "type": "Symptom",
+      "name": "MM症狀9",
+      "name_en": "mm_symptom_9",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000010",
+      "type": "Symptom",
+      "name": "MM症狀10",
+      "name_en": "mm_symptom_10",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000011",
+      "type": "Symptom",
+      "name": "MM症狀11",
+      "name_en": "mm_symptom_11",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000012",
+      "type": "Symptom",
+      "name": "MM症狀12",
+      "name_en": "mm_symptom_12",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000013",
+      "type": "Symptom",
+      "name": "MM症狀13",
+      "name_en": "mm_symptom_13",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000014",
+      "type": "Symptom",
+      "name": "MM症狀14",
+      "name_en": "mm_symptom_14",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "id": "SMMS000015",
+      "type": "Symptom",
+      "name": "MM症狀15",
+      "name_en": "mm_symptom_15",
+      "symmap_component": "SMMS",
+      "source_ref": "import_symmap_kg.sample"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "SMHB000001",
+      "target": "SMTS000002",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000002",
+      "target": "SMTS000003",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000003",
+      "target": "SMTS000004",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000004",
+      "target": "SMTS000005",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000005",
+      "target": "SMTS000006",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000006",
+      "target": "SMTS000007",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000007",
+      "target": "SMTS000008",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000008",
+      "target": "SMTS000009",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000009",
+      "target": "SMTS000010",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000010",
+      "target": "SMTS000011",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000011",
+      "target": "SMTS000012",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000012",
+      "target": "SMTS000013",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000013",
+      "target": "SMTS000014",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000014",
+      "target": "SMTS000015",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000015",
+      "target": "SMTS000016",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000016",
+      "target": "SMTS000017",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000017",
+      "target": "SMTS000018",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000018",
+      "target": "SMTS000019",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000019",
+      "target": "SMTS000020",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000020",
+      "target": "SMTS000021",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000021",
+      "target": "SMTS000022",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000022",
+      "target": "SMTS000023",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000023",
+      "target": "SMTS000024",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000024",
+      "target": "SMTS000025",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000025",
+      "target": "SMTS000026",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000026",
+      "target": "SMTS000027",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000027",
+      "target": "SMTS000028",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000028",
+      "target": "SMTS000029",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000029",
+      "target": "SMTS000030",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000030",
+      "target": "SMTS000031",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000031",
+      "target": "SMTS000032",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000032",
+      "target": "SMTS000033",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000033",
+      "target": "SMTS000034",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000034",
+      "target": "SMTS000035",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000035",
+      "target": "SMTS000001",
+      "type": "TREATS",
+      "description": "sample TREATS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000001",
+      "target": "SMIT000001",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000002",
+      "target": "SMIT000002",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000003",
+      "target": "SMIT000003",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000004",
+      "target": "SMIT000004",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000005",
+      "target": "SMIT000005",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000006",
+      "target": "SMIT000006",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000007",
+      "target": "SMIT000007",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000008",
+      "target": "SMIT000008",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000009",
+      "target": "SMIT000009",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000010",
+      "target": "SMIT000010",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000011",
+      "target": "SMIT000011",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000012",
+      "target": "SMIT000012",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000013",
+      "target": "SMIT000013",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000014",
+      "target": "SMIT000014",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000015",
+      "target": "SMIT000015",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000016",
+      "target": "SMIT000016",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000017",
+      "target": "SMIT000017",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000018",
+      "target": "SMIT000018",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000019",
+      "target": "SMIT000019",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000020",
+      "target": "SMIT000020",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000021",
+      "target": "SMIT000021",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000022",
+      "target": "SMIT000022",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000023",
+      "target": "SMIT000023",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000024",
+      "target": "SMIT000024",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000025",
+      "target": "SMIT000025",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000026",
+      "target": "SMIT000026",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000027",
+      "target": "SMIT000027",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000028",
+      "target": "SMIT000028",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000029",
+      "target": "SMIT000029",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000030",
+      "target": "SMIT000030",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000031",
+      "target": "SMIT000031",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000032",
+      "target": "SMIT000032",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000033",
+      "target": "SMIT000033",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000034",
+      "target": "SMIT000034",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMHB000035",
+      "target": "SMIT000035",
+      "type": "CONTAINS",
+      "description": "sample CONTAINS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000001",
+      "target": "SMTT000001",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000002",
+      "target": "SMTT000002",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000003",
+      "target": "SMTT000003",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000004",
+      "target": "SMTT000004",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000005",
+      "target": "SMTT000005",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000006",
+      "target": "SMTT000006",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000007",
+      "target": "SMTT000007",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000008",
+      "target": "SMTT000008",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000009",
+      "target": "SMTT000009",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000010",
+      "target": "SMTT000010",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000011",
+      "target": "SMTT000011",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000012",
+      "target": "SMTT000012",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000013",
+      "target": "SMTT000013",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000014",
+      "target": "SMTT000014",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000015",
+      "target": "SMTT000015",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000016",
+      "target": "SMTT000016",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000017",
+      "target": "SMTT000017",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000018",
+      "target": "SMTT000018",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000019",
+      "target": "SMTT000019",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000020",
+      "target": "SMTT000020",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000021",
+      "target": "SMTT000021",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000022",
+      "target": "SMTT000022",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000023",
+      "target": "SMTT000023",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000024",
+      "target": "SMTT000024",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMIT000025",
+      "target": "SMTT000025",
+      "type": "TARGETS",
+      "description": "sample TARGETS",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000001",
+      "target": "SMDE000001",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000002",
+      "target": "SMDE000002",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000003",
+      "target": "SMDE000003",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000004",
+      "target": "SMDE000004",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000005",
+      "target": "SMDE000005",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000006",
+      "target": "SMDE000006",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000007",
+      "target": "SMDE000007",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000008",
+      "target": "SMDE000008",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000009",
+      "target": "SMDE000009",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000010",
+      "target": "SMDE000010",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000011",
+      "target": "SMDE000011",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000012",
+      "target": "SMDE000012",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000013",
+      "target": "SMDE000013",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000014",
+      "target": "SMDE000014",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000015",
+      "target": "SMDE000015",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000016",
+      "target": "SMDE000016",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000017",
+      "target": "SMDE000017",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000018",
+      "target": "SMDE000018",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000019",
+      "target": "SMDE000019",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000020",
+      "target": "SMDE000020",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000021",
+      "target": "SMDE000021",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000022",
+      "target": "SMDE000022",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000023",
+      "target": "SMDE000023",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000024",
+      "target": "SMDE000024",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTT000025",
+      "target": "SMDE000025",
+      "type": "ASSOCIATED_WITH",
+      "description": "sample ASSOCIATED_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000001",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000002",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000003",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000004",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000005",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000006",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000007",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000008",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000009",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000010",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000011",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000012",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000013",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000014",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000015",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000016",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000017",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000018",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000019",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000020",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000021",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000022",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000003",
+      "target": "SMDE000023",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000001",
+      "target": "SMDE000024",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMTS000002",
+      "target": "SMDE000025",
+      "type": "CORRELATES_WITH",
+      "description": "sample CORRELATES_WITH",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000001",
+      "target": "SMTS000001",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000002",
+      "target": "SMTS000002",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000003",
+      "target": "SMTS000003",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000004",
+      "target": "SMTS000004",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000005",
+      "target": "SMTS000005",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000006",
+      "target": "SMTS000006",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000007",
+      "target": "SMTS000007",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000008",
+      "target": "SMTS000008",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000009",
+      "target": "SMTS000009",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000010",
+      "target": "SMTS000010",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000011",
+      "target": "SMTS000011",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000012",
+      "target": "SMTS000012",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000013",
+      "target": "SMTS000013",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000014",
+      "target": "SMTS000014",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    },
+    {
+      "source": "SMMS000015",
+      "target": "SMTS000015",
+      "type": "MAPS_TO",
+      "description": "sample MM->TCM symptom MAPS_TO",
+      "source_ref": "import_symmap_kg.sample"
+    }
+  ]
+}
