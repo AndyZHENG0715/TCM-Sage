@@ -8,11 +8,19 @@ Entity Types:
     - Symptom: Clinical symptoms and conditions
     - Herb: Medicinal herbs
     - Formula: Classical prescriptions
+    - Disease: Modern disease / phenotype (e.g., SymMap MM layer)
+    - Ingredient: Molecular constituents (e.g., SymMap IM)
+    - Target: Gene/protein targets (e.g., SymMap TM)
+    - Syndrome: TCM pattern / syndrome (e.g., SymMap SMYS)
 
 Relationship Types:
     - TREATS: Herb/Formula treats a Symptom
-    - CONTAINS: Formula contains an Herb
-    - ASSOCIATED_WITH: Symptom associated with another Symptom
+    - CONTAINS: Formula contains an Herb; Herb contains Ingredient (SymMap HM–IM)
+    - INDICATES: Symptom indicates Disease (SymMap SM–MM)
+    - TARGETS: Ingredient acts on Target (SymMap IM–TM)
+    - MAPS_TO: MM symptom to TCM symptom or cross-vocabulary alignment
+    - ASSOCIATED_WITH: Target–disease and generic associations
+    - CORRELATES_WITH: Statistical or indirect symptom–disease links
 """
 
 import json
@@ -34,11 +42,13 @@ class TCMKnowledgeGraph:
     # Valid entity and relationship types (expanded for Neijing content)
     ENTITY_TYPES = {
         "Symptom", "Pattern", "Herb", "Formula", "TreatmentMethod",
-        "Meridian", "Acupoint", "BodyPart", "Substance"
+        "Meridian", "Acupoint", "BodyPart", "Substance",
+        "Disease", "Ingredient", "Target", "Syndrome",
     }
     RELATIONSHIP_TYPES = {
         "TREATS", "CONTAINS", "INDICATES", "APPLIES_TO", "LOCATED_ON",
-        "ORIGINATES_FROM", "FLOWS_THROUGH", "DERIVED_FROM", "ENTERS", "GOVERNS"
+        "ORIGINATES_FROM", "FLOWS_THROUGH", "DERIVED_FROM", "ENTERS", "GOVERNS",
+        "MAPS_TO", "TARGETS", "ASSOCIATED_WITH", "CORRELATES_WITH",
     }
 
     def __init__(self):

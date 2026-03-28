@@ -52,3 +52,46 @@ SymMap exposes **direct** associations between adjacent entity types (e.g. herb�
 | MM symptom ↔ TCM symptom / disease | SMMS ↔ SMTS, SMMS ↔ SMDE | Bridging tables |
 
 **Legacy shorthand (papers / older docs):** SM = symptom, HM = herb, IM = ingredient, TM = target, MM = disease — maps to **SMTS/SMMS, SMHB, SMIT, SMTT, SMDE** above.
+
+---
+
+## Schema Mapping
+
+### Entity mapping (SymMap → `TCMKnowledgeGraph` node `type`)
+
+| SymMap component | Prefix | `TCMKnowledgeGraph` entity `type` | Notes |
+|------------------|--------|-----------------------------------|-------|
+| TCM symptom | SMTS | `Symptom` | Primary symptom nodes for user queries (e.g. 頭痛) |
+| MM symptom | SMMS | `Symptom` | Same type; use `symmap_component: "SMMS"` in attributes when needed |
+| Herb | SMHB | `Herb` | |
+| Ingredient | SMIT | `Ingredient` | Requires `Ingredient` in `ENTITY_TYPES` |
+| Target | SMTT | `Target` | Gene/protein |
+| Disease | SMDE | `Disease` | Modern disease |
+| Syndrome | SMYS | `Syndrome` | Distinct from single symptoms |
+
+**Node attributes:** Prefer `name` (Chinese where applicable), `name_en`, `pinyin`, `symmap_id`, `symmap_component`, `description`, and optional `source_ref` for provenance.
+
+### Relationship mapping (SymMap → edge `type`)
+
+| SymMap link (intuitive) | Edge `type` | Direction (source → target) |
+|---------------------------|-------------|-----------------------------|
+| Herb treats / used for TCM symptom | `TREATS` | Herb → Symptom |
+| Symptom indicates pattern (if modeled) | `INDICATES` | Symptom → Syndrome |
+| Herb contains ingredient | `CONTAINS` | Herb → Ingredient |
+| Ingredient acts on target | `TARGETS` | Ingredient → Target |
+| Target linked to disease | `ASSOCIATED_WITH` | Target → Disease |
+| Symptom–disease (inferred or direct) | `CORRELATES_WITH` | Symptom → Disease |
+| MM symptom ↔ TCM symptom | `MAPS_TO` | SMMS → SMTS |
+
+**JSON export shape** (matches `load_from_json`):
+
+```json
+{
+  "entities": [{ "id": "...", "type": "...", "name": "...", "name_en": "...", ... }],
+  "relationships": [{ "source": "...", "target": "...", "type": "TREATS", "description": "...", "source_ref": "SymMap" }]
+}
+```
+
+### Compatibility
+
+`src/graph_builder.py` **`ENTITY_TYPES`** and **`RELATIONSHIP_TYPES`** include the SymMap-oriented values above so programmatic `add_entity` / `add_relationship` calls stay valid. **`load_from_json`** remains permissive for forward compatibility.
