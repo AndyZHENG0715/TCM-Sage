@@ -11,8 +11,8 @@
 *Goal: Pivot to an academically recognized Knowledge Graph source (SymMap 2.0).*
 - **Plans:** 3 plans
 - [x] 2-01-PLAN.md — SymMap 2.0 Research & Mapping
-- [ ] 2-02-PLAN.md — Data Adapter Implementation
-- [ ] 2-03-PLAN.md — Pipeline Integration & Verification
+- [x] 2-02-PLAN.md — Data Adapter Implementation
+- [x] 2-03-PLAN.md — Pipeline Integration & Verification
 
 ## Phase 3: Presentation & E2E Polish
 *Goal: Finalize UI/UX and ensure a rock-solid demo.*
