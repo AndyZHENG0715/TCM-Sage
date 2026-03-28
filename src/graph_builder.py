@@ -16,11 +16,11 @@ Entity Types:
 Relationship Types:
     - TREATS: Herb/Formula treats a Symptom
     - CONTAINS: Formula contains an Herb; Herb contains Ingredient (SymMap HM–IM)
-    - INDICATES: Symptom indicates Disease (SymMap SM–MM)
+    - INDICATES: Symptom indicates Syndrome / TCM pattern (SymMap SMYS links)
     - TARGETS: Ingredient acts on Target (SymMap IM–TM)
     - MAPS_TO: MM symptom to TCM symptom or cross-vocabulary alignment
     - ASSOCIATED_WITH: Target–disease and generic associations
-    - CORRELATES_WITH: Statistical or indirect symptom–disease links
+    - CORRELATES_WITH: Symptom–disease links (direct or inferred, e.g. SymMap SM–MM)
 """
 
 import json
