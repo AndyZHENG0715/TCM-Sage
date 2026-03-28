@@ -8,6 +8,7 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 
+from config import GRAPH_DATA_PATH
 from graph_builder import TCMKnowledgeGraph
 from retriever import HybridRetriever, create_hybrid_retriever
 
@@ -57,7 +58,9 @@ def test_hybrid_retriever_integration():
     """Test full hybrid retriever with project data."""
     project_root = Path(__file__).parent.parent
     vectorstore_path = project_root / "vectorstore" / "chroma"
-    graph_path = project_root / "data" / "graph" / "entities.json"
+    graph_path = GRAPH_DATA_PATH if GRAPH_DATA_PATH.exists() else (
+        project_root / "data" / "graph" / "entities.json"
+    )
 
     if not vectorstore_path.exists():
         print("⚠️ test_hybrid_retriever_integration skipped (no vector store)")

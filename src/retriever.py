@@ -20,6 +20,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
+from config import GRAPH_DATA_PATH
 from graph_builder import TCMKnowledgeGraph, create_graph_from_json
 
 
@@ -278,10 +279,7 @@ def create_hybrid_retriever(
         vectorstore_path = str(project_root / "vectorstore" / "chroma")
 
     if graph_data_path is None:
-        graph_data_path = os.getenv(
-            "GRAPH_DATA_PATH",
-            str(project_root / "data" / "graph" / "entities.json"),
-        )
+        graph_data_path = os.getenv("GRAPH_DATA_PATH", str(GRAPH_DATA_PATH))
 
     return HybridRetriever(
         vectorstore_path=vectorstore_path,
