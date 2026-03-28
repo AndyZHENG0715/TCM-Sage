@@ -15,13 +15,8 @@ import argparse
 import csv
 import json
 import re
-from collections import defaultdict
 from pathlib import Path
 from typing import Any
-
-
-def _norm_key(name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", name.strip().lower()).strip("_")
 
 
 def _read_table(path: Path) -> list[dict[str, str]]:
@@ -39,7 +34,7 @@ def _read_table(path: Path) -> list[dict[str, str]]:
     if not lines:
         return []
     reader = csv.DictReader(lines, delimiter=delimiter)
-    return [{k: (v or "").strip() for k, v in row.items()} for row in reader]
+    return [{k: (v or "").strip() for k, v in row.items() if k is not None} for row in reader]
 
 
 def _pick(row: dict[str, str], *candidates: str) -> str:
@@ -54,53 +49,173 @@ def _pick(row: dict[str, str], *candidates: str) -> str:
     return ""
 
 
-def _detect_prefix(entity_id: str) -> str | None:
+def _symmap_prefix(entity_id: str) -> str | None:
+    """SymMap 2.0 style: SMTSxxxxx, SMHBxxxxx, etc."""
     if not entity_id:
         return None
     m = re.match(r"^(SM[A-Z]{2})", entity_id.upper())
     return m.group(1) if m else None
 
 
-def parse_entity_rows(rows: list[dict[str, str]], source_file: str) -> list[dict[str, Any]]:
+def _legacy_layer(entity_id: str) -> str | None:
+    """
+    Legacy export IDs: SM00001 (symptom), HM00001 (herb), IM/TM/MM.
+    Returns a short token: SMTS, SMHB, SMIT, SMTT, SMDE, SMMS.
+    """
+    if not entity_id:
+        return None
+    u = entity_id.upper()
+    if re.match(r"^SM\d", u):
+        return "SMTS"
+    if re.match(r"^HM\d", u):
+        return "SMHB"
+    if re.match(r"^IM\d", u):
+        return "SMIT"
+    if re.match(r"^TM\d", u):
+        return "SMTT"
+    if re.match(r"^MM\d", u):
+        return "SMDE"
+    return None
+
+
+PREFIX_TO_ENTITY_TYPE: dict[str, str] = {
+    "SMTS": "Symptom",
+    "SMMS": "Symptom",
+    "SMHB": "Herb",
+    "SMIT": "Ingredient",
+    "SMTT": "Target",
+    "SMDE": "Disease",
+    "SMYS": "Syndrome",
+}
+
+
+def _entity_id_from_row(row: dict[str, str]) -> str:
+    """First non-empty value from common SymMap / legacy ID columns."""
+    return _pick(
+        row,
+        "SymMap_ID",
+        "symmap_id",
+        "SMTS_ID",
+        "SMMS_ID",
+        "SMHB_ID",
+        "SMIT_ID",
+        "SMTT_ID",
+        "SMDE_ID",
+        "SMYS_ID",
+        "SM_ID",
+        "HM_ID",
+        "IM_ID",
+        "TM_ID",
+        "MM_ID",
+        "ID",
+        "id",
+    )
+
+
+def entity_hint_from_filename(path: Path) -> tuple[str, str] | None:
+    """
+    (entity_type, symmap_component) from filename when IDs lack SMxx prefix.
+    """
+    n = path.stem.lower()
+    if "symptom" in n and "syndrome" not in n:
+        return ("Symptom", "SMTS")
+    if "herb" in n:
+        return ("Herb", "SMHB")
+    if "ingredient" in n:
+        return ("Ingredient", "SMIT")
+    if "target" in n:
+        return ("Target", "SMTT")
+    if "disease" in n:
+        return ("Disease", "SMDE")
+    if "syndrome" in n:
+        return ("Syndrome", "SMYS")
+    return None
+
+
+def parse_entity_rows(
+    rows: list[dict[str, str]],
+    source_file: str,
+    type_hint: tuple[str, str] | None = None,
+) -> list[dict[str, Any]]:
     """Map arbitrary SymMap-like rows to entity dicts."""
     entities: list[dict[str, Any]] = []
     for row in rows:
-        eid = _pick(row, "SymMap_ID", "symmap_id", "ID", "id")
+        eid = _entity_id_from_row(row)
         if not eid:
             continue
-        prefix = _detect_prefix(eid) or ""
-        name = _pick(row, "Name_CN", "Chinese", "name_cn", "Name", "name", "Herb_Name")
-        name_en = _pick(row, "Name_EN", "English", "name_en", "Name_en")
-        pinyin = _pick(row, "Pinyin", "pinyin", "PINYIN")
-        desc = _pick(row, "Description", "description", "Function", "function")
 
-        type_map = {
-            "SMTS": "Symptom",
-            "SMMS": "Symptom",
-            "SMHB": "Herb",
-            "SMIT": "Ingredient",
-            "SMTT": "Target",
-            "SMDE": "Disease",
-            "SMYS": "Syndrome",
-        }
-        etype = type_map.get(prefix, "Symptom")
-        symmap_component = prefix or None
+        prefix = _symmap_prefix(eid) or _legacy_layer(eid)
+        if prefix:
+            etype = PREFIX_TO_ENTITY_TYPE.get(prefix, "Symptom")
+            component = prefix
+        elif type_hint:
+            etype, component = type_hint
+        else:
+            etype, component = "Symptom", "SMTS"
+
+        name = _pick(
+            row,
+            "SMTS_Chinese_Name",
+            "SMHB_Chinese_Name",
+            "SMYS_Chinese_Name",
+            "Name_CN",
+            "Chinese",
+            "SM_Name",
+            "HM_Name",
+            "IM_Name",
+            "TM_Name",
+            "MM_Name",
+            "Name",
+            "name",
+            "Herb_Name",
+            "compound_name",
+            "SMDE_Name",
+        )
+        name_en = _pick(
+            row,
+            "SMTS_English_Name",
+            "SMHB_English_Name",
+            "SMYS_English_Name",
+            "Name_EN",
+            "English",
+            "name_en",
+            "Name_en",
+        )
+        pinyin = _pick(
+            row,
+            "SMTS_Pinyin",
+            "SMHB_Pinyin",
+            "SM_Pinyin",
+            "HM_Pinyin",
+            "Pinyin",
+            "pinyin",
+            "PINYIN",
+        )
+        desc = _pick(
+            row,
+            "Description",
+            "description",
+            "Function",
+            "function",
+            "SMMS_Name",
+        )
 
         if not name and name_en:
             name = name_en
+        if not name:
+            name = eid
 
         ent: dict[str, Any] = {
             "id": eid,
             "type": etype,
-            "name": name or eid,
+            "name": name,
             "name_en": name_en,
             "pinyin": pinyin,
             "description": desc,
             "source_ref": source_file,
+            "symmap_component": component,
         }
-        if symmap_component:
-            ent["symmap_component"] = symmap_component
-        if prefix == "SMMS":
+        if prefix == "SMMS" or (component == "SMMS"):
             ent["symmap_component"] = "SMMS"
         entities.append(ent)
     return entities
@@ -110,14 +225,45 @@ def parse_relationship_rows(
     rows: list[dict[str, str]],
     source_file: str,
     default_type: str = "ASSOCIATED_WITH",
+    source_key: str | None = None,
+    target_key: str | None = None,
 ) -> list[dict[str, Any]]:
     rels: list[dict[str, Any]] = []
     for row in rows:
-        src = _pick(row, "Source", "source", "Head", "head", "ID1", "Herb_ID", "SMTS_ID")
-        tgt = _pick(row, "Target", "target", "Tail", "tail", "ID2", "Symptom_ID", "SMDE_ID")
-        if not src or not tgt:
-            src = _pick(row, "SMHB_ID", "Herb_ID")
-            tgt = _pick(row, "SMTS_ID", "Symptom_ID")
+        if source_key and target_key:
+            src = _pick(row, source_key)
+            tgt = _pick(row, target_key)
+        else:
+            src = _pick(
+                row,
+                "Source",
+                "source",
+                "Head",
+                "head",
+                "ID1",
+                "Herb_ID",
+                "SMHB_ID",
+                "HM_ID",
+                "IM_ID",
+                "TM_ID",
+                "SMTS_ID",
+            )
+            tgt = _pick(
+                row,
+                "Target",
+                "target",
+                "Tail",
+                "tail",
+                "ID2",
+                "Symptom_ID",
+                "SMDE_ID",
+                "SM_ID",
+                "MM_ID",
+                "SMTT_ID",
+            )
+            if not src or not tgt:
+                src = _pick(row, "SMHB_ID", "Herb_ID", "HM_ID", "IM_ID", "TM_ID")
+                tgt = _pick(row, "SMTS_ID", "Symptom_ID", "SM_ID", "MM_ID", "SMTT_ID", "SMIT_ID")
         rtype = _pick(row, "Type", "type", "Relation", "relation") or default_type
         desc = _pick(row, "Description", "description", "Evidence", "evidence")
         if not src or not tgt:
@@ -134,6 +280,52 @@ def parse_relationship_rows(
     return rels
 
 
+def parse_relationship_file(path: Path, rows: list[dict[str, str]]) -> list[dict[str, Any]]:
+    """
+    Apply SYMMAP_MAPPING edge types and endpoint order per relationship file name.
+    Herb treats TCM symptom: TREATS Herb -> Symptom.
+    """
+    stem = path.stem.lower()
+    name = path.name
+
+    if "rel_sm_hm" in stem or ("sm" in stem and "hm" in stem and "rel" in stem):
+        return parse_relationship_rows(rows, name, "TREATS", "HM_ID", "SM_ID")
+
+    if "rel_hm_im" in stem or ("hm" in stem and "im" in stem and "rel" in stem):
+        return parse_relationship_rows(rows, name, "CONTAINS", "HM_ID", "IM_ID")
+
+    if "rel_im_tm" in stem or ("im" in stem and "tm" in stem and "rel" in stem):
+        return parse_relationship_rows(rows, name, "TARGETS", "IM_ID", "TM_ID")
+
+    if "rel_tm_mm" in stem or ("tm" in stem and "mm" in stem and "rel" in stem):
+        return parse_relationship_rows(rows, name, "ASSOCIATED_WITH", "TM_ID", "MM_ID")
+
+    if "rel_sm_mm" in stem or ("sm" in stem and "mm" in stem and "rel" in stem):
+        return parse_relationship_rows(rows, name, "CORRELATES_WITH", "SM_ID", "MM_ID")
+
+    # SymMap 2.0 style column names
+    if "smt" in stem and "smhb" in stem:
+        return parse_relationship_rows(rows, name, "TREATS", "SMHB_ID", "SMTS_ID")
+    if "smhb" in stem and "smit" in stem:
+        return parse_relationship_rows(rows, name, "CONTAINS", "SMHB_ID", "SMIT_ID")
+    if "smit" in stem and "smtt" in stem:
+        return parse_relationship_rows(rows, name, "TARGETS", "SMIT_ID", "SMTT_ID")
+    if "smtt" in stem and "smde" in stem:
+        return parse_relationship_rows(rows, name, "ASSOCIATED_WITH", "SMTT_ID", "SMDE_ID")
+
+    return parse_relationship_rows(rows, name)
+
+
+def _is_relationship_file(path: Path) -> bool:
+    name_u = path.name.upper()
+    stem_l = path.stem.lower()
+    if "REL" in name_u or "PAIR" in name_u or "ASSOC" in name_u:
+        return True
+    if stem_l.startswith("rel_"):
+        return True
+    return False
+
+
 def load_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     entities: list[dict[str, Any]] = []
     relationships: list[dict[str, Any]] = []
@@ -143,19 +335,16 @@ def load_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str
             continue
         if path.suffix.lower() not in {".csv", ".tsv", ".tab", ".txt"}:
             continue
-        name_u = path.name.upper()
         rows = _read_table(path)
         if not rows:
             continue
 
-        if "REL" in name_u or "PAIR" in name_u or "ASSOC" in name_u:
-            relationships.extend(parse_relationship_rows(rows, path.name))
-        elif "SMTS" in name_u and "SMHB" in name_u:
-            relationships.extend(parse_relationship_rows(rows, path.name, default_type="TREATS"))
+        if _is_relationship_file(path):
+            relationships.extend(parse_relationship_file(path, rows))
         else:
-            entities.extend(parse_entity_rows(rows, path.name))
+            hint = entity_hint_from_filename(path)
+            entities.extend(parse_entity_rows(rows, path.name, type_hint=hint))
 
-    # Deduplicate entities by id
     by_id: dict[str, dict[str, Any]] = {}
     for e in entities:
         by_id[e["id"]] = e
@@ -251,7 +440,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Herb -> Symptom TREATS
     for i in range(1, 36):
         hid = f"SMHB{i:06d}"
         sid = f"SMTS{(i % 35) + 1:06d}"
@@ -267,7 +455,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Herb -> Ingredient CONTAINS
     for i in range(1, 36):
         relationships.append(
             {
@@ -279,7 +466,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Ingredient -> Target TARGETS
     for i in range(1, 26):
         relationships.append(
             {
@@ -291,7 +477,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Target -> Disease ASSOCIATED_WITH
     for i in range(1, 26):
         relationships.append(
             {
@@ -303,7 +488,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Symptom -> Disease CORRELATES_WITH
     for i in range(1, 26):
         relationships.append(
             {
@@ -315,7 +499,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Extra edges for density
     for i in range(1, 16):
         relationships.append(
             {
@@ -327,7 +510,6 @@ def build_sample_graph() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    # Add SMMS nodes referenced above
     for i in range(1, 16):
         entities.append(
             {
