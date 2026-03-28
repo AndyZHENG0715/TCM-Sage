@@ -38,6 +38,22 @@ Exact header names can vary slightly by export; the adapter normalizes common al
 | **SMDE** (Disease) | SymMap ID, disease name, vocabulary IDs (e.g. MeSH, DOID) where present |
 | **SMYS** (Syndrome) | SymMap ID, Chinese / English syndrome name, descriptive text |
 
+### Example header patterns (legacy SM/HM-style ↔ SymMap 2.0)
+
+Papers and older dumps often use **SM** (symptom), **HM** (herb), **IM** (ingredient), **TM** (target), **MM** (disease). SymMap 2.0 bulk files typically use **prefix-based IDs** and headers such as:
+
+| Layer (legacy) | SymMap 2.0 prefix | Example ID column | Example name / text columns |
+|----------------|-------------------|--------------------|-----------------------------|
+| SM (TCM symptom) | SMTS | `SMTS_ID` / `SymMap_ID` | `SMTS_Chinese_Name`, `SMTS_Pinyin`, `SMTS_English_Name` |
+| SM (MM symptom) | SMMS | `SMMS_ID` | `SMMS_Name`, synonym / UMLS columns |
+| HM (herb) | SMHB | `SMHB_ID` | `SMHB_Chinese_Name`, `SMHB_Pinyin`, `SMHB_Latin_Name` |
+| IM (ingredient) | SMIT | `SMIT_ID` | `SMIT_Name`, PubChem / InChI where present |
+| TM (target) | SMTT | `SMTT_ID` | `SMTT_Gene_Symbol`, `SMTT_Protein_Name` |
+| MM (disease) | SMDE | `SMDE_ID` | `SMDE_Name`, MeSH / DOID columns |
+| Syndrome | SMYS | `SMYS_ID` | `SMYS_Chinese_Name`, `SMYS_English_Name` |
+
+Relationship files are usually pairwise ID columns (e.g. `SMTS_ID` + `SMHB_ID`) or synonym pairs using the same prefixes; **TSV/CSV** with header row is the common bulk format, with **Excel** exports on the download site.
+
 ### Relationship tables (pairwise)
 
 SymMap exposes **direct** associations between adjacent entity types (e.g. herb–ingredient, symptom–herb). **Indirect** links (e.g. TCM symptom–disease) may be provided as separate inference tables with **p-value / FDR** columns; the adapter can ingest direct edges by default and optionally filter inferred edges by FDR thresholds.
