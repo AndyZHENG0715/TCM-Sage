@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any, Dict, Generator, Union
 
 from dotenv import load_dotenv
-from huggingface_hub import constants as hf_constants
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.embeddings import HuggingFaceEmbeddings
