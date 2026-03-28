@@ -60,8 +60,7 @@ completed: 2026-03-28
 
 1. **Task 2.2.1: Implement SymMap Data Adapter script** - `0ca1145` (feat)
 2. **Task 2.2.2: Generate symmap_entities.json** - `2939bb5` (chore)
-
-**Plan metadata:** `9cf73ab` (docs: complete plan)
+3. **Plan docs** - `9cf73ab` (SUMMARY), `eaf0fc8` (metadata hash + STATE.md)
 
 ## Files Created/Modified
 
@@ -101,7 +100,7 @@ None for this plan’s deliverables.
 ## Self-Check
 
 - **Files:** `scripts/import_symmap_kg.py` — FOUND; `data/graph/symmap_entities.json` — FOUND; `2-02-SUMMARY.md` — FOUND.
-- **Commits:** `0ca1145`, `2939bb5` — present on branch `feature/premium-ui`.
+- **Commits:** `0ca1145`, `2939bb5`, `9cf73ab`, `eaf0fc8` — present on branch `feature/premium-ui`.
 - **Load test:** `TCMKnowledgeGraph.load_from_json` → 160 nodes, 230 edges — PASSED.
 
 ## Self-Check: PASSED
