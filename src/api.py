@@ -7,13 +7,16 @@ with Server-Sent Events (SSE) streaming support.
 
 from __future__ import annotations
 
+import asyncio
 import os
+import random
 import re
 import sys
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Generator
+from typing import Any, AsyncGenerator, Dict, Generator
+from urllib.parse import unquote
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -27,6 +30,7 @@ if str(SRC_DIR) not in sys.path:
 
 load_dotenv()
 
+from arena import ARENA_MODELS, ArenaVoteRecord, generate_raw_llm_response, generate_rag_response, store_vote
 from ui_backend import PipelineConfig, get_runtime_config, get_shared_vectorstore, run_query_stream
 
 app = FastAPI(
@@ -88,6 +92,28 @@ class ConfigResponse(BaseModel):
     hybrid_enabled: bool
     hybrid_available: bool
     graph_depth: int
+
+
+class ArenaQueryRequest(BaseModel):
+    question: str
+    chat_history_a: list[dict] = Field(default_factory=list)
+    chat_history_b: list[dict] = Field(default_factory=list)
+    model_name: str = "qwen-plus"
+    session_id: str = ""
+    round_number: int = 1
+
+
+class ArenaVoteRequest(BaseModel):
+    session_id: str
+    round_number: int
+    query: str
+    response_a: str
+    response_b: str
+    model_name: str
+    position_mapping: dict
+    vote: str  # "a" | "b" | "tie"
+    comment: str | None = None
+    timestamp: str = ""
 
 
 @app.get("/health")
@@ -255,22 +281,48 @@ def extract_paragraph_context(
     return trimmed_paragraph, local_start, local_end
 
 
+@app.get("/config")
+async def get_config():
+    """Retrieve the current pipeline configuration for the UI."""
+    from ui_backend import get_runtime_config
+    try:
+        config = get_runtime_config()
+        return {
+            "provider": config.provider,
+            "model": config.model,
+            "informational_temperature": config.informational_temperature,
+            "prescriptive_temperature": config.prescriptive_temperature,
+            "retrieval_k": config.retrieval_k,
+            "hybrid_enabled": config.hybrid_enabled,
+            "graph_depth": config.graph_depth,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/source/{chunk_id}/context")
 async def get_chunk_context(chunk_id: str) -> Dict[str, Any]:
     """Get deduplicated source context for a specific chunk."""
 
     try:
+        normalized_chunk_id = unquote(chunk_id)
         vectorstore = get_shared_vectorstore()
-        result = vectorstore._collection.get(ids=[chunk_id], include=["metadatas"])
+        result = vectorstore._collection.get(ids=[normalized_chunk_id], include=["metadatas"])
 
         if not result or not result["ids"]:
-            raise HTTPException(status_code=404, detail=f"Chunk {chunk_id} not found in VectorStore")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Chunk {normalized_chunk_id} not found in VectorStore",
+            )
 
         metadata = result["metadatas"][0]
         book = metadata.get("book")
         chapter = metadata.get("source")
         if not book or not chapter:
-            raise HTTPException(status_code=500, detail=f"Incomplete metadata for chunk {chunk_id}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Incomplete metadata for chunk {normalized_chunk_id}",
+            )
 
         chapter_chunks = [
             chunk
@@ -289,10 +341,13 @@ async def get_chunk_context(chunk_id: str) -> Dict[str, Any]:
         )
 
         full_text, chunk_ranges = build_full_source_text(chapter_chunks)
-        if chunk_id not in chunk_ranges:
-            raise HTTPException(status_code=404, detail=f"Chunk {chunk_id} not found in reconstructed source context")
+        if normalized_chunk_id not in chunk_ranges:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Chunk {normalized_chunk_id} not found in reconstructed source context",
+            )
 
-        highlight_start, highlight_end = chunk_ranges[chunk_id]
+        highlight_start, highlight_end = chunk_ranges[normalized_chunk_id]
         paragraph_text, paragraph_highlight_start, paragraph_highlight_end = extract_paragraph_context(
             full_text,
             highlight_start,
@@ -304,7 +359,7 @@ async def get_chunk_context(chunk_id: str) -> Dict[str, Any]:
             chapter_display = ""
 
         return {
-            "chunk_id": chunk_id,
+            "chunk_id": normalized_chunk_id,
             "book": book,
             "chapter": chapter,
             "chapter_display": chapter_display,
@@ -340,13 +395,221 @@ def load_chunks_data() -> list[dict]:
         return json.load(file)
 
 
+@app.get("/books/{book_name}")
+async def get_book_text(book_name: str) -> Dict[str, str]:
+    """Retrieve the full raw text of a book from the source directory."""
+
+    source_dir = Path(__file__).parent.parent / "data" / "source"
+    resolved_book_name = unquote(book_name).strip()
+    requested_stem = Path(resolved_book_name).stem
+    book_path = source_dir / f"{requested_stem}.txt"
+    decoded_name = resolved_book_name
+
+    if not book_path.exists():
+        # Try to find a match if the extension was already included or casing differs
+        matches = list(source_dir.glob("*.txt"))
+        normalized_requested = re.sub(r"^\d+[-_]", "", requested_stem).strip().lower()
+        found_path = None
+        for p in matches:
+            normalized_stem = re.sub(r"^\d+[-_]", "", p.stem).strip().lower()
+            if (
+                p.stem.lower() == requested_stem.lower()
+                or p.name.lower() == resolved_book_name.lower()
+                or normalized_stem == normalized_requested
+                or p.stem.lower().endswith(requested_stem.lower())
+            ):
+                found_path = p
+                break
+
+        if not found_path:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "message": f"Book '{book_name}' not found in source repository",
+                    "requested_stem": requested_stem,
+                    "decoded_name": decoded_name,
+                    "normalized_requested": normalized_requested,
+                    "sample_stems": [p.stem for p in matches[:5]],
+                    "sample_normalized_stems": [
+                        re.sub(r"^\\d+[-_]", "", p.stem).strip().lower() for p in matches[:5]
+                    ],
+                },
+            )
+        book_path = found_path
+
+    try:
+        raw_bytes = book_path.read_bytes()
+        content = None
+        selected_encoding = None
+        for encoding in ("utf-8", "utf-8-sig", "gb18030", "gbk", "big5"):
+            try:
+                content = raw_bytes.decode(encoding)
+                selected_encoding = encoding
+                break
+            except UnicodeDecodeError:
+                continue
+
+        if content is None:
+            raise UnicodeDecodeError(
+                "unknown",
+                raw_bytes,
+                0,
+                min(len(raw_bytes), 1),
+                "Unable to decode source file with supported encodings",
+            )
+        return {"content": content}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to read book: {exc}")
+
+
+async def generate_arena_sse_stream(
+    question: str,
+    chat_history_a: list[dict],
+    chat_history_b: list[dict],
+    model_name: str,
+    session_id: str,
+    round_number: int,
+) -> AsyncGenerator[str, None]:
+    import json as _json
+
+    assignment = random.choice(["rag_a_plain_b", "rag_b_plain_a"])
+    if assignment == "rag_a_plain_b":
+        position_mapping = {"a": "rag", "b": "plain"}
+        gen_a = generate_rag_response(question, chat_history_a, model_name)
+        gen_b = generate_raw_llm_response(question, chat_history_b, model_name)
+    else:
+        position_mapping = {"a": "plain", "b": "rag"}
+        gen_a = generate_raw_llm_response(question, chat_history_a, model_name)
+        gen_b = generate_rag_response(question, chat_history_b, model_name)
+
+    queue: asyncio.Queue[tuple[str, object | None]] = asyncio.Queue()
+
+    async def drain_a() -> None:
+        try:
+            async for item in gen_a:
+                await queue.put(("a", item))
+        except Exception as exc:
+            await queue.put(("error_a", str(exc)))
+        finally:
+            await queue.put(("done_a", None))
+
+    async def drain_b() -> None:
+        try:
+            async for item in gen_b:
+                await queue.put(("b", item))
+        except Exception as exc:
+            await queue.put(("error_b", str(exc)))
+        finally:
+            await queue.put(("done_b", None))
+
+    producers = asyncio.gather(drain_a(), drain_b(), return_exceptions=True)
+    done_count = 0
+
+    try:
+        while done_count < 2:
+            slot, item = await queue.get()
+
+            if slot == "done_a" or slot == "done_b":
+                done_count += 1
+                continue
+
+            if slot == "error_a":
+                yield f"event: error\ndata: {_json.dumps({'panel': 'a', 'message': str(item)})}\n\n"
+                continue
+
+            if slot == "error_b":
+                yield f"event: error\ndata: {_json.dumps({'panel': 'b', 'message': str(item)})}\n\n"
+                continue
+
+            if slot == "a":
+                if isinstance(item, dict):
+                    if item.get("type") == "metadata":
+                        yield f"event: metadata_a\ndata: {_json.dumps(item)}\n\n"
+                    else:
+                        chunk = str(item.get("content", "")).replace("\n", "\\n")
+                        yield f"event: text_a\ndata: {chunk}\n\n"
+                else:
+                    chunk = str(item).replace("\n", "\\n")
+                    yield f"event: text_a\ndata: {chunk}\n\n"
+            elif slot == "b":
+                if isinstance(item, dict):
+                    if item.get("type") == "metadata":
+                        yield f"event: metadata_b\ndata: {_json.dumps(item)}\n\n"
+                    else:
+                        chunk = str(item.get("content", "")).replace("\n", "\\n")
+                        yield f"event: text_b\ndata: {chunk}\n\n"
+                else:
+                    chunk = str(item).replace("\n", "\\n")
+                    yield f"event: text_b\ndata: {chunk}\n\n"
+    finally:
+        producers.cancel()
+        try:
+            await producers
+        except Exception:
+            pass
+
+    yield (
+        "event: arena_config\n"
+        f"data: {_json.dumps({'position_mapping': position_mapping, 'session_id': session_id, 'round_number': round_number})}\n\n"
+    )
+
+
+@app.post("/arena/query")
+async def arena_query(request: ArenaQueryRequest) -> StreamingResponse:
+    """Execute a blind A/B arena query with dual multiplexed SSE streaming."""
+    if not request.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+
+    return StreamingResponse(
+        generate_arena_sse_stream(
+            question=request.question,
+            chat_history_a=request.chat_history_a,
+            chat_history_b=request.chat_history_b,
+            model_name=request.model_name,
+            session_id=request.session_id,
+            round_number=request.round_number,
+        ),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@app.post("/arena/vote")
+async def arena_vote(request: ArenaVoteRequest) -> dict:
+    """Store an arena vote."""
+    record: ArenaVoteRecord = {
+        "session_id": request.session_id,
+        "round_number": request.round_number,
+        "query": request.query,
+        "response_a": request.response_a,
+        "response_b": request.response_b,
+        "model_name": request.model_name,
+        "position_mapping": request.position_mapping,
+        "vote": request.vote,
+        "comment": request.comment,
+        "timestamp": request.timestamp or datetime.utcnow().isoformat(),
+    }
+    store_vote(record)
+    return {"status": "ok"}
+
+
+@app.get("/arena/models")
+async def arena_models() -> dict:
+    """Return available arena model presets."""
+    return ARENA_MODELS
+
+
 if __name__ == "__main__":
     import uvicorn
 
     port = int(os.getenv("PORT", "8000"))
     uvicorn.run(
-        "api:app",
+        app,
         host="0.0.0.0",
         port=port,
-        reload=True,
+        reload=False,
     )
