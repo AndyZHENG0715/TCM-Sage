@@ -34,7 +34,7 @@ export function ArenaModelSelector({
             className={
               `px-3 py-1 rounded-full text-sm font-medium border transition-colors ` +
               `${isSelected
-                ? "border-[#19e6d4] text-[#19e6d4] bg-[#19e6d4]/10"
+                ? "border-primary text-primary bg-primary/10"
                 : "border-gray-600 text-gray-300 hover:border-gray-400 hover:text-gray-100"
               } ` +
               `${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`

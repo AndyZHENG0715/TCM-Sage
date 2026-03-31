@@ -41,18 +41,18 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
   const total = votes.length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0a0a17]/95 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-background-dark/95 backdrop-blur-sm overflow-y-auto">
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-[#19e6d4]">评测结果揭晓</h1>
+          <h1 className="text-2xl font-bold text-primary">评测结果揭晓</h1>
           <p className="text-gray-400 text-sm">共 {total} 轮对话 · 盲评已结束</p>
         </div>
 
         {/* Summary stats */}
         <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="bg-[#19e6d4]/10 border border-[#19e6d4]/30 rounded-xl p-4">
-            <div className="text-3xl font-bold text-[#19e6d4]">{ragWins}</div>
+          <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
+            <div className="text-3xl font-bold text-primary">{ragWins}</div>
             <div className="text-xs text-gray-400 mt-1">RAG 系统胜</div>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
@@ -77,7 +77,7 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
             return (
               <div
                 key={vote.roundNumber}
-                className="bg-[#0d0d1a] border border-gray-700 rounded-xl p-4 space-y-3"
+                className="bg-sidebar-dark border border-gray-700 rounded-xl p-4 space-y-3"
               >
                 {/* Round header */}
                 <div className="flex items-center justify-between">
@@ -85,7 +85,7 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
                     第 {vote.roundNumber} 轮
                   </span>
                   <div className="flex gap-2 text-xs">
-                    <span className="bg-[#19e6d4]/15 text-[#19e6d4] border border-[#19e6d4]/30 px-2 py-0.5 rounded-full">
+                    <span className="bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full">
                       {ragPanel} = RAG 增强
                     </span>
                     <span className="bg-gray-700/30 text-gray-400 border border-gray-700 px-2 py-0.5 rounded-full">
@@ -101,7 +101,7 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">你的选择：</span>
                   {winner === "rag" && (
-                    <span className="text-xs bg-[#19e6d4]/20 text-[#19e6d4] border border-[#19e6d4]/40 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-primary/20 text-primary border border-primary/40 px-2 py-0.5 rounded-full font-medium">
                       ✓ RAG 增强系统
                     </span>
                   )}
@@ -123,7 +123,7 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
                 {/* RAG Citations */}
                 {ragCitations.length > 0 && (
                   <div className="border-t border-gray-800 pt-2 space-y-1">
-                    <p className="text-xs text-[#19e6d4] font-medium">RAG 引用来源</p>
+                    <p className="text-xs text-primary font-medium">RAG 引用来源</p>
                     <ul className="space-y-0.5">
                       {ragCitations.slice(0, 4).map((c, i) => (
                         <li key={i} className="text-xs text-gray-500">
@@ -148,7 +148,7 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
           <button
             type="button"
             onClick={onReset}
-            className="px-8 py-3 bg-[#19e6d4] text-[#0d0d1a] font-semibold rounded-xl hover:bg-[#14c9b8] transition-colors"
+            className="px-8 py-3 bg-primary text-sidebar-dark font-semibold rounded-xl hover:bg-primary-dark transition-colors"
           >
             开始新会话
           </button>

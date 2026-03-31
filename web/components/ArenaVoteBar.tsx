@@ -40,12 +40,12 @@ export function ArenaVoteBar({
   ];
 
   return (
-    <div className="border-t border-gray-700 bg-[#0d0d1a] px-4 py-3 space-y-2 shrink-0">
+    <div className="border-t border-gray-700 bg-sidebar-dark px-4 py-3 space-y-2 shrink-0">
       {/* Round indicator */}
       <div className="flex items-center justify-between text-xs text-gray-500">
         <span>第 {roundNumber} 轮 · 已投 {totalVotes} 票</span>
         {hasVoted && (
-          <span className="text-[#19e6d4] font-medium">✓ 已投票，可继续提问</span>
+          <span className="text-primary font-medium">✓ 已投票，可继续提问</span>
         )}
       </div>
 
@@ -94,7 +94,7 @@ export function ArenaVoteBar({
           type="button"
           onClick={onReveal}
           disabled={totalVotes === 0}
-          className="px-4 py-2 rounded-lg text-sm font-medium border border-[#19e6d4] text-[#19e6d4] hover:bg-[#19e6d4]/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-lg text-sm font-medium border border-primary text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           揭晓结果
         </button>
@@ -107,7 +107,7 @@ export function ArenaVoteBar({
           onChange={(e) => setComment(e.target.value)}
           placeholder="可选：说明你的选择理由…"
           rows={2}
-          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-[#F3EFE0] placeholder-gray-500 focus:outline-none focus:border-[#19e6d4] resize-none"
+          className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-parchment placeholder-gray-500 focus:outline-none focus:border-primary resize-none"
         />
       )}
     </div>

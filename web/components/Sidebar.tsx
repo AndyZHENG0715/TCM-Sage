@@ -10,8 +10,10 @@ import {
     PanelLeftOpen,
     MessageSquare,
     Trash2,
+    Swords,
 } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 interface SidebarProps {
     sessions: ChatSession[];
@@ -184,7 +186,17 @@ export function Sidebar({
             </div>
 
             {/* Footer / User Profile */}
-            <div className="p-4 border-t border-white/5">
+            <div className="p-4 border-t border-white/5 flex flex-col gap-2">
+                <Link
+                    href="/arena"
+                    className={cn(
+                        "flex items-center gap-3 w-full p-2 rounded-lg text-primary hover:text-primary hover:bg-white/5 transition-colors text-left group",
+                        collapsed ? "justify-center" : ""
+                    )}
+                >
+                    <Swords size={18} className="text-primary/70 group-hover:text-primary transition-colors" />
+                    {!collapsed && <span className="text-sm font-medium truncate">Arena 评测</span>}
+                </Link>
                 <div className={cn(
                     "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left",
                     collapsed ? "justify-center" : ""

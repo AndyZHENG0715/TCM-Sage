@@ -59,9 +59,9 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a2e] text-[#F3EFE0] flex flex-col">
-      <header className="flex items-center gap-4 px-6 py-3 border-b border-gray-700 bg-[#0d0d1a]">
-        <h1 className="text-lg font-semibold text-[#19e6d4] shrink-0">TCM Arena</h1>
+    <div className="min-h-screen bg-background-dark text-parchment flex flex-col">
+      <header className="flex items-center gap-4 px-6 py-4 border-b border-white/5 bg-background-dark/80 backdrop-blur-md z-10 shrink-0">
+        <h1 className="text-lg font-semibold text-primary shrink-0">TCM Arena</h1>
         <div className="flex-1">
           <ArenaModelSelector
             models={ARENA_MODEL_PRESETS}
@@ -115,7 +115,7 @@ export default function ArenaPage() {
       )}
 
       {!state.showReveal && (
-        <footer className="px-4 py-3 border-t border-gray-700 bg-[#0d0d1a] space-y-2">
+        <footer className="px-4 py-3 border-t border-gray-700 bg-sidebar-dark space-y-2">
           <div className="flex gap-2 flex-wrap">
             {ARENA_SAMPLE_PROMPTS.slice(0, 5).map((prompt) => (
               <button
@@ -143,13 +143,13 @@ export default function ArenaPage() {
               }}
               placeholder="向两个模型提问…"
               disabled={isStreaming}
-              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-[#F3EFE0] placeholder-gray-500 focus:outline-none focus:border-[#19e6d4] disabled:opacity-50"
+              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-parchment placeholder-gray-500 focus:outline-none focus:border-primary disabled:opacity-50"
             />
             <button
               type="button"
               onClick={handleSubmit}
               disabled={!inputValue.trim() || isStreaming}
-              className="px-4 py-2 bg-[#19e6d4] text-[#0d0d1a] font-semibold text-sm rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#14c9b8] transition-colors"
+              className="px-4 py-2 bg-primary text-sidebar-dark font-semibold text-sm rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors"
             >
               提交
             </button>

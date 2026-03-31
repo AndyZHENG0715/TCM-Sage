@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Serif_SC } from "next/font/google";
-import Link from "next/link";
 import "./globals.css";
 
 const inter = Inter({
@@ -29,14 +28,6 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${notoSerifSC.variable} antialiased bg-background-dark text-parchment`}
       >
-        <div className="fixed top-2 right-4 z-40">
-          <Link
-            href="/arena"
-            className="text-xs bg-gray-800 border border-gray-700 px-3 py-1 rounded-full text-gray-400 hover:text-[#19e6d4] hover:border-[#19e6d4] transition-colors"
-          >
-            Arena 评测
-          </Link>
-        </div>
         {children}
       </body>
     </html>
