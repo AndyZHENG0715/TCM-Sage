@@ -1,80 +1,110 @@
 # External Integrations
 
-**Analysis Date:** 2026-03-23
+**Analysis Date:** 2026-04-01
 
 ## APIs & External Services
 
-**LLM Providers:**
-- **Alibaba Cloud DashScope**: Used for Qwen models.
-  - SDK/Client: `dashscope` (Python SDK)
-  - Auth: `DASHSCOPE_API_KEY`
-- **OpenAI API**: Used for GPT-4o, etc.
+**LLM providers (runtime selectable):**
+- OpenAI via `langchain_openai.ChatOpenAI` in `src/main.py`
   - SDK/Client: `langchain-openai`
   - Auth: `OPENAI_API_KEY`
-- **Google Generative AI**: Used for Gemini models.
+- Google Gemini via `langchain_google_genai.ChatGoogleGenerativeAI` in `src/main.py`
   - SDK/Client: `langchain-google-genai`
   - Auth: `GOOGLE_API_KEY`
-- **Anthropic Claude**: Used for Claude models.
+- Anthropic via `langchain_anthropic.ChatAnthropic` in `src/main.py`
   - SDK/Client: `langchain-anthropic`
   - Auth: `ANTHROPIC_API_KEY`
-- **OpenRouter/Together AI**: Meta-providers for various open-source models.
-  - SDK/Client: `langchain-openai` (compatible)
-  - Auth: `OPENROUTER_API_KEY`, `TOGETHER_API_KEY`
+- OpenRouter via `langchain_community.llms.OpenRouter` in `src/main.py`
+  - SDK/Client: `langchain-community`
+  - Auth: `OPENROUTER_API_KEY`
+- Together via `langchain_community.llms.Together` in `src/main.py`
+  - SDK/Client: `langchain-community`
+  - Auth: `TOGETHER_API_KEY`
+- Alibaba DashScope (OpenAI-compatible endpoint) in `src/main.py`
+  - SDK/Client: `langchain-openai` (`ChatOpenAI` with `base_url=https://dashscope-intl.aliyuncs.com/compatible-mode/v1`)
+  - Auth: `DASHSCOPE_API_KEY`
+- Ollama local endpoint in `src/main.py`
+  - SDK/Client: `langchain-openai`
+  - Auth: no real key required (uses fixed placeholder), endpoint from `OLLAMA_BASE_URL`
+- LM Studio local endpoint in `src/main.py`
+  - SDK/Client: `langchain-openai`
+  - Auth: no real key required (uses fixed placeholder), endpoint from `LMSTUDIO_BASE_URL`
+
+**Knowledge source integration:**
+- SymMap public dataset and related API consumed by `scripts/fetch_symmap_v2.py`
+  - Endpoints: `http://www.symmap.org/static/download/V2.0/` and `http://www.symmap.org/related_components/`
+  - Client: `requests`
+  - Auth: none
+
+**Frontend-backend bridge:**
+- Next.js catch-all proxy at `web/app/api/backend/[...path]/route.ts`
+  - Forwards to `BACKEND_URL` or `NEXT_PUBLIC_BACKEND_URL` (fallback `http://127.0.0.1:8000`)
+  - Preserves query strings and supports streaming request bodies (`duplex: "half"`)
 
 ## Data Storage
 
 **Databases:**
-- **ChromaDB**: Local, persistent vector database.
-  - Connection: `VECTORSTORE_DIR` (from `src/config.py`)
-  - Client: `chromadb` (Python library)
+- Local embedded vector database (Chroma)
+  - Connection: filesystem path `vectorstore/chroma` (`src/config.py` `VECTORSTORE_DIR`)
+  - Client: `langchain_community.vectorstores.Chroma`
 
 **File Storage:**
-- **Local Filesystem**: Used for storing processed document chunks (`data/processed/chunks.json`) and Knowledge Graph entity data (`data/graph/entities.json`).
+- Local filesystem only
+  - Corpus: `data/source/`
+  - Chunk metadata/content: `data/processed/chunks.json`
+  - Graph JSON: `data/graph/symmap/symmap_entities.json` (default via `src/config.py`, override with `GRAPH_DATA_PATH`)
+  - SymMap raw exports: `data/graph/symmap/raw/`
 
 **Caching:**
-- **Python lru_cache**: Used in `src/api.py` for `load_chunks_data()`.
-- **Frontend State**: `web/hooks/useHistory.ts` manages chat history persistence in the browser session.
+- In-process cache via `functools.lru_cache` in `src/api.py` and `src/ui_backend.py`
+- Hugging Face model cache via `HF_HOME`/default cache path (used in `src/ui_backend.py`)
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- **None/Custom**: The application is currently designed for internal use and does not implement a formal auth provider like Auth0 or NextAuth.js.
+- Custom/no user identity layer in `src/api.py` (no JWT/session middleware)
+  - Implementation: API-key based provider access only for outbound LLM calls
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- **None**: No external service like Sentry or LogRocket is integrated.
+- None detected as an active external service integration in runtime code paths
 
 **Logs:**
-- **Standard Console Logs**: Backend uses standard logging and `coloredlogs` for console output.
+- Application-level print/exception logs in Python modules (`src/api.py`, `src/ui_backend.py`, `src/main.py`)
+- Server logs from Uvicorn when running `src/api.py`
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- **Local/Self-hosted**: The codebase is designed to run locally for development and testing.
+- Not fixed in repo; backend is deployable as Uvicorn service (`src/api.py`), frontend as standard Next.js app (`web/package.json`)
 
 **CI Pipeline:**
-- **GitHub Actions**: Workflows in `.github/workflows/` handle automated triage, review, and potentially deployment tasks.
+- Not detected (`.github/workflows/` not present)
 
 ## Environment Configuration
 
-**Required env vars:**
-- `LLM_PROVIDER`: The primary LLM provider to use (e.g., `alibaba`).
-- `DASHSCOPE_API_KEY` / `OPENAI_API_KEY`: API keys for the chosen provider.
-- `NEXT_PUBLIC_BACKEND_URL`: Used by the frontend to communicate with the FastAPI backend.
+**Required env vars (integration-relevant):**
+- Provider selection and model routing: `LLM_PROVIDER`, `LLM_MODEL`, `CLASSIFIER_LLM_PROVIDER`, `CLASSIFIER_LLM_MODEL`, `VERIFIER_LLM_PROVIDER`, `VERIFIER_LLM_MODEL`
+- Provider auth (choose by provider): `DASHSCOPE_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, `TOGETHER_API_KEY`
+- Local inference endpoints: `OLLAMA_BASE_URL`, `LMSTUDIO_BASE_URL`
+- Retrieval graph plumbing: `HYBRID_RETRIEVAL_ENABLED`, `GRAPH_DATA_PATH`, `GRAPH_DEPTH`, `RETRIEVAL_K`
+- API/network surface: `PORT`, `ALLOWED_ORIGINS`, `BACKEND_URL`, `NEXT_PUBLIC_BACKEND_URL`
+- Optional Hugging Face cache controls: `HF_HOME`, `XDG_CACHE_HOME`, `HF_LOCAL_FILES_ONLY`
+- Optional UI integration: `FEEDBACK_FORM_URL` (used by `src/ui_app.py`)
 
 **Secrets location:**
-- `.env` (Backend, ignored by git)
-- `web/.env.local` (Frontend, ignored by git)
+- `.env` in project root (present); `.env.example` as template
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- **SSE Endpoints**: `/query` on the backend provides a Server-Sent Events stream for real-time LLM responses.
+- None detected
 
 **Outgoing:**
-- **None detected**.
+- Outbound HTTP calls to selected LLM provider endpoints from `src/main.py`
+- Outbound SymMap download/API calls from `scripts/fetch_symmap_v2.py`
 
 ---
 
-*Integration audit: 2026-03-23*
+*Integration audit: 2026-04-01*

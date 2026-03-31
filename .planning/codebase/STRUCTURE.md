@@ -1,126 +1,153 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-03-23
+**Analysis Date:** 2026-04-01
 
 ## Directory Layout
 
-```
+```text
 TCM-Sage/
-├── data/               # Persistent data storage
-│   ├── source/         # Raw source texts (.txt)
-│   ├── processed/      # Chunked and processed data (.json)
-│   └── graph/          # Knowledge Graph extraction results
-├── src/                # Backend source code (Python)
-├── web/                # Frontend source code (Next.js/TypeScript)
-├── scripts/            # Maintenance and audit scripts
-├── vectorstore/        # Vector database persistence (ChromaDB)
-├── docs/               # Architecture and project documentation
-├── research/           # Research papers and notes
-├── walkthrough/        # Pipeline guides and documentation
-├── openspec/           # Feature and evolution specifications
-└── plan/               # Implementation and roadmap plans
+├── src/                     # Python RAG core (ingest, retriever, graph, API, CLI, arena)
+├── web/                     # Next.js 16 App Router frontend + backend proxy route
+├── scripts/                 # Operational scripts (SymMap import, verification, diagnostics)
+├── data/
+│   ├── source/              # Raw corpus .txt files for ingestion
+│   ├── processed/           # Generated `chunks.json`
+│   ├── graph/               # Knowledge graph assets (`symmap/` default + legacy graph files)
+│   ├── feedback/            # Arena vote output (`arena_votes.jsonl`)
+│   └── ...                  # Additional research/sample assets
+├── vectorstore/             # Generated Chroma persistence directory (`chroma/`)
+├── docs/                    # Project documentation (for setup/config/reference)
+├── .planning/               # GSD planning artifacts, phases, and codebase maps
+├── plan/                    # Separate planning docs (`plan/sdp.md`)
+├── requirements.txt         # Python dependency lock-style list
+├── README.md                # Project overview/runbook
+└── AGENTS.md                # Agent conventions and workflow guardrails
 ```
 
 ## Directory Purposes
 
-**src/:**
-- Purpose: Contains the core RAG pipeline, API server, and retrieval logic.
-- Contains: Python modules for retrieval, generation, and extraction.
-- Key files: `api.py` (API server), `main.py` (Core pipeline), `ui_backend.py` (Shared logic), `retriever.py` (Hybrid search), `kg_extractor.py` (KG extraction).
+**`src`:**
+- Purpose: Owns runtime backend behavior and shared RAG logic.
+- Contains: `src/main.py`, `src/api.py`, `src/ui_backend.py`, `src/retriever.py`, `src/graph_builder.py`, `src/arena.py`, `src/config.py`, `src/citation_types.py`, `src/ingest.py`, plus `src/test_*.py`.
+- Key files: `src/main.py`, `src/ui_backend.py`, `src/api.py`.
 
-**web/:**
-- Purpose: Modern Next.js application for the user interface.
-- Contains: React components, hooks, and API client.
-- Key files: `app/page.tsx` (Main UI), `lib/api.ts` (API client), `hooks/useChat.ts` (State management).
+**`web`:**
+- Purpose: Owns user-facing UI and browser-side transport.
+- Contains: `web/app` routes, `web/components`, `web/hooks`, `web/lib`.
+- Key files: `web/app/page.tsx`, `web/lib/api.ts`, `web/app/api/backend/[...path]/route.ts`, `web/app/source/[chunkId]/page.tsx`, `web/app/arena/page.tsx`.
 
-**data/:**
-- Purpose: Storage for raw and intermediate data throughout the pipeline.
-- Contains: `.txt` sources, `.json` chunks, and `.json` graph facts.
-- Key files: `source/` (Huangdi Neijing texts), `processed/chunks.json` (Deduplicated chunks for UI).
+**`scripts`:**
+- Purpose: Owns one-shot data import/verification and diagnostics.
+- Contains: `scripts/import_symmap_kg.py`, `scripts/verify_symmap_retrieval.py`, `scripts/e2e_test.py`, and other checks.
+- Key files: `scripts/import_symmap_kg.py`, `scripts/verify_symmap_retrieval.py`.
 
-**scripts/:**
-- Purpose: Utility scripts for maintenance, testing, and auditing.
-- Contains: Single-purpose Python scripts for health checks and data inspection.
-- Key files: `check_health.py`, `quality_check.py`, `e2e_test.py`.
+**`data`:**
+- Purpose: Owns corpus and graph data artifacts consumed by backend.
+- Contains: `data/source`, `data/processed/chunks.json`, `data/graph/symmap/symmap_entities.json`, feedback and sample datasets.
+- Key files: `data/processed/chunks.json`, `data/graph/symmap/symmap_entities.json`.
 
-**vectorstore/chroma/:**
-- Purpose: Persistent storage for vector embeddings.
-- Contains: SQLite and Parquet files managed by ChromaDB.
+**`vectorstore`:**
+- Purpose: Owns persisted vector index generated from ingestion.
+- Contains: `vectorstore/chroma`.
+- Key files: runtime-loaded by `src/main.py` and `src/ui_backend.py`.
 
-**openspec/specs/:**
-- Purpose: Detailed technical specifications for past and future architecture changes.
-- Contains: Markdown files describing feature designs (e.g., `retrieval-graph`).
+**`.planning`:**
+- Purpose: Owns planning and mapping references used by GSD workflow.
+- Contains: `.planning/codebase/*.md`, `.planning/phases/*`, roadmap and requirements docs.
 
 ## Key File Locations
 
 **Entry Points:**
-- `src/api.py`: Backend REST API entry point.
-- `src/main.py`: Core logic and CLI entry point.
-- `web/app/page.tsx`: Frontend main application page.
+- `src/main.py`: CLI entrypoint for interactive RAG.
+- `src/api.py`: FastAPI app + SSE + arena endpoints.
+- `src/ingest.py`: Build chunk metadata and vector index.
+- `web/app/page.tsx`: main chat page.
+- `web/app/arena/page.tsx`: arena A/B experience.
 
 **Configuration:**
-- `.env.example`: Template for environment variables.
-- `src/config.py`: Centralized backend configuration loader.
-- `web/next.config.ts`: Next.js build and runtime configuration.
-- `web/tailwind.config.ts`: Frontend styling configuration.
+- `src/config.py`: central path and defaults constants.
+- `docs/CONFIG.md`: environment and runtime configuration reference.
+- `.env.example`: sample env keys (values provided at runtime in `.env`).
+- `web/next.config.ts`: frontend build/runtime config.
 
 **Core Logic:**
-- `src/retriever.py`: Hybrid retrieval implementation.
-- `src/ui_backend.py`: Shared backend helpers for UI-specific features.
-- `web/lib/api.ts`: Frontend client for communicating with the backend.
+- `src/retriever.py`: `HybridRetriever` implementation.
+- `src/graph_builder.py`: graph model, loading, traversal, matching.
+- `src/ui_backend.py`: API execution pipeline and cached resources.
+- `src/citation_types.py`: backend citation contract.
+- `web/lib/types.ts`: frontend mirrored citation/message/settings types.
 
 **Testing:**
-- `src/test_retriever.py`: Unit tests for retrieval logic.
-- `src/test_citations.py`: Tests for provenance tracking.
-- `scripts/e2e_test.py`: End-to-end integration tests.
+- `src/test_citations.py`, `src/test_graph.py`, `src/test_hybrid_retriever.py`: script-style backend tests.
+- `scripts/verify_symmap_retrieval.py`, `scripts/e2e_test.py`: integration/diagnostic checks.
 
 ## Naming Conventions
 
 **Files:**
-- **Python**: `snake_case.py` (e.g., `graph_builder.py`).
-- **TypeScript (React)**: `PascalCase.tsx` for components (e.g., `ChatArea.tsx`), `camelCase.ts` for hooks and libs (e.g., `useChat.ts`).
-- **Data**: `snake_case.json` or `snake_case.txt`.
+- Python modules: `snake_case.py` in `src/` and `scripts/`.
+- React components: `PascalCase.tsx` in `web/components`.
+- Hooks/utils/types: `camelCase.ts` in `web/hooks` and `web/lib`.
+- App Router dynamic route segments: bracketed names like `web/app/source/[chunkId]/page.tsx`.
 
 **Directories:**
-- **General**: `snake_case` (e.g., `vectorstore`, `source`).
-- **Web App**: Next.js standard `app/` structure.
+- Frontend route ownership in `web/app/<route>/`.
+- Planning phases in `.planning/phases/<numeric-prefix>-<slug>/`.
+- Data organization by lifecycle stage (`source` -> `processed` -> `vectorstore`).
 
 ## Where to Add New Code
 
-**New Feature (Backend):**
-- **Logic**: Primary implementation in `src/` (e.g., `src/new_feature.py`).
-- **API**: Add endpoints to `src/api.py`.
-- **Integration**: Update `src/ui_backend.py` if it affects the main RAG flow.
+**New Feature:**
+- Primary backend logic: `src/` (prefer extending existing modules before creating new top-level abstractions).
+- API exposure: `src/api.py`.
+- Frontend integration: `web/lib/api.ts` + route/component under `web/app`/`web/components`.
+- Tests: `src/test_<feature>.py` and optional script-level verification under `scripts/`.
 
-**New UI Component:**
-- **Implementation**: Place in `web/components/`.
-- **State**: Use existing hooks in `web/hooks/` or add new ones if shared.
+**New Component/Module:**
+- UI component: `web/components/<Name>.tsx`.
+- UI hook: `web/hooks/use<Feature>.ts`.
+- Backend helper module: `src/<feature>.py` with imports from `src/config.py` for paths/defaults.
 
-**New Utility:**
-- **Shared Helpers**: `src/utils.py` (if added) or specific module.
-- **Maintenance Scripts**: `scripts/`.
-
-**New Data Source:**
-- **Input**: Place raw text in `data/source/`.
-- **Processing**: Run `python src/ingest.py` to update the vector store.
+**Utilities:**
+- Shared frontend helpers: `web/lib/*.ts`.
+- Shared backend constants/config: `src/config.py`.
+- One-time migration/import logic: `scripts/*.py`.
 
 ## Special Directories
 
-**vectorstore/chroma/:**
-- Purpose: Persistent vector database.
-- Generated: Yes (by `src/ingest.py`).
-- Committed: No (managed locally).
+**`data/graph/symmap`:**
+- Purpose: SymMap-shaped KG files and source materials.
+- Generated: Yes, via scripts such as `scripts/import_symmap_kg.py`.
+- Committed: Yes, currently used as default graph source.
 
-**web/.next/:**
-- Purpose: Next.js build output.
+**`vectorstore/chroma`:**
+- Purpose: Chroma database files generated by ingestion.
 - Generated: Yes.
-- Committed: No.
+- Committed: Not required for source-level development.
 
-**venv/:**
-- Purpose: Python virtual environment.
-- Generated: Yes.
-- Committed: No.
+**`web/app/api/backend/[...path]`:**
+- Purpose: Internal proxy boundary between browser and FastAPI service.
+- Generated: No.
+- Committed: Yes.
+
+**`.planning/codebase`:**
+- Purpose: Implementation-planning references (`ARCHITECTURE.md`, `STRUCTURE.md`, etc.).
+- Generated: Yes (by mapping workflow).
+- Committed: Yes.
+
+## Module Boundaries and Ownership
+
+**Backend runtime boundary:**
+- `src/api.py` should own HTTP concerns only; heavy retrieval/generation logic stays in `src/ui_backend.py` and `src/main.py` helpers.
+
+**Retrieval boundary:**
+- Retrieval algorithms belong in `src/retriever.py` and graph traversal in `src/graph_builder.py`; avoid embedding retrieval logic into route handlers.
+
+**Frontend transport boundary:**
+- Network contracts belong in `web/lib/api.ts`; UI hooks/components consume typed functions instead of raw fetch calls.
+
+**Data pipeline boundary:**
+- Data transformation/import belongs in `src/ingest.py` and `scripts/`; runtime query code should treat `data/` and `vectorstore/` as read-only inputs.
 
 ---
 
-*Structure analysis: 2026-03-23*
+*Structure analysis: 2026-04-01*
