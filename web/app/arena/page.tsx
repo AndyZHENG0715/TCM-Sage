@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { ArenaModelSelector } from "@/components/ArenaModelSelector";
 import { ArenaPanel } from "@/components/ArenaPanel";
 import { ArenaReveal } from "@/components/ArenaReveal";
@@ -61,6 +62,9 @@ export default function ArenaPage() {
   return (
     <div className="min-h-screen bg-background-dark text-parchment flex flex-col">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-white/5 bg-background-dark/80 backdrop-blur-md z-10 shrink-0">
+        <Link href="/" className="shrink-0 p-1.5 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/10" title="返回主页">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </Link>
         <h1 className="text-lg font-semibold text-primary shrink-0">TCM Arena</h1>
         <div className="flex-1">
           <ArenaModelSelector
