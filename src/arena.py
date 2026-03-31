@@ -79,12 +79,13 @@ class ArenaSessionConfig(TypedDict):
 # Raw LLM response generator (NO retrieval)
 # ---------------------------------------------------------------------------
 
-_RAW_PROMPT_TEMPLATE = (
-    f"{DEFAULT_SYSTEM_PROMPT}\n\n"
-    "{{history}}\n"
-    "Question:\n{{question}}\n\n"
-    "Answer:\n"
-)
+# Arena-specific system prompt for the plain LLM side (no retrieval context).
+# Uses the same TCM expert identity but allows free-form answers.
+_ARENA_PLAIN_SYSTEM_PROMPT = """You are an expert assistant in Traditional Chinese Medicine (中医).
+You have deep knowledge of TCM theory (阴阳, 五行, 脏腑, 经络), diagnostic methods (四诊), herbal formulas (方剂), acupuncture, and classical texts including but not limited to the Huangdi Neijing (黄帝内经), Shang Han Lun (伤寒论), and Jin Gui Yao Lue (金匮要略).
+Draw on your full TCM knowledge to give an accurate, helpful answer.
+Your answer must be in the same language as the question.
+Use markdown formatting (bold, lists, headings) conservatively to ensure clean rendering."""
 
 
 async def generate_raw_llm_response(
@@ -113,7 +114,7 @@ async def generate_raw_llm_response(
     history_text = "\n".join(history_lines)
 
     prompt_text = (
-        f"{DEFAULT_SYSTEM_PROMPT}\n\n"
+        f"{_ARENA_PLAIN_SYSTEM_PROMPT}\n\n"
     )
     if history_text:
         prompt_text += f"Chat History:\n{history_text}\n\n"
