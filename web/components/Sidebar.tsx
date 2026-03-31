@@ -195,7 +195,7 @@ export function Sidebar({
                     )}
                 >
                     <Swords size={18} className="text-primary/70 group-hover:text-primary transition-colors" />
-                    {!collapsed && <span className="text-sm font-medium truncate">Arena 评测</span>}
+                    {!collapsed && <span className="text-sm font-medium truncate">Arena</span>}
                 </Link>
                 <div className={cn(
                     "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left",
