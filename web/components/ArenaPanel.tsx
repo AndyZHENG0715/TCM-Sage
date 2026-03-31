@@ -28,14 +28,17 @@ export function ArenaPanel({
 }: ArenaPanelProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const processedContent = useMemo(
-    () => (content ? postProcessAssistantContent(content) : ""),
-    [content]
-  );
+  const processedContent = useMemo(() => {
+    if (!content) return "";
+    const cleaned = postProcessAssistantContent(content);
+    // Strip inline citation markers [1], [2] etc. to avoid revealing RAG identity
+    return cleaned.replace(/\[\d+\]/g, "");
+  }, [content]);
 
   const markdownComponents = useMemo(
-    () => createMarkdownComponents(citations),
-    [citations]
+    // Arena doesn't render citation buttons — pass empty to disable %%CITE%% processing
+    () => createMarkdownComponents([]),
+    []
   );
 
   // Auto-scroll while streaming

@@ -23,6 +23,8 @@ from typing import TYPE_CHECKING, List, Tuple
 
 from dotenv import load_dotenv
 
+from config import GRAPH_DATA_DEFAULT_RELATIVE
+
 # Load environment variables at the earliest possible moment
 load_dotenv()
 
@@ -67,11 +69,12 @@ except ImportError:
 
 
 
-DEFAULT_SYSTEM_PROMPT = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
-Your task is to answer questions accurately based ONLY on the provided source text.
+DEFAULT_SYSTEM_PROMPT = """You are an expert assistant in Traditional Chinese Medicine (中医).
+You have deep knowledge of TCM theory (阴阳, 五行, 脏腑, 经络), diagnostic methods (四诊), herbal formulas (方剂), acupuncture, and classical texts including but not limited to the Huangdi Neijing (黄帝内经), Shang Han Lun (伤寒论), and Jin Gui Yao Lue (金匮要略).
+When source materials are provided, ground your answer in those sources and cite them.
+When no source materials are provided, draw on your full TCM knowledge to give an accurate, helpful answer.
 Your answer must be in the same language as the question.
-Avoid excessive or nested markdown formatting to reduce rendering artifacts.
-Use markdown formatting (bold, lists) conservatively to ensure clean rendering."""
+Use markdown formatting (bold, lists, headings) conservatively to ensure clean rendering."""
 
 _SOURCES_DIRECTIVE_PATTERNS = [
     re.compile(
@@ -189,7 +192,7 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
     elif provider == 'alibaba':
         if ChatOpenAI is None:
             raise ValueError("Alibaba provider in OpenAI-compatible mode requires 'langchain-openai' package. Install with: pip install langchain-openai")
-        
+
         api_key = os.getenv('DASHSCOPE_API_KEY')
         if not api_key or api_key == 'your-alibaba-api-key-here':
             raise ValueError("Alibaba API key (DASHSCOPE_API_KEY) not found. Please set it in your .env file.")
@@ -310,10 +313,12 @@ For example: "According to the Neijing [1], yin and yang are fundamental princip
 
 
 CITATION_INSTRUCTION = """
-Use inline citations in the format [1], [2], etc.
+You must ONLY use inline citations in the format [1], [2], etc.
 Each number corresponds to the numbered sources provided in the context below.
-Do not add a trailing Sources/References section.
+NEVER include a "Sources:", "References:", or numbered list of sources at the end of your response.
+NEVER append any section with source citations, source list, or reference list.
 Only cite sources that are actually provided.
+Violation of this rule will break the UI.
 """
 
 
@@ -334,8 +339,11 @@ def build_prompt_template(system_prompt: str) -> ChatPromptTemplate:
     normalized_prompt = strip_sources_directive(system_prompt)
     template = (
         f"{normalized_prompt}\n\n"
-        f"{CITATION_INSTRUCTION.strip()}\n\n"
-        "Context:\n{context}\n\nQuestion:\n{question}\n\nAnswer:\n"
+        "Context:\n{context}\n\n"
+        "Question:\n{question}\n\n"
+        "Final Requirement:\n"
+        "You must ONLY use inline citations like [1]. NEVER add a 'Sources:' or 'References:' list at the end. This is a strict UI requirement.\n\n"
+        "Answer:\n"
     )
     return ChatPromptTemplate.from_template(template)
 
@@ -419,7 +427,14 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
             score = doc.metadata.get('score', 0.0) if doc.metadata else 0.0
             chunk_id = getattr(doc, "id", None) or (doc.metadata.get('id') if doc.metadata else None)
 
-            # Fallback if chunk_id is missing
+            # Reconstruct canonical chunk IDs when document.id is missing.
+            if chunk_id is None and doc.metadata:
+                book = doc.metadata.get("book")
+                chunk_index = doc.metadata.get("chunk_index")
+                if book and chunk_index is not None:
+                    chunk_id = f"{book}_chunk_{chunk_index}"
+
+            # Final fallback only when metadata is insufficient.
             if chunk_id is None:
                 chunk_id = f"{source}_{i}"
 
@@ -636,7 +651,7 @@ def main():
 
         # Hybrid retrieval configuration
         hybrid_enabled = os.getenv('HYBRID_RETRIEVAL_ENABLED', 'true').lower() == 'true'
-        graph_data_path = os.getenv('GRAPH_DATA_PATH', 'data/graph/entities.json')
+        graph_data_path = os.getenv('GRAPH_DATA_PATH', GRAPH_DATA_DEFAULT_RELATIVE)
         graph_depth = int(os.getenv('GRAPH_DEPTH', '1'))
 
         # Get system prompt configuration
@@ -647,7 +662,7 @@ Your task is to answer questions accurately based ONLY on the provided source te
 Your answer must be in the same language as the question.
 Avoid excessive or nested markdown formatting to reduce rendering artifacts.
 Use markdown formatting (bold, lists) conservatively to ensure clean rendering.
-After providing the answer, cite the source chapter for the information you provide in a "Sources:" section."""
+DO NOT add a 'Sources:' or 'References:' list at the end of your response."""
 
         if not system_prompt:
             system_prompt = DEFAULT_SYSTEM_PROMPT

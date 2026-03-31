@@ -107,14 +107,21 @@ export function useArena(initialSessionId: string, initialModel = "qwen-plus") {
                 let collectedB = "";
                 let doneA = false;
                 let doneB = false;
+                let bothStarted = false;
 
                 for await (const event of stream) {
                     if (event.type === "text_a") {
                         collectedA += event.content;
-                        setState((prev) => ({ ...prev, responseA: collectedA }));
+                        if (!bothStarted && collectedB) bothStarted = true;
+                        if (bothStarted) {
+                            setState((prev) => ({ ...prev, responseA: collectedA, responseB: collectedB }));
+                        }
                     } else if (event.type === "text_b") {
                         collectedB += event.content;
-                        setState((prev) => ({ ...prev, responseB: collectedB }));
+                        if (!bothStarted && collectedA) bothStarted = true;
+                        if (bothStarted) {
+                            setState((prev) => ({ ...prev, responseA: collectedA, responseB: collectedB }));
+                        }
                     } else if (event.type === "metadata_a") {
                         doneA = true;
                         setState((prev) => ({
