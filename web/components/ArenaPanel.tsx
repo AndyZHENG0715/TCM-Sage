@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Citation } from "@/lib/types";
+import { postProcessAssistantContent, createMarkdownComponents } from "@/lib/markdown";
 
 interface ArenaPanelProps {
   label: string;          // "Model A" | "Model B"
@@ -26,6 +27,16 @@ export function ArenaPanel({
   citations = [],
 }: ArenaPanelProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const processedContent = useMemo(
+    () => (content ? postProcessAssistantContent(content) : ""),
+    [content]
+  );
+
+  const markdownComponents = useMemo(
+    () => createMarkdownComponents(citations),
+    [citations]
+  );
 
   // Auto-scroll while streaming
   useEffect(() => {
@@ -60,7 +71,7 @@ export function ArenaPanel({
         ) : content ? (
           <div className="bg-parchment rounded-xl shadow-lg border border-[#e3dac3] p-6 relative overflow-hidden">
             <div className="prose prose-sm max-w-none font-serif text-parchment-text">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{processedContent}</ReactMarkdown>
             </div>
             {isStreaming && (
               <span className="inline-block w-2 h-4 bg-primary animate-pulse rounded-sm align-middle mt-2" />

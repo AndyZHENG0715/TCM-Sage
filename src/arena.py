@@ -135,13 +135,14 @@ async def generate_rag_response(
     chat_history: list[dict],
     model_name: str,
 ) -> AsyncIterator[Dict[str, Any]]:
-    """Async generator that wraps the existing RAG pipeline.
+    """Async generator wrapping the sync RAG pipeline with progressive streaming.
 
-    Yields dicts:
-      - ``{"type": "text", "content": "..."}`` for each text chunk
-      - ``{"type": "metadata", "citations": [...], "verification": ...}``
-        as the final event
+    Uses a thread + queue so chunks are yielded as they arrive,
+    rather than waiting for the entire generation to complete.
     """
+    import queue
+    import threading
+
     provider = os.getenv("LLM_PROVIDER", "alibaba").lower()
 
     runtime_settings: Dict[str, Any] = {
@@ -149,26 +150,38 @@ async def generate_rag_response(
         "model": model_name,
     }
 
-    def _collect() -> list:
-        return list(
-            run_query_stream(
+    q: queue.Queue[Dict[str, Any] | None] = queue.Queue()
+
+    def _produce() -> None:
+        try:
+            for item in run_query_stream(
                 user_query=question,
                 chat_history=chat_history,
                 runtime_settings=runtime_settings,
-            )
-        )
+            ):
+                if isinstance(item, dict):
+                    q.put({
+                        "type": "metadata",
+                        "citations": item.get("citations", []),
+                        "verification": item.get("verification"),
+                    })
+                else:
+                    q.put({"type": "text", "content": item})
+        except Exception as exc:
+            q.put({"type": "error", "message": str(exc)})
+        finally:
+            q.put(None)  # sentinel
 
-    items = await asyncio.to_thread(_collect)
+    thread = threading.Thread(target=_produce, daemon=True)
+    thread.start()
 
-    for item in items:
-        if isinstance(item, dict):
-            yield {
-                "type": "metadata",
-                "citations": item.get("citations", []),
-                "verification": item.get("verification"),
-            }
-        else:
-            yield {"type": "text", "content": item}
+    while True:
+        while q.empty():
+            await asyncio.sleep(0.02)
+        item = q.get()
+        if item is None:
+            break
+        yield item
 
 
 # ---------------------------------------------------------------------------

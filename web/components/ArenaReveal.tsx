@@ -129,9 +129,9 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
                         <li key={i} className="text-xs text-gray-500">
                           [{i + 1}]{" "}
                           {c.type === "text"
-                            ? `${(c as { book?: string }).book ?? ""} · ${(c as { chapter_display?: string; chapter?: string }).chapter_display ?? (c as { chapter?: string }).chapter ?? ""}`
+                            ? c.source
                             : c.type === "graph"
-                            ? (c as { fact?: string }).fact ?? ""
+                            ? c.fact
                             : ""}
                         </li>
                       ))}

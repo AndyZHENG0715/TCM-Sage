@@ -1,90 +1,20 @@
 "use client";
 
-import { useMemo, useState, type ComponentPropsWithoutRef } from "react";
+import { getDisplaySourceLabel } from "@/lib/citations";
+import {
+    createMarkdownComponents,
+    postProcessAssistantContent,
+} from "@/lib/markdown";
+import { Citation, Message } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { AlertTriangle, Check, Copy, Info, ThumbsUp } from "lucide-react";
+import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, ThumbsUp, Info, AlertTriangle, Check } from "lucide-react";
-import { Citation, Message } from "@/lib/types";
-import { getDisplaySourceLabel } from "@/lib/citations";
-import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
     message: Message;
     onCitationClick?: (citation: Citation) => void;
-}
-
-const CITE_PREFIX = "%%CITE_";
-const CITE_SUFFIX = "%%";
-const SOURCE_HEADER_RE = /^\s*(?:\*\*)?(?:Sources?|References?)(?:\*\*)?\s*:?\s*$/i;
-const SOURCE_LIST_RE = /^\s*(?:[-*•]|\d+[.)])\s+/;
-const SOURCE_ENTRY_RE = /^\s*(?:\[\d+\]|Source\s*:|KG Fact\s*:)/i;
-
-function stripTrailingReferenceSection(content: string): string {
-    const trimmedContent = content.trimEnd();
-    const lines = trimmedContent.split(/\r?\n/);
-
-    // Search from the end for a line that looks like a "Sources" header
-    for (let index = lines.length - 1; index >= 0; index -= 1) {
-        const line = lines[index].trim();
-        if (!SOURCE_HEADER_RE.test(line)) {
-            continue;
-        }
-
-        // Check if all subsequent non-empty lines are source entries
-        const tailLines = lines.slice(index + 1).filter((l) => l.trim().length > 0);
-        const isReferenceTail =
-            tailLines.length === 0 ||
-            tailLines.every((l) => {
-                const trimmedLine = l.trim();
-                return (
-                    SOURCE_LIST_RE.test(trimmedLine) ||
-                    SOURCE_ENTRY_RE.test(trimmedLine) ||
-                    // Also handle [1], [2] etc without the "Source:" prefix
-                    /^\[\d+\]/.test(trimmedLine)
-                );
-            });
-
-        if (isReferenceTail) {
-            return lines.slice(0, index).join("\n").trimEnd();
-        }
-    }
-
-    // Fallback: Check for a very common pattern where the header and list are together at the end
-    // but might have been missed by the line-by-line check
-    const multiLineMatch = trimmedContent.match(
-        /(?:\n\n|\r\n\r\n)(?:\*\*)?(?:Sources?|References?)(?:\*\*)?\s*:?\s*\n(?:\s*[-*•\d\[].*[\n\r]*)*$/i
-    );
-    if (multiLineMatch) {
-        return trimmedContent.slice(0, multiLineMatch.index).trimEnd();
-    }
-
-    return trimmedContent;
-}
-
-function normalizeQuotedBoldMarkdown(content: string): string {
-    return content
-        // Normalize bold/italic markers: remove spaces inside: ** text ** -> **text**
-        .replace(/(\*\*\*?)\s+/g, "$1")
-        .replace(/\s+(\*\*\*?)/g, "$1")
-        // Handle mismatched markers like ***text：** or **text：***
-        .replace(/\*\*\*(.*?)\*\*/g, "**$1**")
-        .replace(/\*\*(.*?)\*\*\*/g, "**$1**")
-        // Ensure no spaces between bold markers and common Chinese/English quotes
-        .replace(/\*\*(?=["“「『])/g, "**")
-        .replace(/(?<=[”」』"])\*\*/g, "**")
-        // Chinese character robustness: ensure bold markers work with Chinese punctuation like '：'
-        .replace(/([“「『])\*\*/g, "$1**")
-        .replace(/\*\*([”」』])/g, "**$1");
-}
-
-function postProcessAssistantContent(content: string): string {
-    return normalizeQuotedBoldMarkdown(stripTrailingReferenceSection(content))
-        .replace(/\n(\d+\.\s)/g, "\n\n$1") // Ensure numbered lists have two newlines before them
-        .replace(/\n([-*]\s)/g, "\n\n$1") // Ensure bullet points starting with - or * have two newlines before them
-        .replace(
-            /\[(\d+)\]/g,
-            (_match, number) => `\`${CITE_PREFIX}${number}${CITE_SUFFIX}\``
-        );
 }
 
 export function MessageBubble({
@@ -108,76 +38,10 @@ export function MessageBubble({
         return postProcessAssistantContent(message.content);
     }, [isUser, message.content]);
 
-    const markdownComponents = useMemo(() => ({
-        code({ children, ...props }: ComponentPropsWithoutRef<"code">) {
-            const text = String(children).trim();
-            if (text.startsWith(CITE_PREFIX) && text.endsWith(CITE_SUFFIX)) {
-                const citationNumber = Number.parseInt(
-                    text.slice(CITE_PREFIX.length, -CITE_SUFFIX.length),
-                    10
-                );
-                const citation = message.citations?.find(
-                    (item) => item.number === citationNumber
-                );
-
-                if (citation) {
-                    return (
-                        <button
-                            onClick={() => onCitationClick?.(citation)}
-                            className="inline-flex items-center justify-center mx-1 px-1.5 py-0.5 text-xs font-sans font-bold text-primary bg-primary/10 rounded-full hover:bg-primary/20 transition-colors cursor-pointer align-super"
-                        >
-                            {citationNumber}
-                        </button>
-                    );
-                }
-
-                return <span>[{citationNumber}]</span>;
-            }
-
-            return (
-                <code
-                    className="bg-black/5 px-1.5 py-0.5 rounded text-sm font-mono"
-                    {...props}
-                >
-                    {children}
-                </code>
-            );
-        },
-        p({ children }: ComponentPropsWithoutRef<"p">) {
-            return <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>;
-        },
-        h1({ children }: ComponentPropsWithoutRef<"h1">) {
-            return <h1 className="text-2xl font-bold mb-3 mt-4 first:mt-0">{children}</h1>;
-        },
-        h2({ children }: ComponentPropsWithoutRef<"h2">) {
-            return <h2 className="text-xl font-bold mb-2 mt-3 first:mt-0">{children}</h2>;
-        },
-        h3({ children }: ComponentPropsWithoutRef<"h3">) {
-            return <h3 className="text-lg font-semibold mb-2 mt-3 first:mt-0">{children}</h3>;
-        },
-        ul({ children }: ComponentPropsWithoutRef<"ul">) {
-            return <ul className="list-disc pl-6 mb-3 space-y-1">{children}</ul>;
-        },
-        ol({ children }: ComponentPropsWithoutRef<"ol">) {
-            return <ol className="list-decimal pl-6 mb-3 space-y-1">{children}</ol>;
-        },
-        li({ children }: ComponentPropsWithoutRef<"li">) {
-            return <li className="leading-relaxed">{children}</li>;
-        },
-        blockquote({ children }: ComponentPropsWithoutRef<"blockquote">) {
-            return (
-                <blockquote className="border-l-4 border-primary/40 pl-4 italic my-3 text-parchment-text/80">
-                    {children}
-                </blockquote>
-            );
-        },
-        strong({ children }: ComponentPropsWithoutRef<"strong">) {
-            return <strong className="font-bold">{children}</strong>;
-        },
-        hr() {
-            return <hr className="my-4 border-[#dcd3b8]" />;
-        },
-    }), [message.citations, onCitationClick]);
+    const markdownComponents = useMemo(
+        () => createMarkdownComponents(message.citations, onCitationClick),
+        [message.citations, onCitationClick]
+    );
 
     const renderContent = () => {
         if (isUser) {
