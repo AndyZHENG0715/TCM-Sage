@@ -7,7 +7,7 @@ import {
 } from "@/lib/markdown";
 import { Citation, Message } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, Copy, Info, ThumbsUp } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Copy, Info, ThumbsUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -94,6 +94,26 @@ export function MessageBubble({
                         </div>
 
                         <div className="text-parchment-text">{renderContent()}</div>
+
+                        {message.verification && (
+                            <div
+                                className={cn(
+                                    "mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+                                    message.verification.status === "SUPPORTED"
+                                        ? "bg-emerald-500/10 text-emerald-400"
+                                        : "bg-amber-500/10 text-amber-400"
+                                )}
+                            >
+                                {message.verification.status === "SUPPORTED" ? (
+                                    <CheckCircle2 size={12} />
+                                ) : (
+                                    <AlertTriangle size={12} />
+                                )}
+                                {message.verification.status === "SUPPORTED"
+                                    ? "Verified against sources"
+                                    : "May contain unsupported claims"}
+                            </div>
+                        )}
 
                         {message.citations && message.citations.length > 0 && (
                             <div className="mt-6 pt-4 border-t border-[#dcd3b8]">

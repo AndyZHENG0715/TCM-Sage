@@ -1,6 +1,7 @@
 "use client";
 
-import type { Citation } from "@/lib/types";
+import type { Citation, GraphCitation, TextCitation } from "@/lib/types";
+import { useState } from "react";
 
 type VoteOption = "a" | "b" | "tie";
 
@@ -34,7 +35,42 @@ function getRagCitations(vote: ArenaRoundVote): Citation[] {
   return [];
 }
 
+function TextCitationDetail({ citation }: { citation: TextCitation }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-primary/80">
+        Passage Content
+      </p>
+      <div className="rounded-md border border-primary/10 bg-sidebar-dark/30 p-3">
+        <p className="border-l-2 border-primary/40 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-parchment/90">
+          {citation.content}
+        </p>
+      </div>
+      <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary/70">
+        Rel: {citation.relevance_percent.toFixed(1)}%
+      </span>
+    </div>
+  );
+}
+
+function GraphCitationDetail({ citation }: { citation: GraphCitation }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-primary/80">
+        Knowledge Graph Fact
+      </p>
+      <div className="rounded-md border border-primary/10 bg-sidebar-dark/30 p-3">
+        <p className="text-sm leading-relaxed text-parchment/90">{citation.fact}</p>
+      </div>
+      <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary/70">
+        {citation.depth}-hop
+      </span>
+    </div>
+  );
+}
+
 export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
+  const [expandedCitation, setExpandedCitation] = useState<{ round: number; index: number } | null>(null);
   const ragWins = votes.filter((v) => resolveWinner(v) === "rag").length;
   const plainWins = votes.filter((v) => resolveWinner(v) === "plain").length;
   const ties = votes.filter((v) => resolveWinner(v) === "tie").length;
@@ -71,6 +107,8 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
           {votes.map((vote) => {
             const winner = resolveWinner(vote);
             const ragCitations = getRagCitations(vote);
+            const displayedCitations = ragCitations.slice(0, 8);
+            const moreCount = ragCitations.length - displayedCitations.length;
             const ragPanel = Object.entries(vote.positionMapping).find(([, v]) => v === "rag")?.[0]?.toUpperCase();
             const plainPanel = Object.entries(vote.positionMapping).find(([, v]) => v === "plain")?.[0]?.toUpperCase();
 
@@ -124,18 +162,46 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
                 {ragCitations.length > 0 && (
                   <div className="border-t border-gray-800 pt-2 space-y-1">
                     <p className="text-xs text-primary font-medium">RAG 引用来源</p>
-                    <ul className="space-y-0.5">
-                      {ragCitations.slice(0, 4).map((c, i) => (
-                        <li key={i} className="text-xs text-gray-500">
-                          [{i + 1}]{" "}
-                          {c.type === "text"
-                            ? c.source
-                            : c.type === "graph"
-                            ? c.fact
-                            : ""}
-                        </li>
-                      ))}
+                    <ul className="space-y-2">
+                      {displayedCitations.map((c, i) => {
+                        const isExpanded =
+                          expandedCitation?.round === vote.roundNumber && expandedCitation?.index === i;
+
+                        return (
+                          <li key={`${vote.roundNumber}-${i}`} className="text-xs">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedCitation(isExpanded ? null : { round: vote.roundNumber, index: i })
+                              }
+                              aria-expanded={isExpanded}
+                              className={`flex w-full items-start gap-2 text-left cursor-pointer transition-colors ${
+                                isExpanded ? "text-primary" : "text-gray-400 hover:text-primary"
+                              }`}
+                            >
+                              <span className="shrink-0 text-primary/70">[{i + 1}]</span>
+                              <span className="flex-1">
+                                {c.type === "text" ? c.source : c.type === "graph" ? c.fact : ""}
+                              </span>
+                              <span className="shrink-0 ml-1 text-primary/50">
+                                {isExpanded ? "▼" : "▶"}
+                              </span>
+                            </button>
+
+                            {isExpanded && (
+                              <div className="mt-1 ml-4 rounded-lg border border-primary/20 bg-background-dark/50 p-3">
+                                {c.type === "text" ? (
+                                  <TextCitationDetail citation={c} />
+                                ) : c.type === "graph" ? (
+                                  <GraphCitationDetail citation={c} />
+                                ) : null}
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
+                    {moreCount > 0 && <p className="pl-2 text-xs text-gray-500">and {moreCount} more...</p>}
                   </div>
                 )}
               </div>

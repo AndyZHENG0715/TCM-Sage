@@ -1,3 +1,8 @@
+export type Verification = {
+    status: string;
+    explanation: string;
+};
+
 export type TextCitation = {
     number: number;
     type: "text";
@@ -5,6 +10,7 @@ export type TextCitation = {
     content: string;
     chunk_id?: string;
     score: number;
+    relevance_percent: number;
 };
 
 export type GraphCitation = {
@@ -21,12 +27,13 @@ export type Message = {
     role: "user" | "assistant";
     content: string;
     citations?: Citation[];
-    severity?: "informational" | "prescriptive"; // Based on backend
-    verification?: {
-        status: string;
-        explanation: string;
-    };
+    severity?: "informational" | "prescriptive";
+    verification?: Verification;
     timestamp: number;
+};
+
+export type SettingsCapabilities = {
+    hybridAvailable: boolean;
 };
 
 export type Settings = {
@@ -34,9 +41,21 @@ export type Settings = {
     llmModel: string;
     informationalTemperature: number;
     prescriptiveTemperature: number;
+    classifierFollowMain: boolean;
+    classifierProvider: string;
+    classifierModel: string;
+    verifierFollowMain: boolean;
+    verifierProvider: string;
+    verifierModel: string;
+    arenaModels: {
+        flash: string;
+        plus: string;
+        max: string;
+    };
     retrievalK: number;
     hybridRetrieval: boolean;
     graphDepth: number;
+    graphMaxResults: number;
     responseStyle: "concise" | "detailed" | "academic";
     citationFormat: "chapter" | "section";
     themeMode: "dark";
@@ -55,10 +74,26 @@ export const DEFAULT_SETTINGS: Settings = {
     llmModel: "",
     informationalTemperature: 0.1,
     prescriptiveTemperature: 0.0,
+    classifierFollowMain: true,
+    classifierProvider: "",
+    classifierModel: "",
+    verifierFollowMain: true,
+    verifierProvider: "",
+    verifierModel: "",
+    arenaModels: {
+        flash: "qwen-turbo",
+        plus: "qwen-plus",
+        max: "qwen-max",
+    },
     retrievalK: 5,
     hybridRetrieval: true,
     graphDepth: 1,
+    graphMaxResults: 20,
     responseStyle: "detailed",
     citationFormat: "chapter",
     themeMode: "dark",
+};
+
+export const DEFAULT_SETTINGS_CAPABILITIES: SettingsCapabilities = {
+    hybridAvailable: true,
 };

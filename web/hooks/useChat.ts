@@ -1,20 +1,40 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { Message, Citation } from "@/lib/types";
+import { useCallback, useRef, useState } from "react";
+import { Citation, Message, Settings, Verification } from "@/lib/types";
 import { streamQuery } from "@/lib/api";
 
-export function useChat() {
+function updateLastAssistantMessage(
+    messages: Message[],
+    updater: (message: Message) => Message
+) {
+    const next = [...messages];
+    const lastMessage = next[next.length - 1];
+    if (lastMessage?.role !== "assistant") {
+        return messages;
+    }
+
+    next[next.length - 1] = updater(lastMessage);
+    return next;
+}
+
+export function useChat(settings: Settings) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isStreaming, setIsStreaming] = useState(false);
     const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
 
-    // AbortController for cancelling streams
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const sendMessage = useCallback(
         async (content: string) => {
-            if (!content.trim() || isStreaming) return;
+            if (!content.trim() || isStreaming) {
+                return;
+            }
+
+            const chatHistory = messages.map((message) => ({
+                role: message.role,
+                content: message.content,
+            }));
 
             const userMessage: Message = {
                 role: "user",
@@ -22,88 +42,79 @@ export function useChat() {
                 timestamp: Date.now(),
             };
 
-            setMessages((prev) => [...prev, userMessage]);
-            setIsStreaming(true);
-
-            const assistantMessagePlaceholder: Message = {
+            const assistantPlaceholder: Message = {
                 role: "assistant",
                 content: "",
                 timestamp: Date.now(),
             };
 
-            setMessages((prev) => [...prev, assistantMessagePlaceholder]);
+            setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
+            setIsStreaming(true);
 
             try {
                 abortControllerRef.current = new AbortController();
-                // Note: fetch in streamQueryRobust doesn't use signal yet, but we can ignore result
 
-                const stream = streamQuery(content);
-
+                const stream = streamQuery(content, chatHistory, settings);
                 let fullContent = "";
                 let citations: Citation[] = [];
                 let severity: "informational" | "prescriptive" | undefined;
-                let verification: { status: string; explanation: string } | undefined;
+                let verification: Verification | undefined;
 
                 for await (const event of stream) {
                     if (event.type === "text") {
                         fullContent += event.content;
-                        setMessages((prev) => {
-                            const newMessages = [...prev];
-                            const lastMsg = newMessages[newMessages.length - 1];
-                            if (lastMsg.role === "assistant") {
-                                lastMsg.content = fullContent;
-                            }
-                            return newMessages;
-                        });
-                    } else if (event.type === "metadata") {
+                        setMessages((prev) =>
+                            updateLastAssistantMessage(prev, (message) => ({
+                                ...message,
+                                content: fullContent,
+                            }))
+                        );
+                        continue;
+                    }
+
+                    if (event.type === "metadata") {
                         citations = event.citations;
                         severity = event.severity;
-                        verification = event.verification as { status: string; explanation: string };
+                        verification = event.verification;
 
-                        setMessages((prev) => {
-                            const newMessages = [...prev];
-                            const lastMsg = newMessages[newMessages.length - 1];
-                            if (lastMsg.role === "assistant") {
-                                lastMsg.citations = citations;
-                                lastMsg.severity = severity;
-                                lastMsg.verification = verification;
-                            }
-                            return newMessages;
-                        });
-                    } else if (event.type === "error") {
-                        console.error("Stream error:", event.message);
-                        // Append error to content or handle appropriately
-                        fullContent += `\n\n[Error: ${event.message}]`;
-                        setMessages((prev) => {
-                            const newMessages = [...prev];
-                            const lastMsg = newMessages[newMessages.length - 1];
-                            if (lastMsg.role === "assistant") {
-                                lastMsg.content = fullContent;
-                            }
-                            return newMessages;
-                        });
+                        setMessages((prev) =>
+                            updateLastAssistantMessage(prev, (message) => ({
+                                ...message,
+                                citations,
+                                severity,
+                                verification,
+                            }))
+                        );
+                        continue;
                     }
+
+                    console.error("Stream error:", event.message);
+                    fullContent += `\n\n[Error: ${event.message}]`;
+                    setMessages((prev) =>
+                        updateLastAssistantMessage(prev, (message) => ({
+                            ...message,
+                            content: fullContent,
+                        }))
+                    );
                 }
             } catch (error) {
                 console.error("Chat error:", error);
-                setMessages((prev) => {
-                    const newMessages = [...prev];
-                    const lastMsg = newMessages[newMessages.length - 1];
-                    if (lastMsg.role === "assistant") {
-                        lastMsg.content += "\n\n[System Error: Failed to get response]";
-                    }
-                    return newMessages;
-                });
+                setMessages((prev) =>
+                    updateLastAssistantMessage(prev, (message) => ({
+                        ...message,
+                        content: `${message.content}\n\n[System Error: Failed to get response]`,
+                    }))
+                );
             } finally {
                 setIsStreaming(false);
                 abortControllerRef.current = null;
             }
         },
-        [isStreaming]
+        [isStreaming, messages, settings]
     );
 
-    const setMessagesList = useCallback((msgs: Message[]) => {
-        setMessages(msgs);
+    const setMessagesList = useCallback((nextMessages: Message[]) => {
+        setMessages(nextMessages);
     }, []);
 
     return {

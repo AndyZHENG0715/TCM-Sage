@@ -62,6 +62,7 @@ class PipelineConfig:
     hybrid_enabled: bool
     hybrid_available: bool
     graph_depth: int
+    graph_max_results: int
     graph_data_path: str
     system_prompt: str
 
@@ -156,6 +157,7 @@ def _get_default_pipeline_config() -> PipelineConfig:
     retrieval_k = _env_int("RETRIEVAL_K", 5)
     requested_hybrid = _env_flag("HYBRID_RETRIEVAL_ENABLED", True)
     graph_depth = _env_int("GRAPH_DEPTH", 1)
+    graph_max_results = _env_int("GRAPH_MAX_RESULTS", 20)
 
     # Default: SymMap KG at GRAPH_DATA_PATH; override with GRAPH_DATA_PATH env (relative or absolute).
     raw_graph_path = os.getenv("GRAPH_DATA_PATH", GRAPH_DATA_DEFAULT_RELATIVE)
@@ -193,6 +195,7 @@ def _get_default_pipeline_config() -> PipelineConfig:
         hybrid_enabled=hybrid_enabled,
         hybrid_available=hybrid_available,
         graph_depth=graph_depth,
+        graph_max_results=graph_max_results,
         graph_data_path=graph_data_path,
         system_prompt=system_prompt,
     )
@@ -256,6 +259,7 @@ def resolve_runtime_config(overrides: Dict[str, Any] | None = None) -> PipelineC
         overrides.get("hybrid_retrieval_enabled", base.hybrid_enabled)
     )
     graph_depth = max(1, int(overrides.get("graph_depth", base.graph_depth)))
+    graph_max_results = max(1, int(overrides.get("graph_max_results", base.graph_max_results)))
     graph_data_path = base.graph_data_path
     hybrid_available = Path(graph_data_path).exists()
     hybrid_enabled = requested_hybrid and hybrid_available
@@ -277,6 +281,7 @@ def resolve_runtime_config(overrides: Dict[str, Any] | None = None) -> PipelineC
         hybrid_enabled=hybrid_enabled,
         hybrid_available=hybrid_available,
         graph_depth=graph_depth,
+        graph_max_results=graph_max_results,
         graph_data_path=graph_data_path,
         system_prompt=base.system_prompt,
     )
@@ -337,6 +342,7 @@ def _search_graph_documents(
     query: str,
     graph_data_path: str,
     depth: int,
+    max_results: int = 20,
 ) -> list[Document]:
     knowledge_graph = _get_knowledge_graph(graph_data_path)
     graph_docs: list[Document] = []
@@ -349,6 +355,7 @@ def _search_graph_documents(
         related_entities = knowledge_graph.get_related_entities(
             entity_id,
             max_depth=depth,
+            max_results=max_results,
         )
 
         for item in related_entities:
@@ -392,7 +399,7 @@ def _search_graph_documents(
                 )
             )
 
-    return graph_docs
+    return graph_docs[:max_results]
 
 
 def _retrieve_documents(query: str, config: PipelineConfig) -> list[Document]:
@@ -410,6 +417,7 @@ def _retrieve_documents(query: str, config: PipelineConfig) -> list[Document]:
             query=query,
             graph_data_path=config.graph_data_path,
             depth=config.graph_depth,
+            max_results=config.graph_max_results,
         )
     except Exception as error:  # pragma: no cover - best effort fallback
         print(f"[Debug] Hybrid retrieval disabled for this request: {error}")

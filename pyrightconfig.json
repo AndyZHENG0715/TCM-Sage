@@ -1,0 +1,11 @@
+{
+    "venvPath": ".",
+    "venv": "venv",
+    "pythonVersion": "3.13",
+    "pythonPlatform": "Windows",
+    "executionEnvironment": [{"root": "src", "extraPaths": ["src"]}],
+    "reportMissingImports": "warning",
+    "reportImplicitRelativeImport": false,
+    "reportMissingTypeArgument": false,
+    "include": ["src", "scripts"]
+}

@@ -23,6 +23,7 @@ type QuerySettingsPayload = {
     retrieval_k: number;
     hybrid_retrieval_enabled: boolean;
     graph_depth: number;
+    graph_max_results: number;
 };
 
 type RuntimeConfigResponse = {
@@ -40,6 +41,7 @@ type RuntimeConfigResponse = {
     hybrid_enabled: boolean;
     hybrid_available: boolean;
     graph_depth: number;
+    graph_max_results: number;
 };
 
 export type SettingsBootstrap = {
@@ -117,6 +119,7 @@ function serializeRuntimeSettings(settings: Settings): QuerySettingsPayload {
         retrieval_k: settings.retrievalK,
         hybrid_retrieval_enabled: settings.hybridRetrieval,
         graph_depth: settings.graphDepth,
+        graph_max_results: settings.graphMaxResults,
     };
 }
 
@@ -143,6 +146,7 @@ function mapConfigToSettings(config: RuntimeConfigResponse): SettingsBootstrap {
         retrievalK: config.retrieval_k,
         hybridRetrieval: capabilities.hybridAvailable ? config.hybrid_enabled : false,
         graphDepth: config.graph_depth,
+        graphMaxResults: config.graph_max_results ?? 20,
     };
 
     return {
@@ -254,13 +258,27 @@ export async function* streamQuery(
 
 export async function fetchConfig(): Promise<SettingsBootstrap | null> {
     try {
-        const res = await fetch(`${BACKEND_URL}/config`);
+        const [res, arenaModels] = await Promise.all([
+            fetch(`${BACKEND_URL}/config`),
+            fetchArenaModels(),
+        ]);
         if (!res.ok) {
             throw new Error("Failed to fetch config");
         }
 
         const parsed = (await res.json()) as RuntimeConfigResponse;
-        return mapConfigToSettings(parsed);
+        const bootstrap = mapConfigToSettings(parsed);
+        return {
+            ...bootstrap,
+            defaultSettings: {
+                ...bootstrap.defaultSettings,
+                arenaModels: {
+                    flash: arenaModels.flash?.trim() || bootstrap.defaultSettings.arenaModels.flash,
+                    plus: arenaModels.plus?.trim() || bootstrap.defaultSettings.arenaModels.plus,
+                    max: arenaModels.max?.trim() || bootstrap.defaultSettings.arenaModels.max,
+                },
+            },
+        };
     } catch (error) {
         console.error("Error fetching config:", error);
         return null;
@@ -424,8 +442,12 @@ export async function submitArenaVote(vote: {
     });
 }
 
-export async function fetchArenaModels(): Promise<Record<string, string>> {
-    const res = await fetch(`${BACKEND_URL}/arena/models`);
-    if (!res.ok) return {};
-    return res.json() as Promise<Record<string, string>>;
+export async function fetchArenaModels(): Promise<Partial<Settings["arenaModels"]>> {
+    try {
+        const res = await fetch(`${BACKEND_URL}/arena/models`);
+        if (!res.ok) return {};
+        return (await res.json()) as Partial<Settings["arenaModels"]>;
+    } catch {
+        return {};
+    }
 }

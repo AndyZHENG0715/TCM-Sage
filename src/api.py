@@ -65,6 +65,7 @@ class RuntimeSettingsRequest(BaseModel):
     retrieval_k: int | None = None
     hybrid_retrieval_enabled: bool | None = None
     graph_depth: int | None = None
+    graph_max_results: int | None = None
 
 
 class QueryRequest(BaseModel):
@@ -92,6 +93,7 @@ class ConfigResponse(BaseModel):
     hybrid_enabled: bool
     hybrid_available: bool
     graph_depth: int
+    graph_max_results: int
 
 
 class ArenaQueryRequest(BaseModel):
@@ -144,6 +146,7 @@ async def get_config() -> ConfigResponse:
             hybrid_enabled=config.hybrid_enabled,
             hybrid_available=config.hybrid_available,
             graph_depth=config.graph_depth,
+            graph_max_results=config.graph_max_results,
         )
     except Exception as exc:  # pragma: no cover - passthrough for runtime failures
         raise HTTPException(status_code=500, detail=f"Failed to load config: {exc}") from exc

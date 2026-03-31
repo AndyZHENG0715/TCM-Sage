@@ -1,17 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArenaModelSelector } from "@/components/ArenaModelSelector";
 import { ArenaPanel } from "@/components/ArenaPanel";
 import { ArenaReveal } from "@/components/ArenaReveal";
 import { ArenaVoteBar } from "@/components/ArenaVoteBar";
 import { useArena } from "@/hooks/useArena";
-import { ARENA_MODEL_PRESETS, ARENA_SAMPLE_PROMPTS } from "@/lib/arenaPrompts";
+import { ARENA_SAMPLE_PROMPTS } from "@/lib/arenaPrompts";
+import { useSettings } from "@/hooks/useSettings";
 import type { VoteOption } from "@/hooks/useArena";
 import type { Citation } from "@/lib/types";
 
 export default function ArenaPage() {
+  const { settings, isLoaded } = useSettings();
   const [sessionId] = useState(() => crypto.randomUUID());
   const [inputValue, setInputValue] = useState("");
   const [selectedVote, setSelectedVote] = useState<VoteOption | null>(null);
@@ -19,6 +21,22 @@ export default function ArenaPage() {
 
   const { state, sendArenaQuery, submitVote, setSelectedModel, revealAll, resetSession } =
     useArena(sessionId);
+  const didSyncInitialModel = useRef(false);
+
+  useEffect(() => {
+    if (!isLoaded || didSyncInitialModel.current) return;
+    setSelectedModel(settings.arenaModels.plus);
+    didSyncInitialModel.current = true;
+  }, [isLoaded, settings.arenaModels.plus, setSelectedModel]);
+
+  const arenaModelPresets = useMemo(
+    () => [
+      { label: "Flash", value: settings.arenaModels.flash, description: "轻量快速" },
+      { label: "Plus", value: settings.arenaModels.plus, description: "均衡性价比" },
+      { label: "Max", value: settings.arenaModels.max, description: "旗舰性能" },
+    ],
+    [settings.arenaModels.flash, settings.arenaModels.plus, settings.arenaModels.max]
+  );
 
   const isStreaming = state.isStreamingA || state.isStreamingB;
   const bothDone = state.canVote && !isStreaming;
@@ -59,6 +77,14 @@ export default function ArenaPage() {
     setSelectedVote(null);
   };
 
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background-dark text-parchment">
+        <div className="animate-pulse text-sm text-gray-400">Loading Arena settings...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background-dark text-parchment flex flex-col">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-white/5 bg-background-dark/80 backdrop-blur-md z-10 shrink-0">
@@ -68,7 +94,7 @@ export default function ArenaPage() {
         <h1 className="text-lg font-semibold text-primary shrink-0">TCM Arena</h1>
         <div className="flex-1">
           <ArenaModelSelector
-            models={ARENA_MODEL_PRESETS}
+            models={arenaModelPresets}
             selected={state.selectedModel}
             onSelect={setSelectedModel}
             disabled={isStreaming}

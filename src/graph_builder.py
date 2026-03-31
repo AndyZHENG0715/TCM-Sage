@@ -161,6 +161,7 @@ class TCMKnowledgeGraph:
         relationship_type: Optional[str] = None,
         direction: str = "both",
         max_depth: int = 1,
+        max_results: int = 20,
     ) -> list[dict]:
         """
         Get entities related to the given entity via graph traversal.
@@ -170,6 +171,7 @@ class TCMKnowledgeGraph:
             relationship_type: Filter by relationship type (optional).
             direction: Traversal direction - 'outgoing', 'incoming', or 'both'.
             max_depth: Maximum traversal depth (1 = direct neighbors, 2 = neighbors' neighbors).
+            max_results: Maximum number of related entities returned after traversal.
 
         Returns:
             List of related entities with relationship info:
@@ -231,7 +233,7 @@ class TCMKnowledgeGraph:
                 traverse(related_id, depth + 1)
 
         traverse(entity_id, 1)
-        return results
+        return results[:max_results]
 
     def search_by_name(self, query: str) -> list[str]:
         """
