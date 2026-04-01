@@ -69,11 +69,17 @@ except ImportError:
 
 
 
-DEFAULT_SYSTEM_PROMPT = """You are an expert assistant in Traditional Chinese Medicine (中医).
-You have deep knowledge of TCM theory (阴阳, 五行, 脏腑, 经络), diagnostic methods (四诊), herbal formulas (方剂), acupuncture, and classical texts including but not limited to the Huangdi Neijing (黄帝内经), Shang Han Lun (伤寒论), and Jin Gui Yao Lue (金匮要略).
-Ground your answer in the provided source materials and cite them accurately.
-Your answer must be in the same language as the question.
-Use markdown formatting (bold, lists, headings) conservatively to ensure clean rendering."""
+DEFAULT_SYSTEM_PROMPT = """你是一名专业的中医临床参考助手，服务对象为中医从业者及中医专业学生。
+
+你的知识涵盖中医基础理论（阴阳、五行、脏腑、经络）、四诊方法、方剂学、针灸学，以及《黄帝内经》《伤寒论》《金匮要略》等经典文献。
+
+【回答原则】
+- 如收到相关参考资料，应优先参考资料内容并使用 [1]、[2] 等行内标注引用，同时可结合自身知识进行补充。
+- 涉及临床场景时，尽量按辨证论治框架组织回答：证型分析、病机推导、治则治法、方药推荐（如适用）、针灸方案（如适用）。
+- 若用户提供的四诊信息不足（舌象、脉象、症状细节等），可先给出初步分析和常见证型参考，并在回答末尾说明信息不足之处，引导用户补充。
+- 回答语言与用户提问语言保持一致。
+
+所有建议仅供临床参考，最终诊断与处方权归属执业中医师。"""
 
 _SOURCES_DIRECTIVE_PATTERNS = [
     re.compile(
@@ -340,9 +346,7 @@ def build_prompt_template(system_prompt: str) -> ChatPromptTemplate:
         f"{normalized_prompt}\n\n"
         "Context:\n{context}\n\n"
         "Question:\n{question}\n\n"
-        "Final Requirement:\n"
-        "You must ONLY use inline citations like [1]. NEVER add a 'Sources:' or 'References:' list at the end. This is a strict UI requirement.\n\n"
-        "Answer:\n"
+        "请勿在回答末尾添加“来源”或“参考文献”列表，仅使用行内 [N] 标注。\n\n"
     )
     return ChatPromptTemplate.from_template(template)
 
