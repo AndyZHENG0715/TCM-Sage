@@ -339,16 +339,27 @@ def strip_sources_directive(system_prompt: str) -> str:
 
 
 def build_prompt_template(system_prompt: str) -> ChatPromptTemplate:
-    """Build the shared RAG prompt with inline-citation guidance."""
+    """Build the shared RAG prompt with proper role separation.
+    
+    Uses SystemMessage for behavioral instructions and HumanMessage for
+    context + question. This role separation prevents the LLM from entering
+    'summarization mode' when given reference material.
+    """
+    from langchain_core.messages import SystemMessage
 
     normalized_prompt = strip_sources_directive(system_prompt)
-    template = (
-        f"{normalized_prompt}\n\n"
-        "Context:\n{context}\n\n"
-        "Question:\n{question}\n\n"
-        "请勿在回答末尾添加“来源”或“参考文献”列表，仅使用行内 [N] 标注。\n\n"
-    )
-    return ChatPromptTemplate.from_template(template)
+
+    return ChatPromptTemplate.from_messages([
+        SystemMessage(content=normalized_prompt),
+        ("human", (
+            "以下为检索到的参考资料，供回答时引用：\n\n"
+            "{context}\n\n"
+            "---\n\n"
+            "用户提问：{question}\n\n"
+            "请基于以上资料和自身知识，以结构清晰的方式回答。"
+            "使用行内 [N] 标注引用来源，勿在末尾添加参考文献列表。"
+        )),
+    ])
 
 
 def build_verification_payload(status: str) -> dict:
@@ -442,7 +453,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
                 chunk_id = f"{source}_{i}"
 
             # Add to context with citation number
-            context_parts.append(f"[{citation_number}] Source: {source}\n{doc.page_content}\n")
+            context_parts.append(f"[{citation_number}] {source}\n{doc.page_content}\n")
 
             # Build citation metadata
             content = doc.page_content.strip().replace('\n', ' ')
@@ -480,7 +491,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
             citation_number += 1
 
     # Build final context
-    context = "=== Numbered Sources ===\n\n" + "\n".join(context_parts) if context_parts else ""
+    context = "\n".join(context_parts) if context_parts else ""
     apply_relevance_percentages(citations)
 
     return context, citations
