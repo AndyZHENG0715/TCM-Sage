@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from typing import List
 
 import streamlit as st
 
@@ -19,7 +18,15 @@ SRC_DIR = Path(__file__).resolve().parent
 if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
-from ui_backend import get_runtime_config, run_query, run_query_stream  # type: ignore  # pylint: disable=import-error
+from ui_backend import get_runtime_config, run_query_stream  # type: ignore  # pylint: disable=import-error
+
+STREAMLIT_HISTORY_LIMIT = max(1, int(os.getenv("STREAMLIT_HISTORY_LIMIT", "20")))
+STREAMLIT_STREAM_UPDATE_CHAR_INTERVAL = max(
+    40, int(os.getenv("STREAMLIT_STREAM_UPDATE_CHAR_INTERVAL", "120"))
+)
+STREAMLIT_DEBUG_CONTEXT_PREVIEW_CHARS = max(
+    0, int(os.getenv("STREAMLIT_DEBUG_CONTEXT_PREVIEW_CHARS", "4000"))
+)
 
 st.set_page_config(
     page_title="TCM-Sage Prototype",
@@ -40,11 +47,41 @@ if feedback_url:
 else:
     st.caption("Discovery UI for demonstrating query routing and evidence-backed answers.")
 
-if "history" not in st.session_state:
-    st.session_state.history: List[dict] = []
 
-if "query_input" not in st.session_state:
-    st.session_state.query_input = ""
+def ensure_session_state() -> None:
+    if "history" not in st.session_state:
+        st.session_state.history = []
+    if "query_input" not in st.session_state:
+        st.session_state.query_input = ""
+
+
+def build_history_entry(metadata: dict) -> dict:
+    return {
+        "question": metadata["question"],
+        "answer": metadata["answer"],
+        "severity": metadata["severity"],
+        "temperature": metadata["temperature"],
+        "timestamp": metadata["timestamp"],
+        "provider": metadata["provider"],
+        "model": metadata.get("model"),
+        "verification_result": metadata.get("verification_result"),
+    }
+
+
+def trim_history() -> None:
+    del st.session_state.history[STREAMLIT_HISTORY_LIMIT:]
+
+
+def get_debug_context_preview(debug_context: str | None) -> tuple[str | None, bool]:
+    if not debug_context or STREAMLIT_DEBUG_CONTEXT_PREVIEW_CHARS <= 0:
+        return None, False
+
+    truncated = len(debug_context) > STREAMLIT_DEBUG_CONTEXT_PREVIEW_CHARS
+    preview = debug_context[:STREAMLIT_DEBUG_CONTEXT_PREVIEW_CHARS]
+    return preview, truncated
+
+
+ensure_session_state()
 
 
 def handle_submit(query: str) -> None:
@@ -66,6 +103,7 @@ def handle_submit(query: str) -> None:
         stream = run_query_stream(query)
         collected_answer = ""
         metadata = None
+        last_rendered_length = 0
         
         # Update status once streaming starts
         first_chunk = True
@@ -78,7 +116,14 @@ def handle_submit(query: str) -> None:
                     status_placeholder.info("✍️ Generating answer...")
                     first_chunk = False
                 collected_answer += item
-                answer_placeholder.markdown(collected_answer + "▌")
+                should_render = (
+                    "\n" in item
+                    or len(collected_answer) - last_rendered_length
+                    >= STREAMLIT_STREAM_UPDATE_CHAR_INTERVAL
+                )
+                if should_render:
+                    answer_placeholder.markdown(collected_answer + "▌")
+                    last_rendered_length = len(collected_answer)
         
         # Remove cursor and show final answer
         answer_placeholder.markdown(collected_answer)
@@ -100,12 +145,20 @@ def handle_submit(query: str) -> None:
                 verification_placeholder.success("✅ [Self-Critique Pass]: This answer has been verified against the provided citations.")
             
             # Display debug references in collapsible section
-            if metadata.get("debug_context"):
+            debug_context_preview, debug_context_truncated = get_debug_context_preview(
+                metadata.get("debug_context")
+            )
+            if debug_context_preview:
                 with st.expander("🔍 Debug: Retrieved Context", expanded=False):
-                    st.code(metadata["debug_context"], language=None)
+                    st.code(debug_context_preview, language=None)
+                    if debug_context_truncated:
+                        st.caption(
+                            "Debug context preview truncated to keep Streamlit payloads smaller on unstable connections."
+                        )
             
-            # Store in history
-            st.session_state.history.insert(0, metadata)
+            # Store only the fields required for rerendering to keep session payloads small.
+            st.session_state.history.insert(0, build_history_entry(metadata))
+            trim_history()
     
     except Exception as e:
         status_placeholder.empty()

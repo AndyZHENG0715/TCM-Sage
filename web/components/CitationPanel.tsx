@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { X, BookOpen, ExternalLink, Loader2 } from "lucide-react";
-import { Citation, GraphCitation, TextCitation } from "@/lib/types";
 import { ChunkContext, fetchChunkContext } from "@/lib/api";
 import { getDisplaySourceLabel, getOcrArtifacts } from "@/lib/citations";
+import { Citation, GraphCitation, TextCitation } from "@/lib/types";
+import { BookOpen, ExternalLink, Loader2, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { KGViewer } from "./KGViewer";
 
 interface CitationPanelProps {
@@ -43,7 +43,13 @@ function HighlightedText({
     );
 }
 
-function TextCitationContent({ citation }: { citation: TextCitation }) {
+function TextCitationContent({
+    citation,
+    onSourceLabelResolved
+}: {
+    citation: TextCitation;
+    onSourceLabelResolved?: (label: string) => void;
+}) {
     const chunkId = citation.chunk_id;
     const [context, setContext] = useState<ChunkContext | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -77,37 +83,36 @@ function TextCitationContent({ citation }: { citation: TextCitation }) {
         };
     }, [chunkId, showFullText, context]);
 
+    useEffect(() => {
+        const label = getDisplaySourceLabel(
+            citation.source,
+            context?.chapter_display || context?.chapter
+        );
+        const display = [context?.book, label].filter(Boolean).join(" — ");
+        if (display) {
+            onSourceLabelResolved?.(display);
+        } else {
+            onSourceLabelResolved?.(label || "Source");
+        }
+    }, [citation.source, context, onSourceLabelResolved]);
+
     const loading = showFullText && !context && !error;
-    const sourceLabel = getDisplaySourceLabel(
-        citation.source,
-        context?.chapter_display || context?.chapter
-    );
-    const sourceDisplay = [context?.book, sourceLabel].filter(Boolean).join(" — ");
-    
+
     // Determine what text to show based on toggle state
-    const paragraphText = showFullText && context?.paragraph_text 
-        ? context.paragraph_text 
+    const paragraphText = showFullText && context?.paragraph_text
+        ? context.paragraph_text
         : citation.content;
-    
+
     // Highlights only apply when we have the full context mapping
     const paragraphStart = showFullText ? (context?.paragraph_highlight_start ?? 0) : 0;
-    const paragraphEnd = showFullText 
-        ? (context?.paragraph_highlight_end ?? paragraphText.length) 
+    const paragraphEnd = showFullText
+        ? (context?.paragraph_highlight_end ?? paragraphText.length)
         : paragraphText.length;
-        
+
     const ocrArtifacts = getOcrArtifacts(paragraphText);
 
     return (
         <div className="space-y-6">
-            <div className="space-y-2">
-                <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
-                    Source Chapter
-                </h3>
-                <p className="font-serif text-2xl text-parchment-text border-b-2 border-primary/20 pb-2 inline-block">
-                    {sourceDisplay || sourceLabel || "Source"}
-                </p>
-            </div>
-
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
@@ -199,6 +204,8 @@ function GraphCitationContent({ citation }: { citation: GraphCitation }) {
 }
 
 export function CitationPanel({ citation, onClose }: CitationPanelProps) {
+    const [sourceLabel, setSourceLabel] = useState<string>("");
+
     if (!citation) {
         return null;
     }
@@ -207,19 +214,24 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
     const chunkId = isText ? (citation as TextCitation).chunk_id : undefined;
 
     return (
-        <div className="fixed inset-y-0 right-0 w-full sm:w-[400px] lg:w-[450px] bg-parchment shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col border-l border-[#dcd3b8]">
+        <div className="relative h-screen w-full sm:w-[400px] lg:w-[450px] bg-parchment shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l border-[#dcd3b8] shrink-0">
             <div className="flex items-center justify-between p-6 border-b border-[#dcd3b8] bg-[#ebe5d5]">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg text-primary-dark">
                         <BookOpen size={20} />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <h2 className="font-sans text-xs font-bold text-[#8c8578] uppercase tracking-wider">
                             {isText ? "Classic Text Source" : "Knowledge Graph Fact"}
                         </h2>
-                        <p className="font-serif font-bold text-parchment-text text-lg leading-tight">
-                            Ref [{citation.number}]
+                        <p className="font-serif font-bold text-parchment-text text-lg leading-tight truncate max-w-[250px]">
+                            {sourceLabel || `Ref [${citation.number}]`}
                         </p>
+                        {sourceLabel && (
+                            <p className="font-sans text-[10px] text-[#8c8578] uppercase mt-0.5">
+                                Ref [{citation.number}]
+                            </p>
+                        )}
                     </div>
                 </div>
                 <button
@@ -235,6 +247,7 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                     <TextCitationContent
                         key={chunkId || `text-${citation.number}`}
                         citation={citation as TextCitation}
+                        onSourceLabelResolved={setSourceLabel}
                     />
                 ) : (
                     <GraphCitationContent citation={citation as GraphCitation} />
@@ -244,7 +257,7 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
             <div className="p-6 border-t border-[#dcd3b8] bg-[#ebe5d5]">
                 {isText && chunkId ? (
                     <Link
-                        href={`/source/${chunkId}`}
+                        href={`/source/${chunkId}?from=chat`}
                         target="_blank"
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white font-sans font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
                     >

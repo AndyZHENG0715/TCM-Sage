@@ -4,7 +4,7 @@ TCM-Sage Type Definitions
 TypedDict schemas for structured data used across the RAG pipeline.
 """
 
-from typing import TypedDict, Union, Literal, Optional
+from typing import Literal, Optional, TypedDict, Union
 
 
 class TextCitation(TypedDict):
@@ -12,10 +12,11 @@ class TextCitation(TypedDict):
 
     number: int
     type: Literal["text"]
-    source: str           # Chapter name (e.g., "素問·陰陽應象大論")
-    content: str          # Snippet of the text passage
+    source: str
+    content: str
     chunk_id: Optional[str]
-    score: float          # Similarity score (lower = better match for distance)
+    score: float
+    relevance_percent: float
 
 
 class GraphCitation(TypedDict):
@@ -23,10 +24,9 @@ class GraphCitation(TypedDict):
 
     number: int
     type: Literal["graph"]
-    fact: str             # Formatted fact (e.g., "川芎 --TREATS--> 頭痛")
-    depth: int            # Traversal depth (1-hop, 2-hop, etc.)
-    source_ref: Optional[dict]  # Optional provenance reference
+    fact: str
+    depth: int
+    source_ref: Optional[dict]
 
 
-# Union type for all citation types
 Citation = Union[TextCitation, GraphCitation]
