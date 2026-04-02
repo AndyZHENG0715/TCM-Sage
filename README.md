@@ -10,9 +10,9 @@ The vast body of TCM knowledge, spanning thousands of years of literature, repre
 
 The system is built on a Modular RAG paradigm to handle the complexities of classical Chinese texts.
 
-1. **Knowledge Base:** The current knowledge base is the full classical text of the *Huangdi Neijing (黃帝内經)*. The text has been programmatically cleaned, chunked, and embedded into a persistent **ChromaDB vector store**.
+2. **Knowledge Base:** 17 classical TCM texts (3.72M characters) including the four canonical works (《黄帝内经》《伤寒论》《金匮要略》《神农本草经》), 本草纲目, 备急千金要方, 金元四大家著作, and 温病学 texts. Texts are chunked with sentence-aware splitting and embedded into a persistent **ChromaDB** vector store using **DashScope text-embedding-v4** (1024 dimensions).
 
-2. **Hybrid Retriever:** The retriever combines semantic vector search with an in-memory **Knowledge Graph (KG)** built with **NetworkX** to resolve the ambiguity of classical terminology.
+2. **Hybrid Retriever:** The retriever combines semantic vector search with the **SymMap 2.0 Knowledge Graph** (18,450 entities, 21,476 relationships) built with **NetworkX** and connected via a crosswalk bridge for entity resolution.
 
 3. **Reflective Generator:** A two-layer "glass-box" generator inspired by Self-RAG ensures trustworthy answers:
 
@@ -22,21 +22,24 @@ The system is built on a Modular RAG paradigm to handle the complexities of clas
 
 ## Tech Stack
 
-- **Frontend:** Next.js 16, React 19, TailwindCSS, Lucide React, XYFlow (for KG visualization)
+- **Frontend:** Next.js 16, React 19, TailwindCSS, Lucide React, @xyflow/react (KG visualization), Chart.js (arena statistics)
 - **Backend:** FastAPI (Python 3.10+), LangChain, Uvicorn
-- **Vector Database:** ChromaDB
-- **Knowledge Graph:** NetworkX
-- **Embeddings:** Nomic Embed Text v1.5 (HuggingFace)
+- **Vector Database:** ChromaDB (1024-dim, text-embedding-v4)
+- **Knowledge Graph:** SymMap 2.0 via NetworkX + crosswalk bridge
+- **Embeddings:** DashScope text-embedding-v4 (Alibaba Cloud, 1024 dimensions)
 - **LLM Support:** Alibaba DashScope (Qwen), Google Gemini, OpenAI, Anthropic
 
 ## Current Status (Apr 2026)
 
-The project is in active stabilization + knowledge graph migration:
+The project is in active development approaching FYP presentation:
 
-- ✅ Next.js 16 web interface and FastAPI backend are both production-usable for local development.
-- ✅ Hybrid retrieval (vector + KG) is running, with ongoing migration from legacy graph data to SymMap-based KG data.
-- ✅ Multi-provider LLM support is available (Alibaba/Qwen, Gemini, OpenAI, Anthropic).
-- 🔄 Prompt quality tuning, verification hardening, and end-to-end evaluation are still in progress.
+- ✅ Next.js 16 web interface and FastAPI backend are production-usable.
+- ✅ 17 classical TCM texts ingested (3.72M characters, 11,522 chunks) with DashScope text-embedding-v4.
+- ✅ Hybrid retrieval (vector + SymMap 2.0 KG) with jieba-enhanced entity matching.
+- ✅ Arena blind A/B evaluation system for comparing RAG vs plain LLM responses.
+- ✅ Chinese system prompt with 辨证论治 framework and cite-then-explain guidance.
+- ✅ Multi-provider LLM support (Alibaba/Qwen, Gemini, OpenAI, Anthropic).
+- 🔄 KG subgraph visualization and arena statistical analysis in progress.
 
 For detailed planning artifacts and phase tracking, see `.planning/ROADMAP.md`.
 
@@ -128,10 +131,13 @@ For detailed planning artifacts and phase tracking, see `.planning/ROADMAP.md`.
 TCM-Sage analyzes each query to determine clinical severity, routing it to optimized LLM instances with tailored temperature settings.
 
 ### 🕸️ **Knowledge Graph Visualization**
-A modern, interactive graph viewer allows practitioners to explore relationships between symptoms, herbs, formulas, and related entities through the integrated KG pipeline.
+A modern, interactive graph viewer powered by @xyflow/react renders subgraph neighborhoods around cited entities with dagre layout, allowing practitioners to explore relationships between symptoms, herbs, formulas, and related entities from the SymMap 2.0 knowledge graph.
 
 ### 📚 **Evidence-Based Answers**
-All responses are backed by direct, verifiable citations from the source corpus, presented in a dedicated citation panel with source reconstruction.
+All responses are backed by direct, verifiable citations from the 17-text classical corpus. The system quotes original text verbatim before explaining, and presents citations in a dedicated panel with full paragraph viewing and source reconstruction.
+
+### ⚖️ **Arena Blind Evaluation**
+A blind A/B comparison system where TCM practitioners evaluate RAG-enhanced responses against plain LLM responses without knowing which is which. Results are analyzed with paired T-Test for statistical proof of RAG effectiveness.
 
 ### 🌐 **Multi-Provider Support**
 Seamlessly switch between Alibaba Cloud, Google, OpenAI, and Anthropic for maximum flexibility and availability.
