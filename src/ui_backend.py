@@ -19,14 +19,15 @@ from typing import Any, Dict, Generator, Union
 from dotenv import load_dotenv
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 SRC_DIR = Path(__file__).resolve().parent
 if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
 from config import GRAPH_DATA_DEFAULT_RELATIVE
+from crosswalk_bridge import resolve_query_to_symmap_ids
+from embeddings import get_embedding_model
 from graph_builder import create_graph_from_json
 from main import (  # type: ignore  # pylint: disable=import-error
     DEFAULT_SYSTEM_PROMPT,
@@ -40,8 +41,6 @@ from main import (  # type: ignore  # pylint: disable=import-error
 )
 
 load_dotenv()
-
-EMBEDDING_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
 
 
 @dataclass(frozen=True)
@@ -103,36 +102,6 @@ def _resolve_path(raw_path: str) -> Path:
     return (Path(__file__).parent.parent / candidate).resolve()
 
 
-def _get_huggingface_cache_root() -> Path:
-    hf_home = os.getenv("HF_HOME")
-    if hf_home:
-        return Path(hf_home)
-
-    xdg_cache_home = os.getenv("XDG_CACHE_HOME")
-    if xdg_cache_home:
-        return Path(xdg_cache_home) / "huggingface"
-
-    return Path.home() / ".cache" / "huggingface"
-
-
-def _get_local_embedding_snapshot(model_name: str) -> Path | None:
-    repo_cache_dir = _get_huggingface_cache_root() / "hub" / f"models--{model_name.replace('/', '--')}"
-    snapshots_dir = repo_cache_dir / "snapshots"
-    if not snapshots_dir.exists():
-        return None
-
-    try:
-        snapshots = sorted(
-            (path for path in snapshots_dir.iterdir() if path.is_dir()),
-            key=lambda path: path.stat().st_mtime,
-            reverse=True,
-        )
-    except OSError:
-        return None
-
-    return snapshots[0] if snapshots else None
-
-
 @lru_cache(maxsize=1)
 def _get_default_pipeline_config() -> PipelineConfig:
     provider = os.getenv("LLM_PROVIDER", "alibaba").lower()
@@ -162,16 +131,6 @@ def _get_default_pipeline_config() -> PipelineConfig:
     # Default: SymMap KG at GRAPH_DATA_PATH; override with GRAPH_DATA_PATH env (relative or absolute).
     raw_graph_path = os.getenv("GRAPH_DATA_PATH", GRAPH_DATA_DEFAULT_RELATIVE)
     graph_data_path = str(_resolve_path(raw_graph_path))
-
-    if not Path(graph_data_path).exists():
-        for rel in (
-            "data/graph/entities.json",
-            "data/graph/entities_partial.json",
-        ):
-            candidate = str(_resolve_path(rel))
-            if Path(candidate).exists():
-                graph_data_path = candidate
-                break
 
     hybrid_available = Path(graph_data_path).exists()
     hybrid_enabled = requested_hybrid and hybrid_available
@@ -288,18 +247,8 @@ def resolve_runtime_config(overrides: Dict[str, Any] | None = None) -> PipelineC
 
 
 @lru_cache(maxsize=1)
-def _get_embeddings() -> HuggingFaceEmbeddings:
-    local_snapshot = _get_local_embedding_snapshot(EMBEDDING_MODEL_NAME)
-    local_files_only = _env_flag("HF_LOCAL_FILES_ONLY", local_snapshot is not None)
-    model_name_or_path = str(local_snapshot) if local_snapshot is not None else EMBEDDING_MODEL_NAME
-
-    return HuggingFaceEmbeddings(
-        model_name=model_name_or_path,
-        model_kwargs={
-            "trust_remote_code": True,
-            "local_files_only": local_files_only,
-        },
-    )
+def _get_embeddings():
+    return get_embedding_model()
 
 
 @lru_cache(maxsize=1)
@@ -347,7 +296,10 @@ def _search_graph_documents(
     knowledge_graph = _get_knowledge_graph(graph_data_path)
     graph_docs: list[Document] = []
 
-    for entity_id in knowledge_graph.search_by_name(query):
+    candidate_ids = set(knowledge_graph.search_by_name(query))
+    candidate_ids.update(resolve_query_to_symmap_ids(query))
+
+    for entity_id in candidate_ids:
         entity = knowledge_graph.get_entity(entity_id)
         if not entity:
             continue

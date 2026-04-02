@@ -6,7 +6,7 @@ performing a similarity search with a sample query, and displaying the most
 relevant text chunks from the Huangdi Neijing.
 """
 
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from pathlib import Path
 

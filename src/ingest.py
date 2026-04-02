@@ -15,13 +15,9 @@ import pathlib
 import re
 import json
 from typing import List, Dict, Tuple, Optional
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
-
-# Embedding model configuration
-EMBEDDING_MODEL = "nomic-ai/nomic-embed-text-v1.5"
+from embeddings import get_embedding_model
 
 
 class SentenceAwareChineseTextSplitter:
@@ -109,8 +105,10 @@ def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, 
     Split content into chapters while tracking character offsets.
     
     Supports multiple chapter title patterns found in TCM classical texts:
-    - "篇第一", "篇第二" (standard Huangdi Neijing format)
+    - "<篇名>XXX" (standard format in TCM-Ancient-Books repo)
+    - "篇第一", "篇第二" (Huangdi Neijing format)
     - "卷一", "卷二" (volume-based format)
+    - "XXX第一" (inline chapter titles like 灵枢 lfglib format)
     - Sections separated by multiple newlines
     
     Args:
@@ -119,11 +117,13 @@ def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, 
     Returns:
         List of tuples: (chapter_title, chapter_content, char_start, char_end)
     """
-    # Multiple pattern formats for different TCM texts
+    # Multiple pattern formats for different TCM texts (order matters: most specific first)
     patterns = [
-        r'([^\n]*篇第[一二三四五六七八九十百千万]+)',  # 篇第X format
-        r'(卷[一二三四五六七八九十百千万]+[^\n]*)',      # 卷X format
-        r'(第[一二三四五六七八九十百千万]+章[^\n]*)',    # 第X章 format
+        r'<篇名>([^\n]+)',                                    # <篇名>XXX (TCM-Ancient-Books repo)
+        r'([^\n]*篇第[一二三四五六七八九十百千万]+)',              # 篇第X format
+        r'(卷[一二三四五六七八九十百千万上中下]+[^\n]*)',           # 卷X format
+        r'(第[一二三四五六七八九十百千万]+章[^\n]*)',             # 第X章 format
+        r'([^\n]{2,15}第[一二三四五六七八九十百]+)',             # XXX第一 inline titles (灵枢)
     ]
     
     chapters = []
@@ -134,6 +134,9 @@ def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, 
         if len(matches) >= 3:  # At least 3 chapters found
             for i, match in enumerate(matches):
                 chapter_title = match.group(1).strip()
+                # Skip preface/序/目录 sections for cleaner chapter splits
+                if chapter_title in ('序', '目录') or chapter_title.startswith('序') and len(chapter_title) <= 3:
+                    continue
                 char_start = match.start()
                 
                 # End is start of next chapter or end of content
@@ -143,9 +146,11 @@ def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, 
                     char_end = len(content)
                 
                 chapter_content = content[char_start:char_end].strip()
-                chapters.append((chapter_title, chapter_content, char_start, char_end))
+                if chapter_content:  # Skip empty chapters
+                    chapters.append((chapter_title, chapter_content, char_start, char_end))
             
-            return chapters
+            if chapters:
+                return chapters
     
     # Fallback: treat entire content as single chapter
     return [("全文", content, 0, len(content))]
@@ -154,7 +159,7 @@ def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, 
 def process_single_source(
     file_path: pathlib.Path,
     book_name: str,
-    text_splitter: RecursiveCharacterTextSplitter
+    text_splitter: SentenceAwareChineseTextSplitter
 ) -> List[Dict]:
     """
     Process a single source file with character offset tracking.
@@ -265,7 +270,10 @@ def ingest_all_sources(source_dir: pathlib.Path) -> List[Dict]:
 def main():
     """
     Main function to ingest all sources and build vector store.
+    Supports checkpoint/resume: re-run to continue from where it stopped.
     """
+    import sys
+    sys.stdout.reconfigure(encoding='utf-8')
     # Define paths
     script_dir = pathlib.Path(__file__).parent
     source_dir = script_dir.parent / "data" / "source"
@@ -295,26 +303,65 @@ def main():
         json.dump(all_chunks, f, ensure_ascii=False, indent=2)
     print(f"   ✅ Saved to {chunks_file_path}")
     
-    # Generate embeddings and store in ChromaDB
-    print(f"\n🤖 Initializing embedding model ({EMBEDDING_MODEL})...")
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL,
-        model_kwargs={'trust_remote_code': True}
-    )
+    # Generate embeddings and store in ChromaDB with checkpoint/resume
+    print("\n\U0001f916 Initializing embedding model (text-embedding-v4)...")
+    embeddings = get_embedding_model()
     
-    print("📝 Preparing documents for vector store...")
-    chunk_contents = [chunk['content'] for chunk in all_chunks]
-    chunk_ids = [chunk['id'] for chunk in all_chunks]
-    chunk_metadatas = [chunk['metadata'] for chunk in all_chunks]
+    # Checkpoint file tracks which chunk IDs have been successfully embedded
+    checkpoint_path = script_dir.parent / "data" / "processed" / "ingest_checkpoint.json"
+    ingested_ids: set = set()
+    if checkpoint_path.exists():
+        import json as _json
+        ingested_ids = set(_json.load(open(checkpoint_path, encoding='utf-8')))
+        print(f"   \U0001f504 Resuming from checkpoint: {len(ingested_ids)} chunks already ingested")
     
-    print("🗄️ Creating ChromaDB vector store...")
-    vectorstore = Chroma.from_texts(
-        texts=chunk_contents,
-        embedding=embeddings,
-        metadatas=chunk_metadatas,
-        ids=chunk_ids,
-        persist_directory=str(vectorstore_path)
-    )
+    # Filter out already-ingested chunks
+    remaining = [(c, i) for i, c in enumerate(all_chunks) if c['id'] not in ingested_ids]
+    print(f"\n\U0001f4dd Chunks to embed: {len(remaining)} (of {len(all_chunks)} total)")
+    
+    if not remaining:
+        print("\u2705 All chunks already ingested!")
+    else:
+        # Process in batches of 10 (DashScope text-embedding-v4 batch limit)
+        BATCH_SIZE = 10
+        total_batches = (len(remaining) + BATCH_SIZE - 1) // BATCH_SIZE
+        
+        vectorstore = Chroma(
+            persist_directory=str(vectorstore_path),
+            embedding_function=embeddings,
+        )
+        
+        for batch_idx in range(0, len(remaining), BATCH_SIZE):
+            batch = remaining[batch_idx:batch_idx + BATCH_SIZE]
+            batch_num = batch_idx // BATCH_SIZE + 1
+            
+            batch_texts = [c['content'] for c, _ in batch]
+            batch_ids = [c['id'] for c, _ in batch]
+            batch_metas = [c['metadata'] for c, _ in batch]
+            
+            try:
+                vectorstore.add_texts(
+                    texts=batch_texts,
+                    metadatas=batch_metas,
+                    ids=batch_ids,
+                )
+                
+                # Update checkpoint after each successful batch
+                ingested_ids.update(batch_ids)
+                with open(checkpoint_path, 'w', encoding='utf-8') as cp:
+                    json.dump(sorted(ingested_ids), cp, ensure_ascii=False)
+                
+                print(f"   Batch {batch_num}/{total_batches}: +{len(batch)} chunks ({len(ingested_ids)}/{len(all_chunks)} total)")
+                
+            except Exception as e:
+                # Save checkpoint before exiting on failure
+                with open(checkpoint_path, 'w', encoding='utf-8') as cp:
+                    json.dump(sorted(ingested_ids), cp, ensure_ascii=False)
+                print(f"\n\u26a0\ufe0f  API error at batch {batch_num}/{total_batches}: {e}")
+                print(f"\U0001f4be Checkpoint saved: {len(ingested_ids)}/{len(all_chunks)} chunks ingested")
+                print(f"\n\U0001f504 To resume, run this script again. It will skip already-ingested chunks.")
+                print(f"   To start fresh, delete: {checkpoint_path}")
+                return
     
     # Statistics
     print("\n" + "=" * 60)

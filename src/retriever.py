@@ -16,11 +16,12 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_core.documents import Document
 
+from crosswalk_bridge import resolve_query_to_symmap_ids
 from config import GRAPH_DATA_PATH
+from embeddings import get_embedding_model
 from graph_builder import TCMKnowledgeGraph, create_graph_from_json
 
 
@@ -42,7 +43,7 @@ class HybridRetriever:
         self,
         vectorstore_path: str,
         graph_data_path: str,
-        embedding_model: str = "nomic-ai/nomic-embed-text-v1.5",
+        embedding_model: str = "text-embedding-v4",
         vector_k: int = 5,
         graph_depth: int = 1,
     ):
@@ -66,10 +67,8 @@ class HybridRetriever:
         if not Path(vectorstore_path).exists():
             raise FileNotFoundError(f"Vector store not found: {vectorstore_path}")
 
-        embeddings = HuggingFaceEmbeddings(
-            model_name=embedding_model,
-            model_kwargs={'trust_remote_code': True}
-        )
+        _ = embedding_model
+        embeddings = get_embedding_model()
         self.vectorstore = Chroma(
             persist_directory=str(vectorstore_path),
             embedding_function=embeddings,
@@ -125,7 +124,8 @@ class HybridRetriever:
         graph_docs = []
 
         # Find matching entities in the graph
-        matching_ids = self.knowledge_graph.search_by_name(query)
+        matching_ids = set(self.knowledge_graph.search_by_name(query))
+        matching_ids.update(resolve_query_to_symmap_ids(query))
 
         for entity_id in matching_ids:
             entity = self.knowledge_graph.get_entity(entity_id)

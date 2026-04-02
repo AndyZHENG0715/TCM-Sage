@@ -9,8 +9,7 @@ The system uses a modular RAG architecture that combines semantic vector search 
 evidence-backed answer generation using OpenAI's GPT-4o model.
 """
 
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
@@ -19,11 +18,12 @@ import io
 import os
 import re
 import sys
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING, Any, List, Tuple, cast
 
 from dotenv import load_dotenv
 
 from config import GRAPH_DATA_DEFAULT_RELATIVE
+from embeddings import get_embedding_model
 
 # Load environment variables at the earliest possible moment
 load_dotenv()
@@ -35,8 +35,8 @@ if TYPE_CHECKING:
 if sys.platform == "win32":
     try:
         import codecs
-        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
-        sys.stderr = codecs.getwriter("utf-8")(sys.stderr.detach())
+        sys.stdout = codecs.getwriter("utf-8")(cast(Any, sys.stdout).detach())
+        sys.stderr = codecs.getwriter("utf-8")(cast(Any, sys.stderr).detach())
     except (AttributeError, io.UnsupportedOperation):
         # Running in Streamlit or other context where stdout.detach() is not available
         pass
@@ -131,8 +131,9 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
     }
 
     # Use default model if none specified
-    if not model:
-        model = default_models.get(provider)
+    resolved_model = model or default_models.get(provider)
+    if not resolved_model:
+        raise ValueError(f"No default model configured for provider: {provider}")
 
     if provider == 'openai':
         if ChatOpenAI is None:
@@ -140,8 +141,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key or api_key == 'your-openai-api-key-here':
             raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY in your .env file.")
-        return ChatOpenAI(
-            model_name=model,
+        return cast(Any, ChatOpenAI)(
+            model=resolved_model,
             temperature=temperature,
             api_key=api_key
         )
@@ -152,8 +153,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key or api_key == 'your-google-ai-studio-api-key-here':
             raise ValueError("Google API key not found. Please set GOOGLE_API_KEY in your .env file.")
-        return ChatGoogleGenerativeAI(
-            model=model,
+        return cast(Any, ChatGoogleGenerativeAI)(
+            model=resolved_model,
             temperature=temperature,
             google_api_key=api_key
         )
@@ -164,8 +165,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         api_key = os.getenv('ANTHROPIC_API_KEY')
         if not api_key or api_key == 'your-anthropic-api-key-here':
             raise ValueError("Anthropic API key not found. Please set ANTHROPIC_API_KEY in your .env file.")
-        return ChatAnthropic(
-            model=model,
+        return cast(Any, ChatAnthropic)(
+            model=resolved_model,
             temperature=temperature,
             api_key=api_key
         )
@@ -177,7 +178,7 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         if not api_key or api_key == 'your-openrouter-api-key-here':
             raise ValueError("OpenRouter API key not found. Please set OPENROUTER_API_KEY in your .env file.")
         return OpenRouter(
-            model_name=model,
+            model_name=resolved_model,
             temperature=temperature,
             openrouter_api_key=api_key
         )
@@ -189,7 +190,7 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         if not api_key or api_key == 'your-together-api-key-here':
             raise ValueError("Together API key not found. Please set TOGETHER_API_KEY in your .env file.")
         return Together(
-            model=model,
+            model=resolved_model,
             temperature=temperature,
             together_api_key=api_key
         )
@@ -202,8 +203,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         if not api_key or api_key == 'your-alibaba-api-key-here':
             raise ValueError("Alibaba API key (DASHSCOPE_API_KEY) not found. Please set it in your .env file.")
 
-        return ChatOpenAI(
-            model=model,
+        return cast(Any, ChatOpenAI)(
+            model=resolved_model,
             temperature=temperature,
             streaming=streaming,
             api_key=api_key,
@@ -214,8 +215,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         if ChatOpenAI is None:
             raise ValueError("Ollama provider requires 'langchain-openai' package. Install with: pip install langchain-openai")
         base_url = os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434/v1')
-        return ChatOpenAI(
-            model=model,
+        return cast(Any, ChatOpenAI)(
+            model=resolved_model,
             temperature=temperature,
             base_url=base_url,
             api_key='ollama',  # Ollama doesn't need a real key but ChatOpenAI requires one
@@ -226,8 +227,8 @@ def create_llm(provider, model=None, temperature=0.1, streaming=False):
         if ChatOpenAI is None:
             raise ValueError("LM Studio provider requires 'langchain-openai' package. Install with: pip install langchain-openai")
         base_url = os.getenv('LMSTUDIO_BASE_URL', 'http://localhost:1234/v1')
-        return ChatOpenAI(
-            model=model,
+        return cast(Any, ChatOpenAI)(
+            model=resolved_model,
             temperature=temperature,
             base_url=base_url,
             api_key='lm-studio',  # LM Studio doesn't need a real key but ChatOpenAI requires one
@@ -306,15 +307,6 @@ def format_docs(docs):
     refs_section = "\n=== References (Debug) ===\n" + "\n".join(numbered_refs) if numbered_refs else ""
 
     return "\n".join(context_sections) + refs_section
-
-
-# Instruction to append to system prompt for inline citation generation
-CITATION_INSTRUCTION = """
-When citing information from the context, use inline citations in the format [1], [2], etc.
-Each number corresponds to the numbered sources provided below.
-Only cite sources that are actually provided—do not invent citation numbers.
-For example: "According to the Neijing [1], yin and yang are fundamental principles."
-"""
 
 
 CITATION_INSTRUCTION = """
@@ -690,10 +682,7 @@ DO NOT add a 'Sources:' or 'References:' list at the end of your response."""
             )
 
         # Initialize embeddings (must match the model used during ingestion)
-        embeddings = HuggingFaceEmbeddings(
-            model_name="nomic-ai/nomic-embed-text-v1.5",
-            model_kwargs={'trust_remote_code': True}
-        )
+        embeddings = get_embedding_model()
 
         # Load the persistent ChromaDB
         vectorstore = Chroma(
@@ -718,17 +707,17 @@ DO NOT add a 'Sources:' or 'References:' list at the end of your response."""
                 print("Hybrid retriever initialized with knowledge graph.")
 
                 # Wrap in RunnableLambda for LangChain pipe compatibility
-                retriever = RunnableLambda(lambda query: hybrid_retriever.hybrid_search(query))
+                retriever = RunnableLambda(lambda query: hybrid_retriever.hybrid_search(str(query)))
             except Exception as e:
                 print(f"Warning: Failed to initialize hybrid retriever: {e}")
                 print("Falling back to standard vector retriever.")
                 hybrid_enabled = False
                 retriever = RunnableLambda(
-                    lambda query: vector_search_with_scores(vectorstore, query, retrieval_k)
+                    lambda query: vector_search_with_scores(vectorstore, str(query), retrieval_k)
                 )
         else:
             retriever = RunnableLambda(
-                lambda query: vector_search_with_scores(vectorstore, query, retrieval_k)
+                lambda query: vector_search_with_scores(vectorstore, str(query), retrieval_k)
             )
 
         # Initialize classifier LLM
