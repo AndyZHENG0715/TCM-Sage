@@ -24,11 +24,37 @@ Relationship Types:
 """
 
 import json
+import logging
 import pickle
 from pathlib import Path
 from typing import Optional
 
+import jieba
 import networkx as nx
+
+
+jieba.setLogLevel(logging.WARNING)
+
+_COLLOQUIAL_TO_TCM = {
+    "睡眠": "失眠", "睡不着": "失眠", "睡不好": "失眠",
+    "入睡困难": "失眠", "多梦": "多梦",
+    "头疼": "头痛", "肚子疼": "腹痛", "肚子痛": "腹痛",
+    "胃疼": "胃痛", "腰疼": "腰痛",
+    "拉肚子": "泄泻", "便秘": "便秘", "没胃口": "食欲不振",
+    "不想吃饭": "食欲不振",
+    "心慌": "心悸", "胸闷": "胸闷",
+    "上火": "火热", "怕冷": "畏寒", "出汗多": "多汗",
+    "没力气": "乏力", "疲劳": "疲劳", "累": "乏力",
+}
+
+_GENERIC_FILLER_WORDS = {
+    "会导致", "导致", "什么", "问题", "怎么", "应该", "可以",
+    "为什么", "如何", "哪些", "怎样", "能不能", "有没有",
+    "用吗", "药方", "调理", "治疗", "原因", "方法", "建议",
+    "请问", "想问", "帮我", "告诉我", "缺乏",
+}
+
+_PUNCTUATION_CHARS = "。，！？、；：\"'()《》【】.,!?;:"
 
 
 class TCMKnowledgeGraph:
@@ -251,7 +277,6 @@ class TCMKnowledgeGraph:
             List of matching entity IDs.
         """
         matches = []
-        query_lower = query.lower()
 
         # Common Simplified ↔ Traditional mappings for TCM terms
         simp_trad_map = {
@@ -268,13 +293,54 @@ class TCMKnowledgeGraph:
             "杏仁": "杏仁",
         }
 
-        # Build query variants (original + converted)
-        query_variants = {query}
+        cleaned_query = query.translate(str.maketrans("", "", _PUNCTUATION_CHARS)).strip()
+        for filler in sorted(_GENERIC_FILLER_WORDS, key=len, reverse=True):
+            cleaned_query = cleaned_query.replace(filler, "")
+        cleaned_query = cleaned_query.strip()
+
+        alias_expanded_terms = set()
+        alias_source = cleaned_query or query
+        for colloquial, canonical in _COLLOQUIAL_TO_TCM.items():
+            if colloquial in alias_source:
+                alias_expanded_terms.add(canonical)
+
+        jieba_source = cleaned_query or query
+        jieba_segments = {
+            segment.strip()
+            for segment in jieba.lcut(jieba_source)
+            if segment.strip()
+        }
+
+        search_terms = set(alias_expanded_terms)
+        search_terms.update(jieba_segments)
+        search_terms.add(query)
+        if cleaned_query:
+            search_terms.add(cleaned_query)
+
+        query_variants = set(search_terms)
+        for term in list(search_terms):
+            if not term:
+                continue
+            query_variants.add(term)
+            term_variants = {term}
+            for simp, trad in simp_trad_map.items():
+                next_variants = set(term_variants)
+                for variant in term_variants:
+                    if simp in variant:
+                        next_variants.add(variant.replace(simp, trad))
+                    if trad in variant:
+                        next_variants.add(variant.replace(trad, simp))
+                term_variants = next_variants
+            query_variants.update(term_variants)
+
+        normalized_query_variants = {variant.strip() for variant in query_variants if variant.strip()}
         for simp, trad in simp_trad_map.items():
-            if simp in query:
-                query_variants.add(query.replace(simp, trad))
-            if trad in query:
-                query_variants.add(query.replace(trad, simp))
+            current_variants = list(normalized_query_variants)
+            for variant in current_variants:
+                if simp in variant:
+                    normalized_query_variants.add(variant.replace(simp, trad))
+                if trad in variant:
+                    normalized_query_variants.add(variant.replace(trad, simp))
 
         for node_id, attrs in self.graph.nodes(data=True):
             name = attrs.get("name", "")
@@ -284,15 +350,33 @@ class TCMKnowledgeGraph:
             if not name and not name_en:
                 continue
 
-            for q in query_variants:
+            for q in normalized_query_variants:
+                q_lower = q.lower()
                 # Check if entity name appears in query (for extracting entities from sentences)
                 # OR if query appears in entity name (for partial name searches)
-                if (name and (name in q or q in name)) or (name_en and (name_en in query_lower or query_lower in name_en)):
+                if (name and (name in q or q in name)) or (name_en and (name_en in q_lower or q_lower in name_en)):
                     matches.append(node_id)
                     break  # Avoid duplicate matches for same entity
 
+        if matches:
+            return matches
 
-        return matches
+        keyword_segments = [segment for segment in jieba_segments if len(segment) >= 2]
+        if not keyword_segments:
+            return []
+
+        fallback_matches = []
+        for node_id, attrs in self.graph.nodes(data=True):
+            name = attrs.get("name", "")
+            if not name:
+                continue
+
+            for segment in keyword_segments:
+                if segment in name or name in segment:
+                    fallback_matches.append(node_id)
+                    break
+
+        return fallback_matches
 
     def load_from_json(self, json_path: str) -> None:
         """
