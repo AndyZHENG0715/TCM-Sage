@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Citation, GraphCitation, TextCitation } from "@/lib/types";
 import { useState } from "react";
 
@@ -46,6 +47,16 @@ function TextCitationDetail({ citation }: { citation: TextCitation }) {
           {citation.content}
         </p>
       </div>
+      {citation.chunk_id ? (
+        <Link
+          href={`/source/${encodeURIComponent(citation.chunk_id)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary/70 hover:text-primary inline-flex items-center gap-1 mt-2"
+        >
+          View full paragraph →
+        </Link>
+      ) : null}
       <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary/70">
         Rel: {citation.relevance_percent.toFixed(1)}%
       </span>
@@ -71,6 +82,7 @@ function GraphCitationDetail({ citation }: { citation: GraphCitation }) {
 
 export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
   const [expandedCitation, setExpandedCitation] = useState<{ round: number; index: number } | null>(null);
+  const [showAllCitations, setShowAllCitations] = useState<Set<number>>(() => new Set<number>());
   const ragWins = votes.filter((v) => resolveWinner(v) === "rag").length;
   const plainWins = votes.filter((v) => resolveWinner(v) === "plain").length;
   const ties = votes.filter((v) => resolveWinner(v) === "tie").length;
@@ -107,7 +119,8 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
           {votes.map((vote) => {
             const winner = resolveWinner(vote);
             const ragCitations = getRagCitations(vote);
-            const displayedCitations = ragCitations.slice(0, 8);
+            const isShowingAllCitations = showAllCitations.has(vote.roundNumber);
+            const displayedCitations = isShowingAllCitations ? ragCitations : ragCitations.slice(0, 8);
             const moreCount = ragCitations.length - displayedCitations.length;
             const ragPanel = Object.entries(vote.positionMapping).find(([, v]) => v === "rag")?.[0]?.toUpperCase();
             const plainPanel = Object.entries(vote.positionMapping).find(([, v]) => v === "plain")?.[0]?.toUpperCase();
@@ -201,7 +214,26 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
                         );
                       })}
                     </ul>
-                    {moreCount > 0 && <p className="pl-2 text-xs text-gray-500">and {moreCount} more...</p>}
+                    {ragCitations.length > 8 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowAllCitations((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(vote.roundNumber)) {
+                              next.delete(vote.roundNumber);
+                            } else {
+                              next.add(vote.roundNumber);
+                            }
+                            return next;
+                          })
+                        }
+                        aria-expanded={isShowingAllCitations}
+                        className="pl-2 text-xs text-primary/70 hover:text-primary cursor-pointer"
+                      >
+                        {isShowingAllCitations ? "Show less ▼" : `Show all ${moreCount} citations ▶`}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

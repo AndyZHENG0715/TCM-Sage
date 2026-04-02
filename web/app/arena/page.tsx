@@ -18,6 +18,7 @@ export default function ArenaPage() {
   const [inputValue, setInputValue] = useState("");
   const [selectedVote, setSelectedVote] = useState<VoteOption | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [expandedHistory, setExpandedHistory] = useState<Set<number>>(new Set());
 
   const { state, sendArenaQuery, submitVote, setSelectedModel, revealAll, resetSession } =
     useArena(sessionId);
@@ -108,6 +109,60 @@ export default function ArenaPage() {
           New Session
         </button>
       </header>
+      {state.votes.length > 0 && !state.showReveal && (
+        <div className="max-h-48 overflow-y-auto p-4 space-y-2 border-b border-gray-800 shrink-0">
+          {state.votes.map((vote) => {
+            const isExpanded = expandedHistory.has(vote.roundNumber);
+            const labelA = vote.positionMapping?.["a"] === "rag" ? "RAG Enhanced" : "Plain LLM";
+            const labelB = vote.positionMapping?.["b"] === "rag" ? "RAG Enhanced" : "Plain LLM";
+
+            return (
+              <div
+                key={vote.roundNumber}
+                className="bg-sidebar-dark border border-gray-700 rounded-lg p-3 cursor-pointer hover:border-gray-600 transition-colors"
+                onClick={() => {
+                  setExpandedHistory(prev => {
+                    const next = new Set(prev);
+                    if (next.has(vote.roundNumber)) next.delete(vote.roundNumber);
+                    else next.add(vote.roundNumber);
+                    return next;
+                  });
+                }}
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <div className="text-xs font-semibold text-gray-500 uppercase">
+                    Round {vote.roundNumber}: <span className="normal-case">{vote.query}</span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {isExpanded ? "Collapse ▲" : "Expand ▼"}
+                  </div>
+                </div>
+                {!isExpanded ? (
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm text-gray-400 truncate">
+                      <span className="font-semibold text-gray-500">Model A:</span> {vote.responseA.slice(0, 100)}...
+                    </div>
+                    <div className="text-sm text-gray-400 truncate">
+                      <span className="font-semibold text-gray-500">Model B:</span> {vote.responseB.slice(0, 100)}...
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-700 pt-3 cursor-text" onClick={(e) => e.stopPropagation()}>
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 mb-1">Model A ({labelA})</div>
+                      <div className="text-sm text-parchment whitespace-pre-wrap">{vote.responseA}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 mb-1">Model B ({labelB})</div>
+                      <div className="text-sm text-parchment whitespace-pre-wrap">{vote.responseB}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <main className="flex flex-1 flex-col md:flex-row gap-4 p-4 min-h-0 overflow-hidden">
         <ArenaPanel
