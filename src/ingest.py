@@ -100,6 +100,77 @@ def extract_book_name(filename: str) -> str:
     return name
 
 
+# Texts that use numbered clause structure (N．) instead of chapter-based splitting
+_CLAUSE_BASED_TEXTS = {'伤寒论', '金匮要略方论'}
+
+
+def split_into_clauses(content: str, book_name: str) -> List[Dict]:
+    """Split texts with numbered clause structure (e.g., 伤寒论's 398条).
+    
+    Each clause (N．...) becomes a single chunk, preserving the natural
+    semantic unit of one diagnostic statement + its formula.
+    """
+    import re
+    
+    # Find all clause boundaries: N．
+    clause_pattern = re.compile(r'(?=(?:^|\n)(\d+)．)', re.MULTILINE)
+    matches = list(clause_pattern.finditer(content))
+    
+    if len(matches) < 10:
+        return []  # Not enough clauses, fall back to chapter splitting
+    
+    # Determine which chapter each clause belongs to
+    chapter_pattern = re.compile(r'<篇名>([^\n]+)')
+    chapter_matches = list(chapter_pattern.finditer(content))
+    
+    def get_chapter_for_pos(pos: int) -> str:
+        """Find which chapter a position belongs to."""
+        current_chapter = book_name
+        for cm in chapter_matches:
+            if cm.start() <= pos:
+                current_chapter = cm.group(1).strip()
+            else:
+                break
+        return current_chapter
+    
+    chunks = []
+    for i, match in enumerate(matches):
+        clause_num = match.group(1)
+        clause_start = match.start()
+        
+        # End is start of next clause or end of content
+        if i + 1 < len(matches):
+            clause_end = matches[i + 1].start()
+        else:
+            clause_end = len(content)
+        
+        clause_text = content[clause_start:clause_end].strip()
+        if not clause_text or len(clause_text) < 5:
+            continue
+        
+        chapter = get_chapter_for_pos(clause_start)
+        chunk_id = f"{book_name}_clause_{clause_num}"
+        
+        # Detect formula names in the clause
+        formula_match = re.search(r'([\u4e00-\u9fff]{2,6}汤|[\u4e00-\u9fff]{2,6}散|[\u4e00-\u9fff]{2,6}丸|[\u4e00-\u9fff]{2,6}饮)主之', clause_text)
+        formula_name = formula_match.group(1) if formula_match else None
+        
+        chunks.append({
+            'id': chunk_id,
+            'content': clause_text,
+            'metadata': {
+                'book': book_name,
+                'source': chapter,
+                'chunk_index': int(clause_num),
+                'char_start': clause_start,
+                'char_end': clause_end,
+                'clause_number': int(clause_num),
+                'formula': formula_name or '',
+            }
+        })
+    
+    return chunks
+
 def split_into_chapters_with_offsets(content: str) -> List[Tuple[str, str, int, int]]:
     """
     Split content into chapters while tracking character offsets.
@@ -189,7 +260,15 @@ def process_single_source(
     
     print(f"📖 Processing: {book_name} ({len(content):,} characters)")
     
-    # Split into chapters with offset tracking
+    # Use clause-level splitting for texts with numbered clause structure
+    if book_name in _CLAUSE_BASED_TEXTS:
+        clause_chunks = split_into_clauses(content, book_name)
+        if clause_chunks:
+            print(f"   📝 Clause-level splitting: {len(clause_chunks)} clauses")
+            return clause_chunks
+        print(f"   ⚠️ Clause splitting failed, falling back to chapter splitting")
+    
+    # Default: chapter-based splitting
     chapters = split_into_chapters_with_offsets(content)
     print(f"   📚 Found {len(chapters)} chapters")
     

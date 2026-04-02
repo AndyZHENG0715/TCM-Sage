@@ -351,7 +351,7 @@ def build_prompt_template(system_prompt: str) -> ChatPromptTemplate:
 
     return ChatPromptTemplate.from_messages([
         SystemMessage(content=normalized_prompt),
-        ("human", (
+        ("user", (
             "以下为检索到的参考资料，供回答时引用：\n\n"
             "{context}\n\n"
             "---\n\n"
