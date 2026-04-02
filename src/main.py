@@ -302,10 +302,10 @@ def format_docs(docs):
     # Build full context for LLM
     context_sections = []
     if vector_docs:
-        context_sections.append("=== Text Passages ===")
+        context_sections.append("=== 参考文献 ===")
         context_sections.extend(vector_docs)
     if graph_docs:
-        context_sections.append("\n=== Knowledge Graph Facts ===")
+        context_sections.append("\n=== 相关医理事实 ===")
         context_sections.extend(graph_docs)
 
     # Build debug references
@@ -467,7 +467,7 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
             source_ref = doc.metadata.get('source_ref') if doc.metadata else None
 
             # Add to context with citation number
-            context_parts.append(f"[{citation_number}] KG Fact: {doc.page_content}\n")
+            context_parts.append(f"[{citation_number}] {doc.page_content}\n")
 
             citations.append({
                 "number": citation_number,

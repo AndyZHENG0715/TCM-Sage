@@ -99,7 +99,7 @@ export function Sidebar({
             </div>
 
             {/* New Chat Button */}
-            <div className="px-3 mb-4">
+            <div className="px-3 mb-1">
                 <button
                     onClick={onNewChat}
                     className={cn(

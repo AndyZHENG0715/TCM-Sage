@@ -42,9 +42,9 @@ export default function ArenaPage() {
 
   useEffect(() => {
     if (!isLoaded || didSyncInitialModel.current) return;
-    setSelectedModel(settings.arenaModels.plus);
+    setSelectedModel(settings.arenaModels.flash);
     didSyncInitialModel.current = true;
-  }, [isLoaded, settings.arenaModels.plus, setSelectedModel]);
+  }, [isLoaded, settings.arenaModels.flash, setSelectedModel]);
 
   const arenaModelPresets = useMemo(
     () => [
