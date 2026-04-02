@@ -30,9 +30,9 @@ export function ArenaPanel({
 
   const processedContent = useMemo(() => {
     if (!content) return "";
-    const cleaned = postProcessAssistantContent(content);
-    // Strip inline citation markers [1], [2] etc. to avoid revealing RAG identity
-    return cleaned.replace(/\[\d+\]/g, "");
+    // Strip citation markers BEFORE postProcess converts them to %%CITE%% buttons
+    const stripped = content.replace(/\[\d+\]/g, "");
+    return postProcessAssistantContent(stripped);
   }, [content]);
 
   const markdownComponents = useMemo(

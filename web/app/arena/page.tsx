@@ -14,7 +14,11 @@ import type { Citation } from "@/lib/types";
 
 export default function ArenaPage() {
   const { settings, isLoaded } = useSettings();
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId] = useState(() =>
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2) + Date.now().toString(36)
+  );
   const [inputValue, setInputValue] = useState("");
   const [selectedVote, setSelectedVote] = useState<VoteOption | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
