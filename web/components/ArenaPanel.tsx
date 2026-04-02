@@ -30,9 +30,12 @@ export function ArenaPanel({
 
   const processedContent = useMemo(() => {
     if (!content) return "";
-    // Strip citation markers and "Answer:" prefix that RAG LLM sometimes echoes
+    // Strip citation markers [N] and clean up leftover spaces
     let cleaned = content.replace(/\[\d+\]/g, "");
-    cleaned = cleaned.replace(/^\s*Answer:\s*/i, "");
+    // Remove double spaces left by stripped citations
+    cleaned = cleaned.replace(/  +/g, " ");
+    // Strip "Answer:" / "答案：" / "答：" prefix that RAG LLM sometimes echoes
+    cleaned = cleaned.replace(/^\s*(?:Answer|\u7b54\u6848|\u7b54)\s*[:：]\s*/i, "");
     return postProcessAssistantContent(cleaned);
   }, [content]);
 
