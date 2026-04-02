@@ -154,10 +154,18 @@ def split_into_clauses(content: str, book_name: str) -> List[Dict]:
         # Detect formula names in the clause
         formula_match = re.search(r'([\u4e00-\u9fff]{2,6}汤|[\u4e00-\u9fff]{2,6}散|[\u4e00-\u9fff]{2,6}丸|[\u4e00-\u9fff]{2,6}饮)主之', clause_text)
         formula_name = formula_match.group(1) if formula_match else None
+        # Build contextual header for better embedding quality
+        # e.g., "《伤寒论》第35条 麻黄汤：" helps the embedding model
+        # associate formula names with clause content
+        header_parts = [f'《{book_name}》第{clause_num}条']
+        if formula_name:
+            header_parts.append(formula_name)
+        header = ' '.join(header_parts) + '：'
+        content_with_header = f'{header}\n{clause_text}'
         
         chunks.append({
             'id': chunk_id,
-            'content': clause_text,
+            'content': content_with_header,
             'metadata': {
                 'book': book_name,
                 'source': chapter,
