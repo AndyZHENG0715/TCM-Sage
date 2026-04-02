@@ -42,7 +42,7 @@ export interface ArenaState {
     showReveal: boolean;
 }
 
-export function useArena(initialSessionId: string, initialModel = "qwen-plus") {
+export function useArena(initialSessionId: string, initialModel = "qwen-turbo") {
     const [state, setState] = useState<ArenaState>({
         responseA: "",
         responseB: "",

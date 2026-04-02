@@ -368,7 +368,7 @@ export default function ArenaStatsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {stats.query_results.length === 0 ? (
+                {(!stats.query_results || stats.query_results.length === 0) ? (
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center text-gray-500 italic">
                       No query data available.
