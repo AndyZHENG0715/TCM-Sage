@@ -23,8 +23,9 @@ def main() -> None:
         raise SystemExit(f"Missing graph file: {GRAPH_DATA_PATH}")
 
     kg = create_graph_from_json(str(GRAPH_DATA_PATH))
-    eid = kg.find_entity_by_name("頭痛")
-    assert eid == "SM00001", f"unexpected symptom id for 頭痛: {eid}"
+    matching_ids = kg.search_by_name("頭痛")
+    assert matching_ids, f"expected at least one entity match for 頭痛 in {GRAPH_DATA_PATH}"
+    eid = matching_ids[0]
 
     related = kg.get_related_entities(eid, max_depth=2)
     assert related, "expected graph neighbors for 頭痛"

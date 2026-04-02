@@ -5,8 +5,8 @@ Import SymMap-style CSV/TSV exports into TCM-Sage `entities.json` graph format.
 See `.planning/phases/02-standard-kg-integration/SYMMAP_MAPPING.md` for file layout.
 
 Examples:
-  python scripts/import_symmap_kg.py --sample -o data/graph/symmap_entities.json
-  python scripts/import_symmap_kg.py --input-dir path/to/symmap_csv -o data/graph/symmap_entities.json
+  python scripts/import_symmap_kg.py --sample -o data/graph/symmap/symmap_entities.json
+  python scripts/import_symmap_kg.py --input-dir data/graph/symmap/raw -o data/graph/symmap/symmap_entities.json
 """
 
 from __future__ import annotations
@@ -17,6 +17,42 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+
+
+def _read_xlsx(path: Path) -> list[dict[str, str]]:
+    """Load first sheet of an Excel file as list of dict rows (string values)."""
+    try:
+        import openpyxl
+    except ImportError as e:
+        raise SystemExit(
+            "Reading .xlsx requires openpyxl. Install with: venv\\Scripts\\python.exe -m pip install openpyxl"
+        ) from e
+
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    ws = wb.active
+    rows_iter = ws.iter_rows(values_only=True)
+    try:
+        header_row = next(rows_iter)
+    except StopIteration:
+        return []
+    headers: list[str] = []
+    for h in header_row:
+        headers.append(str(h).strip() if h is not None else "")
+    out: list[dict[str, str]] = []
+    for row in rows_iter:
+        d: dict[str, str] = {}
+        for i, key in enumerate(headers):
+            if not key:
+                continue
+            val = row[i] if i < len(row) else None
+            if val is None:
+                d[key] = ""
+            elif isinstance(val, float) and val.is_integer():
+                d[key] = str(int(val))
+            else:
+                d[key] = str(val).strip()
+        out.append(d)
+    return out
 
 
 def _read_table(path: Path) -> list[dict[str, str]]:
@@ -78,6 +114,22 @@ def _legacy_layer(entity_id: str) -> str | None:
     return None
 
 
+def _normalize_symmap_id(entity_id: str) -> str:
+    """
+    Normalize SymMap IDs to stable zero-padded forms when possible.
+
+    - v2 prefixes: SMHB/SMTS/SMMS/SMIT/SMTT/SMDE/SMSY/SMYS -> 6 digits
+    - legacy prefixes: SM/HM/IM/TM/MM -> keep current shape
+    """
+    if not entity_id:
+        return entity_id
+    raw = entity_id.strip().upper()
+    m_v2 = re.match(r"^(SM[A-Z]{2})(\d+)$", raw)
+    if m_v2:
+        return f"{m_v2.group(1)}{int(m_v2.group(2)):06d}"
+    return raw
+
+
 PREFIX_TO_ENTITY_TYPE: dict[str, str] = {
     "SMTS": "Symptom",
     "SMMS": "Symptom",
@@ -86,6 +138,7 @@ PREFIX_TO_ENTITY_TYPE: dict[str, str] = {
     "SMTT": "Target",
     "SMDE": "Disease",
     "SMYS": "Syndrome",
+    "SMSY": "Syndrome",
 }
 
 
@@ -107,6 +160,13 @@ def _entity_id_from_row(row: dict[str, str]) -> str:
         "IM_ID",
         "TM_ID",
         "MM_ID",
+        "Herb_id",
+        "TCM_symptom_id",
+        "MM_symptom_id",
+        "Ingredient_id",
+        "Target_id",
+        "Disease_id",
+        "Syndrome_id",
         "ID",
         "id",
     )
@@ -117,6 +177,21 @@ def entity_hint_from_filename(path: Path) -> tuple[str, str] | None:
     (entity_type, symmap_component) from filename when IDs lack SMxx prefix.
     """
     n = path.stem.lower()
+    # SymMap v2.0 bulk filenames like "SymMap v2.0, SMHB file"
+    if "smhb" in n:
+        return ("Herb", "SMHB")
+    if "smts" in n:
+        return ("Symptom", "SMTS")
+    if "smms" in n:
+        return ("Symptom", "SMMS")
+    if "smit" in n:
+        return ("Ingredient", "SMIT")
+    if "smtt" in n:
+        return ("Target", "SMTT")
+    if "smde" in n:
+        return ("Disease", "SMDE")
+    if "smsy" in n:
+        return ("Syndrome", "SMSY")
     if "symptom" in n and "syndrome" not in n:
         return ("Symptom", "SMTS")
     if "herb" in n:
@@ -128,7 +203,7 @@ def entity_hint_from_filename(path: Path) -> tuple[str, str] | None:
     if "disease" in n:
         return ("Disease", "SMDE")
     if "syndrome" in n:
-        return ("Syndrome", "SMYS")
+        return ("Syndrome", "SMSY")
     return None
 
 
@@ -140,7 +215,9 @@ def parse_entity_rows(
     """Map arbitrary SymMap-like rows to entity dicts."""
     entities: list[dict[str, Any]] = []
     for row in rows:
-        eid = _entity_id_from_row(row)
+        if _pick(row, "Suppress", "suppress").lower() in {"1", "true", "yes"}:
+            continue
+        eid = _normalize_symmap_id(_entity_id_from_row(row))
         if not eid:
             continue
 
@@ -150,6 +227,9 @@ def parse_entity_rows(
             component = prefix
         elif type_hint:
             etype, component = type_hint
+            if eid.isdigit():
+                eid = f"{component}{int(eid):06d}"
+                prefix = component
         else:
             etype, component = "Symptom", "SMTS"
 
@@ -158,6 +238,13 @@ def parse_entity_rows(
             "SMTS_Chinese_Name",
             "SMHB_Chinese_Name",
             "SMYS_Chinese_Name",
+            "Chinese_name",
+            "TCM_symptom_name",
+            "MM_symptom_name",
+            "Molecule_name",
+            "Syndrome_name",
+            "Disease_name",
+            "Gene_symbol",
             "Name_CN",
             "Chinese",
             "SM_Name",
@@ -187,6 +274,10 @@ def parse_entity_rows(
             "SMHB_Pinyin",
             "SM_Pinyin",
             "HM_Pinyin",
+            "Symptom_pinYin",
+            "Symptom_pinyin",
+            "Syndrome_Pinyin",
+            "Pinyin_name",
             "Pinyin",
             "pinyin",
             "PINYIN",
@@ -197,6 +288,10 @@ def parse_entity_rows(
             "description",
             "Function",
             "function",
+            "Symptom_definition",
+            "MM_symptom_definition",
+            "Syndrome_definition",
+            "Disease_definition",
             "SMMS_Name",
         )
 
@@ -217,6 +312,8 @@ def parse_entity_rows(
         }
         if prefix == "SMMS" or (component == "SMMS"):
             ent["symmap_component"] = "SMMS"
+        if component == "SMSY":
+            ent["symmap_component"] = "SMSY"
         entities.append(ent)
     return entities
 
@@ -231,10 +328,10 @@ def parse_relationship_rows(
     rels: list[dict[str, Any]] = []
     for row in rows:
         if source_key and target_key:
-            src = _pick(row, source_key)
-            tgt = _pick(row, target_key)
+            src = _normalize_symmap_id(_pick(row, source_key))
+            tgt = _normalize_symmap_id(_pick(row, target_key))
         else:
-            src = _pick(
+            src = _normalize_symmap_id(_pick(
                 row,
                 "Source",
                 "source",
@@ -247,8 +344,8 @@ def parse_relationship_rows(
                 "IM_ID",
                 "TM_ID",
                 "SMTS_ID",
-            )
-            tgt = _pick(
+            ))
+            tgt = _normalize_symmap_id(_pick(
                 row,
                 "Target",
                 "target",
@@ -260,10 +357,12 @@ def parse_relationship_rows(
                 "SM_ID",
                 "MM_ID",
                 "SMTT_ID",
-            )
+            ))
             if not src or not tgt:
-                src = _pick(row, "SMHB_ID", "Herb_ID", "HM_ID", "IM_ID", "TM_ID")
-                tgt = _pick(row, "SMTS_ID", "Symptom_ID", "SM_ID", "MM_ID", "SMTT_ID", "SMIT_ID")
+                src = _normalize_symmap_id(_pick(row, "SMHB_ID", "Herb_ID", "HM_ID", "IM_ID", "TM_ID"))
+                tgt = _normalize_symmap_id(
+                    _pick(row, "SMTS_ID", "Symptom_ID", "SM_ID", "MM_ID", "SMTT_ID", "SMIT_ID")
+                )
         rtype = _pick(row, "Type", "type", "Relation", "relation") or default_type
         desc = _pick(row, "Description", "description", "Evidence", "evidence")
         if not src or not tgt:
@@ -303,7 +402,9 @@ def parse_relationship_file(path: Path, rows: list[dict[str, str]]) -> list[dict
     if "rel_sm_mm" in stem or ("sm" in stem and "mm" in stem and "rel" in stem):
         return parse_relationship_rows(rows, name, "CORRELATES_WITH", "SM_ID", "MM_ID")
 
-    # SymMap 2.0 style column names
+    # SymMap 2.0 herb → TCM symptom (e.g. rel_smhb_smts.tsv from scripts/fetch_symmap_v2.py)
+    if "rel_smhb_smts" in stem or ("smhb" in stem and "smts" in stem and "rel" in stem):
+        return parse_relationship_rows(rows, name, "TREATS", "SMHB_ID", "SMTS_ID")
     if "smt" in stem and "smhb" in stem:
         return parse_relationship_rows(rows, name, "TREATS", "SMHB_ID", "SMTS_ID")
     if "smhb" in stem and "smit" in stem:
@@ -333,9 +434,15 @@ def load_directory(input_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str
     for path in sorted(input_dir.iterdir()):
         if not path.is_file():
             continue
-        if path.suffix.lower() not in {".csv", ".tsv", ".tab", ".txt"}:
+        if path.suffix.lower() == ".xlsx":
+            stem_l = path.stem.lower()
+            if "key" in stem_l and "file" in stem_l:
+                continue
+            rows = _read_xlsx(path)
+        elif path.suffix.lower() in {".csv", ".tsv", ".tab", ".txt"}:
+            rows = _read_table(path)
+        else:
             continue
-        rows = _read_table(path)
         if not rows:
             continue
 
@@ -536,7 +643,7 @@ def main() -> None:
         "-o",
         "--output",
         type=Path,
-        default=Path("data/graph/symmap_entities.json"),
+        default=Path("data/graph/symmap/symmap_entities.json"),
         help="Output JSON path",
     )
     parser.add_argument(
