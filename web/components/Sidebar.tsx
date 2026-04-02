@@ -11,6 +11,8 @@ import {
     MessageSquare,
     Trash2,
     Swords,
+    BarChart3,
+    ExternalLink
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -117,6 +119,34 @@ export function Sidebar({
                 </button>
             </div>
 
+            {/* Arena Links */}
+            <div className="px-3 mb-2 space-y-1">
+                <Link
+                    href="/arena"
+                    className={cn(
+                        "flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group",
+                        collapsed ? "justify-center" : ""
+                    )}
+                >
+                    <Swords size={20} className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all" />
+                    {!collapsed && <span className="font-sans font-medium text-parchment text-sm">Arena</span>}
+                </Link>
+                <Link
+                    href="/arena/stats"
+                    className={cn(
+                        "flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group",
+                        collapsed ? "justify-center" : ""
+                    )}
+                >
+                    <BarChart3 size={20} className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all" />
+                    {!collapsed && <span className="font-sans font-medium text-parchment text-sm">Arena Stats</span>}
+                </Link>
+                <a href="https://forms.gle/Sm62ucNSKQzGGPJ76" target="_blank" rel="noopener noreferrer" className={cn("flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group", collapsed ? "justify-center" : "")}>
+                    <ExternalLink size={20} className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all" />
+                    {!collapsed && <span className="font-sans font-medium text-parchment text-sm">Give Feedback</span>}
+                </a>
+            </div>
+
             {/* Chat History List */}
             <div className="flex-1 overflow-y-auto px-3 py-2 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {collapsed ? (
@@ -187,26 +217,6 @@ export function Sidebar({
 
             {/* Footer / User Profile */}
             <div className="p-4 border-t border-white/5 flex flex-col gap-2">
-                <Link
-                    href="/arena"
-                    className={cn(
-                        "flex items-center gap-3 w-full p-2 rounded-lg text-primary hover:text-primary hover:bg-white/5 transition-colors text-left group",
-                        collapsed ? "justify-center" : ""
-                    )}
-                >
-                    <Swords size={18} className="text-primary/70 group-hover:text-primary transition-colors" />
-                    {!collapsed && <span className="text-sm font-medium truncate">Arena</span>}
-                </Link>
-                <Link
-                    href="/arena/stats"
-                    className={cn(
-                        "flex items-center gap-3 w-full p-2 rounded-lg text-primary hover:text-primary hover:bg-white/5 transition-colors text-left group",
-                        collapsed ? "justify-center" : ""
-                    )}
-                >
-                    <span className="text-primary/70 group-hover:text-primary transition-colors flex items-center justify-center w-[18px] h-[18px] text-[18px] leading-none">📊</span>
-                    {!collapsed && <span className="text-sm font-medium truncate">Arena Stats</span>}
-                </Link>
                 <div className={cn(
                     "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left",
                     collapsed ? "justify-center" : ""

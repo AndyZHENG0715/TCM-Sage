@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { ArenaModelSelector } from "@/components/ArenaModelSelector";
 import { ArenaPanel } from "@/components/ArenaPanel";
 import { ArenaReveal } from "@/components/ArenaReveal";
@@ -23,7 +24,18 @@ export default function ArenaPage() {
   const [selectedVote, setSelectedVote] = useState<VoteOption | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [expandedHistory, setExpandedHistory] = useState<Set<number>>(new Set());
+  const [showGuide, setShowGuide] = useState(false);
 
+  useEffect(() => {
+    const seen = localStorage.getItem("arena-guide-seen");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!seen) setShowGuide(true);
+  }, []);
+
+  const dismissGuide = () => {
+    setShowGuide(false);
+    localStorage.setItem("arena-guide-seen", "1");
+  };
   const { state, sendArenaQuery, submitVote, setSelectedModel, revealAll, resetSession } =
     useArena(sessionId);
   const didSyncInitialModel = useRef(false);
@@ -93,8 +105,9 @@ export default function ArenaPage() {
   return (
     <div className="min-h-screen bg-background-dark text-parchment flex flex-col">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-white/5 bg-background-dark/80 backdrop-blur-md z-10 shrink-0">
-        <Link href="/" className="shrink-0 p-1.5 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-primary/10" title="返回主页">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-parchment transition-colors group">
+          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to TCM-Sage</span>
         </Link>
         <h1 className="text-lg font-semibold text-primary shrink-0">TCM Arena</h1>
         <div className="flex-1">
@@ -247,6 +260,30 @@ export default function ArenaPage() {
       )}
 
       {state.showReveal && <ArenaReveal votes={state.votes} onReset={handleReset} />}
+
+      {showGuide && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="bg-sidebar-dark border border-gray-700 rounded-2xl p-8 max-w-md mx-4 space-y-4 shadow-2xl">
+                  <h2 className="text-xl font-serif font-bold text-parchment">Welcome to Arena</h2>
+                  <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+                      <p>Arena is a <strong className="text-parchment">blind evaluation</strong> system for comparing our RAG-enhanced responses against a standard LLM.</p>
+                      <ol className="list-decimal list-inside space-y-2">
+                          <li>Both panels use the <strong className="text-parchment">same AI model</strong> — one receives retrieved classical text context, the other does not.</li>
+                          <li>Read both responses and <strong className="text-parchment">vote for the one you find better</strong> — you won&apos;t know which is which until after voting.</li>
+                          <li>After voting, the <strong className="text-parchment">reveal panel</strong> shows which was RAG-enhanced, along with citations used.</li>
+                          <li>You can continue asking <strong className="text-parchment">follow-up questions</strong> for multi-round evaluation.</li>
+                      </ol>
+                      <p className="text-gray-400 text-xs">Your votes help us improve the system. Thank you for participating!</p>
+                  </div>
+                  <button
+                      onClick={dismissGuide}
+                      className="w-full py-2.5 rounded-lg bg-primary text-background-dark font-semibold hover:bg-primary/90 transition-colors"
+                  >
+                      Got it, let&apos;s start
+                  </button>
+              </div>
+          </div>
+      )}
     </div>
   );
 }

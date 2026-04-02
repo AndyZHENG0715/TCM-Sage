@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import type { Citation, GraphCitation, TextCitation } from "@/lib/types";
 import { useState } from "react";
 
@@ -250,6 +251,17 @@ export function ArenaReveal({ votes, onReset }: ArenaRevealProps) {
           >
             开始新会话
           </button>
+        </div>
+        <div className="mt-6 pt-4 border-t border-gray-700">
+          <a
+            href="https://forms.gle/Sm62ucNSKQzGGPJ76"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors text-sm font-medium"
+          >
+            <ExternalLink size={16} />
+            Share detailed feedback (Google Form)
+          </a>
         </div>
       </div>
     </div>
