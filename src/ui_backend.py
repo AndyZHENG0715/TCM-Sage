@@ -431,6 +431,19 @@ def run_query(user_query: str, runtime_settings: Dict[str, Any] | None = None) -
         selected_temp = config.informational_temperature
 
     retrieved_docs = _retrieve_documents(user_query, config)
+
+    # Rerank retrieved documents for better relevance ordering
+    if len(retrieved_docs) > 1:
+        try:
+            from embeddings import rerank_documents
+            doc_texts = [doc.page_content for doc in retrieved_docs]
+            reranked = rerank_documents(user_query, doc_texts, top_n=min(config.retrieval_k, len(doc_texts)))
+            if reranked:
+                reranked_docs = [retrieved_docs[r['index']] for r in reranked]
+                retrieved_docs = reranked_docs
+        except Exception:
+            pass  # Fallback to original order
+
     formatted_context, citations = format_docs_with_citations(retrieved_docs)
     answer = (runtime_models["prompt"] | selected_llm | StrOutputParser()).invoke(
         {"context": formatted_context, "question": user_query}
@@ -492,6 +505,21 @@ def run_query_stream(
     )
 
     retrieved_docs = _retrieve_documents(user_query, config)
+
+    # Rerank retrieved documents for better relevance ordering
+    if len(retrieved_docs) > 1:
+        try:
+            from embeddings import rerank_documents
+            doc_texts = [doc.page_content for doc in retrieved_docs]
+            reranked = rerank_documents(user_query, doc_texts, top_n=min(config.retrieval_k, len(doc_texts)))
+            if reranked:
+                # Reorder documents by reranker scores
+                reranked_docs = [retrieved_docs[r['index']] for r in reranked]
+                retrieved_docs = reranked_docs
+                print(f"[Debug] Reranked {len(doc_texts)} docs -> top {len(reranked)} by relevance")
+        except Exception as rerank_err:
+            print(f"[Debug] Reranker unavailable, using original order: {rerank_err}")
+
     formatted_context, citations = format_docs_with_citations(retrieved_docs)
     generation_context = _prepend_chat_history(formatted_context, chat_history)
 

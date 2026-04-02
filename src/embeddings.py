@@ -57,3 +57,56 @@ class DashScopeEmbeddings(Embeddings):
 
 def get_embedding_model() -> DashScopeEmbeddings:
     return DashScopeEmbeddings(model="text-embedding-v4", dimension=1024)
+
+
+def rerank_documents(
+    query: str,
+    documents: list[str],
+    top_n: int = 5,
+    model: str = "gte-rerank",
+) -> list[dict]:
+    """Rerank documents using DashScope reranker.
+
+    Args:
+        query: The search query.
+        documents: List of document texts to rerank.
+        top_n: Number of top documents to return.
+        model: Reranker model name.
+
+    Returns:
+        List of dicts with 'index', 'relevance_score', 'text' sorted by relevance.
+    """
+    import dashscope
+
+    load_dotenv(override=True)
+    api_key = os.getenv("DASHSCOPE_API_KEY")
+    api_url = os.getenv(
+        "DASHSCOPE_EMBEDDING_API_URL",
+        "https://dashscope-intl.aliyuncs.com/api/v1",
+    )
+    dashscope.base_http_api_url = api_url
+
+    if not documents:
+        return []
+
+    resp = dashscope.TextReRank.call(
+        model=model,
+        query=query,
+        documents=documents,
+        top_n=min(top_n, len(documents)),
+        return_documents=True,
+        api_key=api_key,
+    )
+
+    if resp.status_code != 200:
+        # Fallback: return original order if reranker fails
+        return [{"index": i, "relevance_score": 0.0, "text": doc} for i, doc in enumerate(documents[:top_n])]
+
+    results = []
+    for r in resp.output.results:
+        results.append({
+            "index": r.index,
+            "relevance_score": r.relevance_score,
+            "text": r.document.text if r.document else documents[r.index],
+        })
+    return results
