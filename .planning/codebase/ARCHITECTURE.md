@@ -165,6 +165,19 @@
 - Add new API capabilities in `src/api.py`, then map in `web/lib/api.ts`.
 - Expand graph ingestion via `scripts/import_symmap_kg.py` while preserving loader compatibility in `src/graph_builder.py`.
 
+## Divergence: `src/main.py` vs `src/ui_backend.py`
+
+| Concern | `src/main.py` (CLI) | `src/ui_backend.py` (API/UI) |
+||--------|---------------------|------------------------------|
+| Hybrid retrieval | Uses `HybridRetriever` from `src/retriever.py` | Reimplements hybrid via `vector_search_with_scores` + `_search_graph_documents` (parallel logic, not shared call) |
+| Graph file fallback | Env default only | Additional fallback to `entities.json` / `entities_partial.json` |
+| Context string for LLM | `format_docs` (debug sections) in chain | `format_docs_with_citations` (numbered sources, UI-safe) |
+| Streaming | Not used | `run_query_stream` + `create_llm(..., streaming=True)` |
+| Embeddings | HuggingFace model id directly | Optional local snapshot + `HF_LOCAL_FILES_ONLY` for air-gapped loads |
+| Citation bound check | `verify_citation_bounds` exists but is **not** wired into CLI or UI pipeline | Not invoked |
+| Chat history | N/A | Prepended to context only in streaming path |
+
+**Prescription for new work:** Prefer extending `HybridRetriever` (or a thin shared retrieval module) so CLI and API stay behavior-identical; call `verify_citation_bounds` after generation if UI integrity for `[n]` markers is required.
 ## Current Branch Realities
 
 - Default graph path now points to SymMap export (`src/config.py` -> `data/graph/symmap/symmap_entities.json`), while `src/ui_backend.py` still includes fallback to legacy `data/graph/entities*.json`.

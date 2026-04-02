@@ -1,0 +1,80 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-28T00:00:00Z",
+  "phase": "1.6",
+  "phase_name": "Closing Verification Gaps",
+  "phase_dir": ".planning/phases/01-stabilization-bug-fixes",
+  "plan": "1.6",
+  "task": 1,
+  "total_tasks": 3,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Full-text context and citation-chain stability fixes",
+      "status": "done",
+      "commit": "uncommitted"
+    },
+    {
+      "id": 2,
+      "name": "Same-origin backend proxy for remote/mobile access",
+      "status": "done",
+      "commit": "uncommitted"
+    },
+    {
+      "id": 3,
+      "name": "Prompt quality issue triage and parking prep",
+      "status": "in_progress",
+      "progress": "Prompt redesign is parked pending domain feedback; handoff artifacts prepared."
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 4,
+      "name": "Integrate TCM expert prompt specification into src/main.py",
+      "status": "not_started"
+    },
+    {
+      "id": 5,
+      "name": "Run post-integration smoke tests and citation UX checks",
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "name": "Continue parallel milestone work (SymMap migration, source expansion, UI polish)",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "Prompt redesign is blocked on external TCM/domain feedback.",
+      "type": "human_action",
+      "workaround": "Park the item and proceed with parallel milestone tasks."
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Collect expert feedback for response contract (structure, tone, safety, few-shots).",
+      "context": "Required before replacing DEFAULT_SYSTEM_PROMPT/build_prompt_template behavior.",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Use domain-first prompt redesign instead of iterative patching of existing instructions.",
+      "rationale": "Repeated prompt-only tweaks showed low reliability and output inconsistency.",
+      "phase": "1.6"
+    },
+    {
+      "decision": "Keep rendering-side trailing-reference sanitizer as defensive fallback.",
+      "rationale": "Protects UI contract even if LLM occasionally drifts.",
+      "phase": "1.6"
+    }
+  ],
+  "uncommitted_files": [
+    "Project has a broad dirty worktree across .planning, src/, web/, docs/, and data/.",
+    "Recent handoff artifacts: .planning/todos/parked-001-tcm-expert-prompt-spec.md, .planning/phases/01-stabilization-bug-fixes/1.6-HANDOFF-APIS-PROMPT.md, .planning/STATE.md"
+  ],
+  "next_action": "Start Phase 2 execution track (SymMap KG integration) while waiting for expert prompt feedback.",
+  "context_notes": "Use /gsd-resume-work to restore this state. When feedback arrives, unpark prompt task and implement changes in src/main.py plus validation."
+}

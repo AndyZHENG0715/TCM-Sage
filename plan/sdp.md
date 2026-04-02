@@ -48,7 +48,7 @@ tcm-sage/                             # Root directory
 │
 ├── notebooks/                         # Jupyter notebooks for experimentation (e.g., KG development)
 │
-├── research/                          # Literature review and summary notes
+├── docs/research/                     # Literature review and summary notes
 │
 ├── src/
 │   ├── ingest.py                    # Data pipeline: Clean -> Chunk -> Embed -> Store

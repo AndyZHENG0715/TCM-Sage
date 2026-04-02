@@ -20,6 +20,7 @@
 ## Completed Phases
 - [x] Phase 1: Core UI Fixes (Completed 2026-03-23)
 - [x] Phase 1.5: Alibaba Fix & Layout Refactor (Completed 2026-03-23)
+- [x] Phase 2.5: Arena Blind Evaluation (Completed on `feature/premium-ui`, 11 commits)
 
 ## Active Verification Gaps
 Remaining issues after recent fixes:
@@ -27,9 +28,12 @@ Remaining issues after recent fixes:
 2. **Mobile Background Streaming Limitation**: Android/iOS can drop active streaming when device locks or tab is backgrounded (browser/OS behavior; defer unless architecture change is approved).
 
 ## Recent Activity
-- Completed **Phase 02 plan 2-03** (pipeline integration): `2-03-SUMMARY.md`, `GRAPH_DATA_PATH` default to `data/graph/symmap_entities.json`, `scripts/verify_symmap_retrieval.py` confirms `_search_graph_documents` for 頭痛; **UI human-verify checkpoint** pending (resume signal `approved`). Full SymMap export + human-reviewed seed crosswalk still required before L0 trustable entity merge (no auto-merge in this plan).
-- Completed **Phase 02 plan 2-02** (SymMap KG adapter): `2-02-SUMMARY.md`, `scripts/import_symmap_kg.py` (legacy SM/HM + `rel_*` edge typing), `data/graph/symmap_entities.json` from `data/symmap_sample/` (160 nodes, 230 edges; `TCMKnowledgeGraph.load_from_json` verified).
+- Completed **Phase 02 plan 2-03** (pipeline integration): `2-03-SUMMARY.md`, `GRAPH_DATA_PATH` default to `data/graph/symmap/symmap_entities.json`, `scripts/verify_symmap_retrieval.py` confirms `_search_graph_documents` for 頭痛; UI human-verify completed with real SymMap data and crosswalk review.
+- Completed **Phase 02 plan 2-02** (SymMap KG adapter): `2-02-SUMMARY.md`, `scripts/import_symmap_kg.py` (legacy SM/HM + `rel_*` edge typing), now validated against real SymMap v2.0 export.
+- Architecture update: SymMap-only KG is now the runtime source of truth; legacy `entities_partial.json` is treated as archival.
+- Bridge update: query-time crosswalk lookup is enabled (`src/crosswalk_bridge.py`) so approved mappings can resolve RAG terms to SymMap node IDs during graph retrieval.
 - Completed **Phase 02 plan 2-01** (SymMap 2.0 research & mapping): `2-01-SUMMARY.md`, mapping doc column examples, `graph_builder` docstring alignment with `SYMMAP_MAPPING.md`.
+- Completed **Arena blind evaluation feature set** on `feature/premium-ui` (11 commits): backend `arena.py`, frontend arena page, KG `max_results`, arena model config, clickable citations, verification badge; architecture docs synced via map-codebase.
 - Fixed full-context citation chain end-to-end:
   - canonical chunk ID reconstruction in `src/main.py`
   - robust `/source/{chunk_id}/context` lookup normalization

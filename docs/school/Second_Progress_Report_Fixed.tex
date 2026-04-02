@@ -1,0 +1,135 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{float}  % Added to force table placement
+
+% Table column type for wrapped text
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+
+\begin{document}
+
+\begin{center}
+    \Large\textbf{COMP4908 Final Year Project: Second Progress Report}
+\end{center}
+
+\noindent\textbf{Project Title:} TCM-Sage: An Evidence-Synthesis Tool for Traditional Chinese Medicine\\
+\textbf{Student:} ZHENG Zian (22231153)\\
+\textbf{Supervisor:} ZHANG Ce\\
+\textbf{Date:} December 31, 2025\\
+\textbf{Reporting Period:} October 2025 -- December 2025 (Phase 2)
+
+\vspace{1em}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{1em}
+
+\section{Executive Summary}
+
+This report outlines the significant progress achieved during Phase 2 (MVP Implementation) of the ``TCM-Sage'' project. Following the foundational research in Phase 1, the primary objective of this period was to develop a functional \textbf{Minimum Viable Product (MVP)} capable of end-to-end Retrieval-Augmented Generation (RAG).
+
+The project successfully transitioned from theoretical architecture to working software. The system now features a fully operational \textbf{Hybrid Retrieval} engine (combining semantic search with a knowledge graph) and a \textbf{Reflective Generator} that implements real-time query routing and self-correction to ensure safety.
+
+All planned milestones for the MVP have been met, and the system is ready for demonstration. This report also addresses previous supervisor feedback regarding schedule visualization and specific evaluation metrics.
+
+\section{Detailed Achievements in Phase 2}
+
+\subsection{Core RAG Pipeline \& Multi-Provider Architecture}
+
+The fundamental ``nervous system'' of TCM-Sage has been implemented in Python. The system ingests user queries, retrieves relevant context from the \textit{Huangdi Neijing} (Yellow Emperor's Inner Canon), and synthesizes evidence-based answers.
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Vector Store Integration:} The text was programmatically cleaned, split, and embedded using \texttt{all-MiniLM-L6-v2} into a persistent \textbf{ChromaDB} vector store, enabling sub-second semantic retrieval.
+    \item \textbf{Multi-Provider Flexibility:} To ensure cost-efficiency and testing rigor, the system features a provider-agnostic layer. It can seamlessly switches between \textbf{Alibaba Cloud} (Qwen-3-max) for heavy testing and \textbf{Google} (Gemini-3-Flash) for high-fidelity benchmarking via environment variable configuration.
+\end{itemize}
+
+\subsection{Architectural Pivot: Hybrid Retrieval Engine}
+
+A major technical achievement this phase was the implementation of a \textbf{Hybrid Retriever}. Early testing revealed that pure vector search struggled with specific herb-symptom relationships (e.g., distinguishing between a ``headache'' in a metaphor versus a clinical treatment).
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Ensemble Context Aggregation:} Instead of complex score merging, the system employs an ``Ensemble Context'' strategy. It retrieves two distinct streams of data:
+    \begin{enumerate}
+        \item \textbf{Semantic Text Chunks (Vector):} For broad context and theoretical explanations.
+        \item \textbf{Structured Facts (Knowledge Graph):} For precise entity relationships (e.g., \textit{Headache --- TREATS --- Chuanxiong}).
+    \end{enumerate}
+    \item \textbf{``Glass Box'' Reasoning:} These streams are presented to the LLM as distinct sections (\texttt{=== Text Passages ===} and \texttt{=== Knowledge Graph Facts ===}). This allows the LLM to explicitly cite structured facts, significantly improving the precision of prescriptive answers.
+\end{itemize}
+
+\subsection{The Reflective Generator: Safety \& Self-Correction}
+
+Given the medical nature of the project, ``hallucination'' is a critical safety risk. To mitigate this, a \textbf{Reflective Generator} architecture (inspired by the ``Self-RAG'' framework) was implemented.
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Intelligent Query Routing:} The system classifies every incoming query as either \textbf{``Informational''} (general concepts, Temp 0.7) or \textbf{``Prescriptive''} (clinical advice, Temp 0.0).
+    \item \textbf{Self-Correction Loop:} A post-generation verification module freezes the output and prompts a secondary lightweight model to audit the response. If unsupported claims are detected, a warning flag (\texttt{! [Self-Critique Warning]}) is automatically appended, ensuring users are alerted to potential inaccuracies in real-time.
+\end{itemize}
+
+\section{Challenges Encountered \& Solutions}
+
+\subsection{Ambiguity in Classical Terminology}
+
+\textbf{Challenge:} The \textit{Huangdi Neijing} uses archaic terminology where a single character can imply a symptom, an organ, or a cosmological concept. Standard embeddings often failed to capture these precise nuances.
+
+\textbf{Solution:} The shift to \textbf{Hybrid Retrieval}. By mapping key clinical entities (Symptoms, Herbs) into a graph structure, we provided a ``ground truth'' pathway. Even if semantic search misses a subtle connection, the explicit graph edge guarantees retrieval.
+
+\subsection{Knowledge Graph Construction Strategy}
+
+\textbf{Challenge:} The original plan called for fully automated Information Extraction (IE) in Phase 2. However, initial experiments showed that automated extraction on Classical Chinese text produced significant noise.
+
+\textbf{Solution:} We prioritized \textbf{Reliability over Scale} for the MVP. A \textbf{Manual JSON Curation} strategy was adopted for the Phase 2 demo, verifying a ``Golden Path'' dataset focusing on common ailments (e.g., Headache, Insomnia). The automated extraction pipeline has been rescheduled to Phase 3 as the primary focus.
+
+\section{Evaluation Metrics}
+
+To objectively measure the system's effectiveness in Phase 4, the following Key Performance Indicators (KPIs) have been defined:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{3.5cm}L{4cm}L{6.5cm}@{}}
+\toprule
+\textbf{Metric Category} & \textbf{Metric Name} & \textbf{Target / Method} \\
+\midrule
+\textbf{Performance} & \textbf{Response Latency} & \textbf{Less than 5 seconds} for the full retrieval \& generation cycle. \\
+\textbf{Accuracy} & \textbf{Citation Precision} & \textbf{More than 90\%} of generated claims must link to the correct source text (Human Evaluation). \\
+\textbf{Safety} & \textbf{Hallucination Rate} & \textbf{Less than 10\%} on prescriptive queries (Verified by domain expert audit). \\
+\textbf{User Experience} & \textbf{Perceived Trust} & Likert Scale (1-5) collected during pilot testing. Target: \textbf{More than 4.0}. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+\section{Upcoming Schedule (Phase 3 \& 4)}
+
+The focus for the next period shifts from ``Core Architecture'' to ``Automation and Evaluation.''
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}L{2.5cm}L{2.5cm}L{9cm}@{}}
+\toprule
+\textbf{Phase} & \textbf{Duration} & \textbf{Key Tasks \& Milestones} \\
+\midrule
+\textbf{Phase 3: Enhancement} & \textbf{Jan 10 -- Feb 10} & \textbf{1. Automated KG Construction:} Develop Python scripts using LLMs to parse the 81 chapters of \textit{Su Wen}, scaling the graph from dozens to thousands of nodes.\newline\textbf{2. Web Interface:} Migrate from CLI to \textbf{Streamlit} Web UI.\newline\textbf{3. Explainability:} Implement ``Reasoning Visualization'' UI to show users exactly which text chunks/graph nodes were used. \\
+\midrule
+\textbf{Phase 4: Evaluation} & \textbf{Feb 11 -- Mar 10} & \textbf{1. Quantitative Benchmarking:} Run the ``Golden Set'' of 20 clinical questions against the metrics defined in Section 4.\newline\textbf{2. Domain Expert Validation:} Conduct pilot testing with \textbf{3-5 students/practitioners} from the HKBU School of Chinese Medicine to validate clinical relevance and usability. \\
+\midrule
+\textbf{Phase 5: Finalizing} & \textbf{Mar 11 -- Apr 8} & \textbf{1. Final Report Writing:} Compile all findings and technical documentation.\newline\textbf{2. Presentation Prep:} Prepare poster and slides for the April oral defense. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Conclusion}
+
+Phase 2 has been highly productive. The transition from a theoretical proposal to a working codebase involves overcoming significant complexity in retrieving information from classical texts. By implementing the Hybrid Retriever and Self-Correction module, TCM-Sage has evolved into a safety-conscious, evidence-backed assistant. I am confident in the current state of the system for the upcoming mid-point presentation and prepared for the scaling challenges in Phase 3.
+
+\end{document}

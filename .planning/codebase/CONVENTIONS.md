@@ -65,6 +65,11 @@
 - Mirror citation and message types in `web/lib/types.ts`.
 - Keep `src/citation_types.py` and `web/lib/types.ts` synchronized whenever citation fields change.
 
+**UI citation rendering behavior:**
+- `MessageBubble.tsx` post-processes assistant markdown: strips trailing "Sources / References / 参考文献" sections, normalizes list spacing; uses `%%CITE_*%%` markers where present for citation button wiring.
+- `CitationPanel.tsx` fetches chunk context by `chunk_id`, highlights character ranges, links to `web/app/source/[chunkId]/page.tsx`.
+- Shared markdown rendering (citation buttons, content processing) extracted to `web/lib/markdown.ts` — used by both `MessageBubble` and `ArenaPanel`.
+
 ## Error Handling and Logging
 
 **Backend:**

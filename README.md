@@ -12,198 +12,129 @@ The system is built on a Modular RAG paradigm to handle the complexities of clas
 
 1. **Knowledge Base:** The current knowledge base is the full classical text of the *Huangdi Neijing (黃帝内經)*. The text has been programmatically cleaned, chunked, and embedded into a persistent **ChromaDB vector store**.
 
-2. **Hybrid Retriever:** The retriever combines semantic vector search with a future Knowledge Graph (KG) to resolve the ambiguity of classical terminology.
+2. **Hybrid Retriever:** The retriever combines semantic vector search with an in-memory **Knowledge Graph (KG)** built with **NetworkX** to resolve the ambiguity of classical terminology.
 
 3. **Reflective Generator:** A two-layer "glass-box" generator inspired by Self-RAG ensures trustworthy answers:
 
-    - **Query Routing:** ✅ **IMPLEMENTED** - A small, fast LLM pre-classifies query severity to apply either a creative (higher temperature) or strict (zero temperature) generation setting based on clinical severity.
+    - **Query Routing:** A small, fast LLM pre-classifies query severity to apply either a creative (higher temperature) or strict (zero temperature) generation setting based on clinical severity.
 
     - **Self-Critique:** The main LLM generates an answer and then validates it against the retrieved source text, providing a direct citation to the source chapter.
 
-## Current Status
+## Tech Stack
 
-**Phase 2: MVP Implementation & Core Logic** ✅ **COMPLETED**
+- **Frontend:** Next.js 16, React 19, TailwindCSS, Lucide React, XYFlow (for KG visualization)
+- **Backend:** FastAPI (Python 3.10+), LangChain, Uvicorn
+- **Vector Database:** ChromaDB
+- **Knowledge Graph:** NetworkX
+- **Embeddings:** Nomic Embed Text v1.5 (HuggingFace)
+- **LLM Support:** Alibaba DashScope (Qwen), Google Gemini, OpenAI, Anthropic
 
-The project has successfully completed Phase 1 (Research & Data Preparation) and Phase 2 (MVP Implementation). The core application logic in `src/main.py` is now fully functional with intelligent query classification and routing capabilities.
+## Current Status (Apr 2026)
 
-## Project Roadmap & Timeline
+The project is in active stabilization + knowledge graph migration:
 
-This plan is aligned with the official submission deadlines.
+- ✅ Next.js 16 web interface and FastAPI backend are both production-usable for local development.
+- ✅ Hybrid retrieval (vector + KG) is running, with ongoing migration from legacy graph data to SymMap-based KG data.
+- ✅ Multi-provider LLM support is available (Alibaba/Qwen, Gemini, OpenAI, Anthropic).
+- 🔄 Prompt quality tuning, verification hardening, and end-to-end evaluation are still in progress.
 
-- **Phase 1: Research & Scoping (Apr 2025 - Sep 2025) - COMPLETED**
-
-  - [x] Literature Review, Architecture Design, Data Pipeline Construction.
-
-  - [x] First Progress Report submitted.
-
-- **Phase 2: MVP Implementation (Oct 2025 - Dec 2025) - COMPLETED**
-
-  - [x] Implement the core RAG chain (`src/main.py`).
-
-  - [x] Implement multi-provider LLM support with Alibaba Cloud Model Studio integration.
-
-  - [x] Build a functional Command-Line Interface (CLI).
-
-  - [x] **Implement intelligent query classification and routing system.**
-
-  - [x] Submit Source Code: End of Nov, End of Dec.
-
-- **Phase 3: Mid-Point Review & Enhancement (Jan 2026 - Feb 2026)**
-
-  - [ ] Prepare and deliver Mid-point Presentation & Demo (Jan 7-9).
-
-  - [x] Submit Second Progress Report (Jan 5).
-
-  - [x] Begin Knowledge Graph development and web UI implementation.
-
-  - [ ] Submit Source Code: End of Jan, End of Feb.
-
-- **Phase 4: Pilot Testing & Evaluation (Mar 2026)**
-
-  - [ ] Conduct internal quantitative evaluation (Latency, Precision, Faithfulness).
-
-  - [ ] Conduct pilot testing with TCM practitioners to gather qualitative feedback.
-
-  - [ ] Submit Source Code: End of Mar.
-
-- **Phase 5: Final Submission (Apr 2026)**
-
-  - [ ] Submit Final Report (Apr 8).
-
-  - [ ] Deliver Final Presentation & Demo (Apr 10-16).
-
-  - [ ] Submit complete Project Archive (Apr 23).
+For detailed planning artifacts and phase tracking, see `.planning/ROADMAP.md`.
 
 ## Setup and Installation
 
 1. **Clone the repository:**
-
     ```bash
     git clone [Your GitHub Repository URL]
     cd tcm-sage
     ```
 
-2. **Create and activate a Python virtual environment:**
-
+2. **Create a Python virtual environment (required):**
     ```bash
     python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
 
-3. **Install dependencies:**
-
+3. **Install backend dependencies using the project venv:**
     ```bash
-    pip install -r requirements.txt
+    # Windows
+    venv\Scripts\python.exe -m pip install -r requirements.txt
+
+    # macOS / Linux
+    venv/bin/python -m pip install -r requirements.txt
     ```
 
-4. **Set up Environment Variables:**
-
-    - Create a `.env` file in the project root directory
-    - Configure your LLM provider and API key (see `docs/CONFIG.md` for detailed instructions):
-
+4. **Install frontend dependencies:**
     ```bash
-    # For Alibaba Cloud Model Studio (1M free tokens for new users - recommended)
+    cd web
+    npm install
+    cd ..
+    ```
+
+5. **Set up environment variables:**
+    - Copy `.env.example` to `.env`.
+    - Configure your provider credentials and retrieval settings.
+    - Minimal example:
+    ```bash
     LLM_PROVIDER=alibaba
-    DASHSCOPE_API_KEY="your-alibaba-dashscope-api-key-here"
+    DASHSCOPE_API_KEY="your-api-key-here"
     ```
-
-    For other providers (Google AI Studio, OpenAI, Anthropic, OpenRouter, Together AI), see `docs/CONFIG.md` for setup instructions.
 
 ## How to Run the Code
 
-1. **Build the Knowledge Base (Run only once):**
-    This script will clean the source text, create chunks, generate embeddings, and build the vector store.
-
+1. **Build or refresh the vector knowledge base (run once after source updates):**
     ```bash
-    python src/ingest.py
+    # Windows
+    venv\Scripts\python.exe src/ingest.py
+
+    # macOS / Linux
+    venv/bin/python src/ingest.py
     ```
 
-2. **Test the Retriever (Optional):**
-    This script runs a sample query to verify the vector store is working correctly.
-
+2. **Start the backend API (`http://127.0.0.1:8000`):**
     ```bash
-    python src/test_retriever.py
+    # Windows
+    venv\Scripts\python.exe src/api.py
+
+    # macOS / Linux
+    venv/bin/python src/api.py
     ```
 
-3. **Run the Main Application:**
-    This will start the interactive RAG application. You can ask questions about Traditional Chinese Medicine and get evidence-backed answers with citations from the Huangdi Neijing.
-
+3. **Start the frontend dev server (`http://localhost:3000`):**
     ```bash
-    python src/main.py
+    cd web
+    npm run dev
     ```
 
-    The application will prompt you to enter questions. Type 'exit' to quit the program.
-
-4. **Launch the Prototype UI (Optional, for demos):**
-    A lightweight Streamlit interface is available for showcasing the system to stakeholders. It reuses the same backend pipeline without modifying the CLI flow.
-
+4. **Run the CLI application (optional):**
     ```bash
-    streamlit run src/ui_app.py
+    # Windows
+    venv\Scripts\python.exe src/main.py
+
+    # macOS / Linux
+    venv/bin/python src/main.py
     ```
 
-    The UI displays the detected query severity, temperature routing, and maintains a session history. Use the sidebar to review the active configuration. Remember to configure your `.env` file before launching to avoid API errors.
+5. **Run lightweight verification scripts (optional):**
+    ```bash
+    # Citation formatting / reconstruction checks
+    venv\Scripts\python.exe src/test_citations.py
+
+    # SymMap KG retrieval sanity checks
+    venv\Scripts\python.exe scripts/verify_symmap_retrieval.py
+    ```
 
 ## Key Features
 
 ### 🧠 **Intelligent Query Classification**
+TCM-Sage analyzes each query to determine clinical severity, routing it to optimized LLM instances with tailored temperature settings.
 
-TCM-Sage automatically analyzes each user query to determine its clinical severity:
-
-- **Informational Queries**: General knowledge questions (e.g., "陰陽是什麼？") use higher temperature for creative explanations
-- **Prescriptive Queries**: Medical advice questions (e.g., "頭痛如何治療？") use zero temperature for maximum accuracy
-
-### 🔄 **Dynamic Response Generation**
-
-The system uses three optimized LLM instances:
-
-- **Classifier LLM**: Fast, lightweight model for query analysis
-- **Informational LLM**: Main model with configurable temperature for general questions
-- **Prescriptive LLM**: Main model with zero temperature for medical advice
+### 🕸️ **Knowledge Graph Visualization**
+A modern, interactive graph viewer allows practitioners to explore relationships between symptoms, herbs, formulas, and related entities through the integrated KG pipeline.
 
 ### 📚 **Evidence-Based Answers**
-
-All responses are backed by direct citations from the Huangdi Neijing, ensuring practitioners can verify information sources.
+All responses are backed by direct, verifiable citations from the source corpus, presented in a dedicated citation panel with source reconstruction.
 
 ### 🌐 **Multi-Provider Support**
-
-Switch between different LLM providers seamlessly:
-
-- Alibaba Cloud Model Studio (1M free tokens)
-- Google AI Studio (Free tier)
-- OpenAI, Anthropic, OpenRouter, Together AI
-
-### 🕸️ **Knowledge Graph (Hybrid Retrieval)**
-
-Optional hybrid retrieval combines vector search with a TCM knowledge graph:
-
-- **Entity Types**: Symptoms, Herbs, Formulas
-- **Relationships**: TREATS, CONTAINS, ASSOCIATED_WITH
-- Query "頭痛" returns both text passages AND related herbs/formulas from the graph
-- Enable with `HYBRID_RETRIEVAL_ENABLED=true` in `.env`
-
-## Multi-Provider LLM Support
-
-TCM-Sage supports multiple LLM providers for flexibility and cost management:
-
-- **Alibaba Cloud Model Studio** (Recommended - 1M free tokens for new users)
-- **Google AI Studio** (Free tier available)
-- **OpenAI** (GPT-4o, GPT-4o-mini)
-- **Anthropic** (Claude 3.5 Sonnet, Claude 3 Haiku)
-- **OpenRouter** (Access to multiple providers)
-- **Together AI** (Open source models)
-
-Switch providers by simply changing `LLM_PROVIDER=google` in your `.env` file. See [CONFIG.md](CONFIG.md) for detailed setup instructions.
+Seamlessly switch between Alibaba Cloud, Google, OpenAI, and Anthropic for maximum flexibility and availability.
 
 ## Configuration
-
-The main application (`src/main.py`) includes configurable parameters:
-
-- **LLM Provider**: Choose from supported providers (default: alibaba)
-- **Model Selection**: Specify a particular model or use provider defaults
-- **Retrieval Count (`k`)**: Number of most relevant document chunks to retrieve (default: 5). Increase for broader context, decrease for faster responses.
-- **Query Classification**: Configure classifier model and temperature settings for different query types
-- **Temperature Settings**:
-  - `LLM_TEMPERATURE`: For informational queries (default: 0.1, can increase for creativity)
-  - `PRESCRIPTIVE_TEMPERATURE`: For medical queries (default: 0.0 for maximum accuracy)
-
-See `docs/CONFIG.md` for detailed configuration options and setup instructions.
+See `docs/CONFIG.md` for detailed configuration options including retrieval parameters, model selection, and graph depth settings.

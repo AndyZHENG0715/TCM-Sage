@@ -14,6 +14,15 @@
 - [x] 2-02-PLAN.md — Data Adapter Implementation
 - [x] 2-03-PLAN.md — Pipeline Integration & Verification
 
+## Phase 2.5: Arena Blind Evaluation
+*Goal: Add blind model-comparison workflow for reliable answer quality checks.*
+- [x] Backend arena endpoints and orchestration (`arena.py`)
+- [x] Frontend arena page and model-side-by-side blind review flow
+- [x] KG retrieval `max_results` setting support for arena runs
+- [x] Arena model configuration wiring
+- [x] Clickable citations and verification badge integration in arena results
+- [x] Architecture docs synchronized via map-codebase
+
 ## Phase 3: Presentation & E2E Polish
 *Goal: Finalize UI/UX and ensure a rock-solid demo.*
 - [ ] Task 3.1: Finalize React Flow styling for graph visualization.
