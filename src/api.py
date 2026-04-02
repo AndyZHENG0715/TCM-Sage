@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, AsyncGenerator, Dict, Generator
+from typing import Any, AsyncGenerator, Dict, Generator, Literal
 from urllib.parse import unquote
 
 from dotenv import load_dotenv
@@ -113,7 +113,7 @@ class ArenaVoteRequest(BaseModel):
     response_b: str
     model_name: str
     position_mapping: dict
-    vote: str  # "a" | "b" | "tie"
+    vote: Literal["a", "b", "tie"]
     comment: str | None = None
     timestamp: str = ""
 
@@ -300,9 +300,18 @@ async def get_chunk_context(chunk_id: str) -> Dict[str, Any]:
                 detail=f"Chunk {normalized_chunk_id} not found in VectorStore",
             )
 
-        metadata = result["metadatas"][0]
-        book = metadata.get("book")
-        chapter = metadata.get("source")
+        metadatas = result.get("metadatas")
+        if not metadatas or metadatas[0] is None:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Incomplete metadata for chunk {normalized_chunk_id}",
+            )
+
+        metadata = metadatas[0]
+        book_raw = metadata.get("book")
+        chapter_raw = metadata.get("source")
+        book = book_raw if isinstance(book_raw, str) else ""
+        chapter = chapter_raw if isinstance(chapter_raw, str) else ""
         if not book or not chapter:
             raise HTTPException(
                 status_code=500,
@@ -447,6 +456,59 @@ async def get_book_text(book_name: str) -> Dict[str, str]:
         raise HTTPException(status_code=500, detail=f"Failed to read book: {exc}")
 
 
+@app.get("/graph/subgraph")
+async def get_graph_subgraph(entity: str, hops: int = 2) -> Dict[str, Any]:
+    from ui_backend import _get_knowledge_graph
+
+    try:
+        config = get_runtime_config()
+        if not config.hybrid_available:
+            return {"nodes": [], "edges": [], "cited_ids": []}
+        kg = _get_knowledge_graph(config.graph_data_path)
+    except Exception:
+        return {"nodes": [], "edges": [], "cited_ids": []}
+
+    entity_ids = kg.search_by_name(entity)
+    if not entity_ids:
+        return {"nodes": [], "edges": [], "cited_ids": []}
+
+    seed_id = entity_ids[0]
+    related = kg.get_related_entities(seed_id, max_depth=min(hops, 3), max_results=100)
+
+    nodes = []
+    seed_attrs = kg.graph.nodes.get(seed_id, {})
+    nodes.append({
+        "id": seed_id,
+        "label": seed_attrs.get("name", seed_id),
+        "type": seed_attrs.get("type", "Unknown"),
+    })
+
+    for related_item in related:
+        entity_data = related_item["entity"]
+        nodes.append({
+            "id": entity_data["id"],
+            "label": entity_data.get("name", entity_data["id"]),
+            "type": entity_data.get("type", "Unknown"),
+        })
+
+    edges = []
+    node_ids = {node["id"] for node in nodes}
+    for related_item in related:
+        relationship = related_item["relationship"]
+        if relationship["source"] in node_ids and relationship["target"] in node_ids:
+            edges.append({
+                "source": relationship["source"],
+                "target": relationship["target"],
+                "label": relationship.get("type", ""),
+            })
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "cited_ids": [seed_id],
+    }
+
+
 async def generate_arena_sse_stream(
     question: str,
     chat_history_a: list[dict],
@@ -587,6 +649,114 @@ async def arena_models() -> dict:
     """Return available arena model presets."""
     return ARENA_MODELS
 
+
+@app.get("/arena/stats")
+async def get_arena_stats():
+    """Compute arena evaluation statistics with T-Test."""
+    import json
+    from scipy import stats as scipy_stats
+    
+    votes_path = Path(__file__).parent.parent / "data" / "feedback" / "arena_votes.jsonl"
+    if not votes_path.exists():
+        return {"total_votes": 0, "votes": [], "statistics": None}
+    
+    votes = []
+    with open(votes_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                votes.append(json.loads(line))
+    
+    if not votes:
+        return {"total_votes": 0, "votes": [], "statistics": None}
+    
+    # Compute win counts
+    rag_wins = 0
+    plain_wins = 0
+    ties = 0
+    rag_scores = []  # 1 if user preferred RAG, 0 if preferred plain, 0.5 if tie
+    
+    for v in votes:
+        mapping = v.get("position_mapping", {})
+        vote = v.get("vote", "")
+        
+        # Determine which side was RAG
+        rag_side = None
+        for panel, role in mapping.items():
+            if role == "rag":
+                rag_side = panel
+                break
+        
+        if not rag_side:
+            continue
+        
+        if vote == "tie":
+            ties += 1
+            rag_scores.append(0.5)
+        elif vote == rag_side:
+            rag_wins += 1
+            rag_scores.append(1.0)
+        else:
+            plain_wins += 1
+            rag_scores.append(0.0)
+    
+    total = rag_wins + plain_wins + ties
+    
+    # T-Test: H0 = no preference (mean = 0.5), H1 = preference exists
+    t_test = None
+    if len(rag_scores) >= 3:
+        t_stat, p_value = scipy_stats.ttest_1samp(rag_scores, 0.5)
+        # Cohen's d effect size
+        import numpy as np
+        mean_score = np.mean(rag_scores)
+        std_score = np.std(rag_scores, ddof=1)
+        cohens_d = (mean_score - 0.5) / std_score if std_score > 0 else 0
+        
+        t_test = {
+            "t_statistic": round(float(t_stat), 4),
+            "p_value": round(float(p_value), 6),
+            "cohens_d": round(float(cohens_d), 4),
+            "mean_rag_score": round(float(mean_score), 4),
+            "sample_size": len(rag_scores),
+            "significant": float(p_value) < 0.05,
+            "interpretation": (
+                "Statistically significant preference for RAG" if float(p_value) < 0.05 and float(mean_score) > 0.5
+                else "Statistically significant preference for Plain LLM" if float(p_value) < 0.05 and float(mean_score) < 0.5
+                else "No statistically significant difference detected"
+            ),
+        }
+    
+    # Per-query breakdown
+    query_results = []
+    for v in votes:
+        mapping = v.get("position_mapping", {})
+        vote = v.get("vote", "")
+        rag_side = None
+        for panel, role in mapping.items():
+            if role == "rag":
+                rag_side = panel
+                break
+        
+        winner = "tie" if vote == "tie" else ("rag" if vote == rag_side else "plain")
+        query_results.append({
+            "query": v.get("query", ""),
+            "winner": winner,
+            "model": v.get("model_name", ""),
+            "timestamp": v.get("timestamp", ""),
+            "session_id": v.get("session_id", ""),
+        })
+    
+    return {
+        "total_votes": total,
+        "rag_wins": rag_wins,
+        "plain_wins": plain_wins,
+        "ties": ties,
+        "rag_win_rate": round(rag_wins / total * 100, 1) if total > 0 else 0,
+        "plain_win_rate": round(plain_wins / total * 100, 1) if total > 0 else 0,
+        "tie_rate": round(ties / total * 100, 1) if total > 0 else 0,
+        "t_test": t_test,
+        "query_results": query_results,
+    }
 
 if __name__ == "__main__":
     import uvicorn

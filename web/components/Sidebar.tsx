@@ -197,6 +197,16 @@ export function Sidebar({
                     <Swords size={18} className="text-primary/70 group-hover:text-primary transition-colors" />
                     {!collapsed && <span className="text-sm font-medium truncate">Arena</span>}
                 </Link>
+                <Link
+                    href="/arena/stats"
+                    className={cn(
+                        "flex items-center gap-3 w-full p-2 rounded-lg text-primary hover:text-primary hover:bg-white/5 transition-colors text-left group",
+                        collapsed ? "justify-center" : ""
+                    )}
+                >
+                    <span className="text-primary/70 group-hover:text-primary transition-colors flex items-center justify-center w-[18px] h-[18px] text-[18px] leading-none">📊</span>
+                    {!collapsed && <span className="text-sm font-medium truncate">Arena Stats</span>}
+                </Link>
                 <div className={cn(
                     "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left",
                     collapsed ? "justify-center" : ""
