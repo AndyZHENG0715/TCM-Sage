@@ -63,7 +63,7 @@ def rerank_documents(
     query: str,
     documents: list[str],
     top_n: int = 5,
-    model: str = "gte-rerank",
+    model: str = "qwen3-rerank",
 ) -> list[dict]:
     """Rerank documents using DashScope reranker.
 
