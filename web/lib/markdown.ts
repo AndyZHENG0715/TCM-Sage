@@ -46,7 +46,11 @@ export function stripTrailingReferenceSection(content: string): string {
 
 export function postProcessAssistantContent(content: string): string {
     const withoutTrailingReferences = stripTrailingReferenceSection(content);
-    return withoutTrailingReferences.replace(/([^\n])\n(?=(?:\d+\.\s|- ))/g, "$1\n\n");
+    const withCiteMarkers = withoutTrailingReferences.replace(
+        /\[(\d+)\]/g,
+        (_match, num) => `\`${CITE_PREFIX}${num}${CITE_SUFFIX}\``
+    );
+    return withCiteMarkers.replace(/([^\n])\n(?=(?:\d+\.\s|- ))/g, "$1\n\n");
 }
 
 export function createMarkdownComponents(

@@ -284,24 +284,6 @@ def extract_paragraph_context(
     return trimmed_paragraph, local_start, local_end
 
 
-@app.get("/config")
-async def get_config():
-    """Retrieve the current pipeline configuration for the UI."""
-    from ui_backend import get_runtime_config
-    try:
-        config = get_runtime_config()
-        return {
-            "provider": config.provider,
-            "model": config.model,
-            "informational_temperature": config.informational_temperature,
-            "prescriptive_temperature": config.prescriptive_temperature,
-            "retrieval_k": config.retrieval_k,
-            "hybrid_enabled": config.hybrid_enabled,
-            "graph_depth": config.graph_depth,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/source/{chunk_id}/context")
 async def get_chunk_context(chunk_id: str) -> Dict[str, Any]:
