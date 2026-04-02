@@ -219,15 +219,15 @@ export default function ArenaPage() {
       {!state.showReveal && (
         <footer className="px-4 py-3 border-t border-gray-700 bg-sidebar-dark space-y-2">
           <div className="flex gap-2 flex-wrap">
-            {ARENA_SAMPLE_PROMPTS.slice(0, 5).map((prompt) => (
+            {ARENA_SAMPLE_PROMPTS.slice(0, 5).map((item) => (
               <button
-                key={prompt}
+                key={item.label}
                 type="button"
-                onClick={() => setInputValue(prompt)}
+                onClick={() => setInputValue(item.query)}
                 disabled={isStreaming}
                 className="text-xs px-2 py-1 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors disabled:opacity-40"
               >
-                {prompt.length > 20 ? prompt.slice(0, 20) + "…" : prompt}
+                {item.label}
               </button>
             ))}
           </div>
