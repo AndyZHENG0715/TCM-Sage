@@ -1,6 +1,6 @@
 "use client";
 
-import { ChunkContext, fetchChunkContext } from "@/lib/api";
+import { ChunkContext, fetchChunkContext, fetchSubgraph, SubgraphResponse } from "@/lib/api";
 import { getDisplaySourceLabel, getOcrArtifacts } from "@/lib/citations";
 import { Citation, GraphCitation, TextCitation } from "@/lib/types";
 import { BookOpen, ExternalLink, Loader2, X } from "lucide-react";
@@ -168,13 +168,54 @@ function TextCitationContent({
 }
 
 function GraphCitationContent({ citation }: { citation: GraphCitation }) {
+    const [subgraph, setSubgraph] = useState<SubgraphResponse | null>(null);
+    const [loadingGraph, setLoadingGraph] = useState(false);
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        async function loadGraph() {
+            const entityName = citation.fact.match(/^(.+?)\s*--/)?.[1]?.trim();
+
+            if (!entityName) {
+                if (!isCancelled) {
+                    setSubgraph(null);
+                    setLoadingGraph(false);
+                }
+                return;
+            }
+
+            if (!isCancelled) setLoadingGraph(true);
+            try {
+                const data = await fetchSubgraph(entityName, 2);
+                if (!isCancelled) setSubgraph(data);
+            } catch {
+                if (!isCancelled) setSubgraph({ nodes: [], edges: [], cited_ids: [] });
+            } finally {
+                if (!isCancelled) setLoadingGraph(false);
+            }
+        }
+
+        loadGraph();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [citation]);
+
     return (
         <div className="space-y-6">
             <div className="space-y-2">
                 <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
                     Fact Relationship
                 </h3>
-                <KGViewer citation={citation} />
+                {loadingGraph && (
+                    <div className="flex items-center gap-2 text-[#8c8578] text-sm">
+                        <Loader2 size={16} className="animate-spin" />
+                        Loading graph neighborhood...
+                    </div>
+                )}
+                <KGViewer citation={citation} subgraph={subgraph} />
             </div>
 
             <div className="space-y-3">
@@ -264,16 +305,7 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                         <ExternalLink size={18} />
                         View Full Context
                     </Link>
-                ) : (
-                    <button
-                        disabled
-                        title={isText ? "No chunk ID available" : "Graph viewer shown above"}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary/40 text-background-dark/60 font-sans font-bold rounded-lg cursor-not-allowed shadow-sm"
-                    >
-                        <ExternalLink size={18} />
-                        {isText ? "View Full Context" : "View Graph"}
-                    </button>
-                )}
+                ) : null}
             </div>
         </div>
     );

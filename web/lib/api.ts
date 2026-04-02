@@ -64,6 +64,12 @@ export type ChunkContext = {
     total_chunks_in_chapter: number;
 };
 
+export interface SubgraphResponse {
+    nodes: Array<{ id: string; label: string; type: string }>;
+    edges: Array<{ source: string; target: string; label: string }>;
+    cited_ids: string[];
+}
+
 export type StreamEvent =
     | { type: "text"; content: string }
     | {
@@ -314,6 +320,15 @@ export async function fetchChunkContext(chunkId: string): Promise<ChunkContext> 
     return res.json();
 }
 
+export async function fetchSubgraph(entity: string, hops: number = 2): Promise<SubgraphResponse> {
+    const params = new URLSearchParams({ entity, hops: String(hops) });
+    const res = await fetch(`${BACKEND_URL}/graph/subgraph?${params.toString()}`);
+    if (!res.ok) {
+        return { nodes: [], edges: [], cited_ids: [] };
+    }
+    return res.json() as Promise<SubgraphResponse>;
+}
+
 export async function fetchBookContent(bookName: string): Promise<BookContent> {
     const res = await fetch(`${BACKEND_URL}/books/${encodeURIComponent(bookName)}`);
     if (!res.ok) {
@@ -448,6 +463,11 @@ export async function fetchArenaModels(): Promise<Partial<Settings["arenaModels"
         if (!res.ok) return {};
         return (await res.json()) as Partial<Settings["arenaModels"]>;
     } catch {
-        return {};
     }
+}
+
+export async function fetchArenaStats() {
+    const res = await fetch(`${BACKEND_URL}/arena/stats`);
+    if (!res.ok) throw new Error("Failed to fetch arena stats");
+    return res.json();
 }
