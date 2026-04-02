@@ -259,7 +259,7 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
             metadataA: null,
             metadataB: null,
             arenaConfig: null,
-            sessionId: crypto.randomUUID(),
+            sessionId: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36),
             roundNumber: 1,
             votes: [],
             selectedModel: state.selectedModel,

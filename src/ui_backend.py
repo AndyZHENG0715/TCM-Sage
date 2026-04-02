@@ -375,7 +375,25 @@ def _retrieve_documents(query: str, config: PipelineConfig) -> list[Document]:
         print(f"[Debug] Hybrid retrieval disabled for this request: {error}")
         return vector_docs
 
-    return vector_docs + graph_docs
+    # Deduplicate: keep only the highest-scoring chunk per book+chapter
+    # This prevents flooding the LLM with 8 variations of the same formula from 千金要方
+    seen_sources: dict[str, Document] = {}
+    deduped_vector: list[Document] = []
+    for doc in vector_docs:
+        source_key = ""
+        if doc.metadata:
+            book = doc.metadata.get("book", "")
+            chapter = doc.metadata.get("source", "")
+            source_key = f"{book}::{chapter}"
+        if not source_key or source_key not in seen_sources:
+            if source_key:
+                seen_sources[source_key] = doc
+            deduped_vector.append(doc)
+    
+    if len(deduped_vector) < len(vector_docs):
+        print(f"[Debug] Deduplication: {len(vector_docs)} -> {len(deduped_vector)} vector docs")
+    
+    return deduped_vector + graph_docs
 
 
 def _build_runtime_models(config: PipelineConfig) -> dict[str, Any]:
