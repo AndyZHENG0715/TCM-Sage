@@ -6,14 +6,14 @@
 - **Status**: IN_PROGRESS (Context-safe handoff updated)
 
 ## Current Phase
-- **Phase**: 1.6 (Closing Verification Gaps)
-- **Progress**: 96%
+- **Phase**: 3.0 (Presentation & E2E Polish)
+- **Progress**: 10%
 
 ## Parked / deferred (do not block other work)
 
 | Item | Status | Resume trigger | Artifact |
 |------|--------|----------------|----------|
-| TCM expert prompt & answer contract | **Parked** — awaiting friend / domain feedback | Expert returns structure, tone, safety, few-shots | `.planning/todos/parked-001-tcm-expert-prompt-spec.md` |
+| TCM expert prompt & answer contract | **Partially resolved** — friend's sample Q&As received, cite-then-explain incorporated | Expert returns structure, tone, safety, few-shots | `.planning/todos/parked-001-tcm-expert-prompt-spec.md` |
 
 **Safe to proceed in parallel:** Phase 2 KG migration (SymMap), adding more text sources, UI/UX improvements per roadmap.
 
@@ -21,13 +21,19 @@
 - [x] Phase 1: Core UI Fixes (Completed 2026-03-23)
 - [x] Phase 1.5: Alibaba Fix & Layout Refactor (Completed 2026-03-23)
 - [x] Phase 2.5: Arena Blind Evaluation (Completed on `feature/premium-ui`, 11 commits)
+- [x] Phase 2.7: Corpus Expansion & Embedding Upgrade (Completed 2026-04-02)
+- [x] Phase 2.8: System Prompt Redesign (Completed 2026-04-02)
 
 ## Active Verification Gaps
 Remaining issues after recent fixes:
-1. **Prompt/Answer Quality Regression**: Responses may still include undesired source-like endings in edge cases and overall answer quality needs prompt redesign.
-2. **Mobile Background Streaming Limitation**: Android/iOS can drop active streaming when device locks or tab is backgrounded (browser/OS behavior; defer unless architecture change is approved).
+1. **E2E Testing**: Full pipeline test with expanded corpus and new embedding model pending.
+2. **KG Subgraph Visualization**: KGViewer shows simple 2-node view; subgraph exploration not yet implemented.
 
 ## Recent Activity
+- Completed **Corpus Expansion**: 17 classical TCM texts (3.72M chars, 11,522 chunks) with text-embedding-v4.
+- Completed **System Prompt Redesign**: Chinese 辨证论治 prompt, cite-then-explain, .env-configurable.
+- Fixed Issues 1-6: duplicate /config, citation rendering, KG matching, arena UX.
+- Cleaned 12 legacy scripts referencing deprecated entities_partial.json.
 - Completed **Phase 02 plan 2-03** (pipeline integration): `2-03-SUMMARY.md`, `GRAPH_DATA_PATH` default to `data/graph/symmap/symmap_entities.json`, `scripts/verify_symmap_retrieval.py` confirms `_search_graph_documents` for 頭痛; UI human-verify completed with real SymMap data and crosswalk review.
 - Completed **Phase 02 plan 2-02** (SymMap KG adapter): `2-02-SUMMARY.md`, `scripts/import_symmap_kg.py` (legacy SM/HM + `rel_*` edge typing), now validated against real SymMap v2.0 export.
 - Architecture update: SymMap-only KG is now the runtime source of truth; legacy `entities_partial.json` is treated as archival.

@@ -1,3 +1,5 @@
+# **Note:** This is the original Software Development Plan from October 2025. For current project state, see `.planning/ROADMAP.md` and `.planning/STATE.md`.
+
 # TCM-Sage: Software Development Plan
 
 ** Version:** 1.0

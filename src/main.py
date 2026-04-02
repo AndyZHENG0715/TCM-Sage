@@ -82,6 +82,11 @@ DEFAULT_SYSTEM_PROMPT = """你是一名专业的中医临床参考助手，服�
 
 所有建议仅供临床参考，最终诊断与处方权归属执业中医师。"""
 
+# Allow override via SYSTEM_PROMPT_OVERRIDE env var for easy tuning
+# (SYSTEM_PROMPT in .env is reserved for legacy; use SYSTEM_PROMPT_OVERRIDE for new prompt)
+_prompt_override = os.getenv("SYSTEM_PROMPT_OVERRIDE")
+if _prompt_override:
+    DEFAULT_SYSTEM_PROMPT = _prompt_override
 _SOURCES_DIRECTIVE_PATTERNS = [
     re.compile(
         r'After providing the answer,\s*cite the source chapter for the information you provide in a ["“]?Sources:?["”]?\s*section\.?',
