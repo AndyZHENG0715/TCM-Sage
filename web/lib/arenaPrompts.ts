@@ -1,14 +1,16 @@
 export const ARENA_SAMPLE_PROMPTS = [
-    { label: "麻黄汤组成", query: "麻黄汤的完整药物组成是什么？请列出所有药材及其剂量比例。" },
-    { label: "十八反·乌头禁忌", query: "乌头反哪些药物？请列出十八反中乌头类的配伍禁忌。" },
+    // Proven RAG advantage: LLM hallucinates on these, RAG retrieves correct source
+    { label: "水蛭性味功效", query: "水蛭的性味是什么？出自哪本经典？主治什么？" },
+    { label: "蛇床子配伍禁忌", query: "蛇床子有哪些配伍禁忌？恶什么药？" },
+    { label: "麻黄汤组成剂量", query: "麻黄汤的完整药物组成和剂量是什么？请引用原文。" },
+    { label: "独活寄生汤全方", query: "独活寄生汤有多少味药？请全部列出并注明剂量。" },
+    { label: "附子性味原文", query: "附子的性味，神农本草经原文怎么说？" },
+    // Improved retrieval after clause-level re-ingestion
+    { label: "小柴胡汤组成", query: "小柴胡汤的组成是什么？请列出全部药味和剂量。" },
+    { label: "马兑铃本草记载", query: "马兑铃在本草纲目中的记载是什么？有什么别名？" },
+    { label: "丹溪痰证治法", query: "《丹溪心法》中关于痰证的治法有哪些？分别用什么药？" },
     { label: "太阳病提纲", query: "《伤寒论》中太阳病的提纲条文是什么？请引述原文并解释。" },
-    { label: "小柴胡汤方义", query: "小柴胡汤中“和解少阳”的具体方义是什么？各药物在方中扮演什么角色？" },
-    { label: "四逆汤组成", query: "四逆汤的药物组成及煎服法是什么？请引用原文。" },
-    { label: "桂枝汤服法", query: "桂枝汤服药后的护理要点是什么？包括啰粥、温覆、禁忌。" },
-    { label: "促结代脉鉴别", query: "什么是促脉？与结脉、代脉的区别是什么？" },
-    { label: "补中益气汤考证", query: "补中益气汤首见于哪本著作？作者是谁？组成是什么？" },
-    { label: "刘寄奴药材", query: "刘寄奴是什么药材？其性味归经和功效是什么？" },
-    { label: "桂枝汤类方鉴别", query: "桂枝汤、桂枝加葛根汤、桂枝加厚朴杏子汤的区别是什么？" },
+    { label: "十八反·乌头禁忌", query: "乌头反哪些药物？请列出十八反中乌头类的配伍禁忌。" },
 ] as const satisfies readonly { label: string; query: string }[];
 
 export const ARENA_MODEL_PRESETS = [
