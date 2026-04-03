@@ -22,11 +22,13 @@ The system is built on a Modular RAG paradigm to handle the complexities of clas
 
 ## Tech Stack
 
-- **Frontend:** Next.js 16, React 19, TailwindCSS, Lucide React, @xyflow/react (KG visualization), Chart.js (arena statistics)
-- **Backend:** FastAPI (Python 3.10+), LangChain, Uvicorn
+- **Frontend:** Next.js 16, React 19, TailwindCSS, Lucide React, @xyflow/react (KG visualization), Chart.js (arena statistics), react-chartjs-2
+- **Backend:** FastAPI (Python 3.13), LangChain, Uvicorn
 - **Vector Database:** ChromaDB (1024-dim, text-embedding-v4)
 - **Knowledge Graph:** SymMap 2.0 via NetworkX + crosswalk bridge
 - **Embeddings:** DashScope text-embedding-v4 (Alibaba Cloud, 1024 dimensions)
+- **Reranker:** DashScope qwen3-rerank for retrieval re-scoring
+- **Chinese NLP:** jieba segmentation for KG entity matching
 - **LLM Support:** Alibaba DashScope (Qwen), Google Gemini, OpenAI, Anthropic
 
 ## Current Status (Apr 2026)
@@ -34,12 +36,16 @@ The system is built on a Modular RAG paradigm to handle the complexities of clas
 The project is in active development approaching FYP presentation:
 
 - ✅ Next.js 16 web interface and FastAPI backend are production-usable.
-- ✅ 17 classical TCM texts ingested (3.72M characters, 11,522 chunks) with DashScope text-embedding-v4.
+- ✅ 17 classical TCM texts ingested (3.72M characters, 11,522+ chunks) with DashScope text-embedding-v4.
+- ✅ Clause-level chunking for 伤寒论 (398条) and 金匮要略 (489条) with contextual headers.
 - ✅ Hybrid retrieval (vector + SymMap 2.0 KG) with jieba-enhanced entity matching.
-- ✅ Arena blind A/B evaluation system for comparing RAG vs plain LLM responses.
-- ✅ Chinese system prompt with 辨证论治 framework and cite-then-explain guidance.
+- ✅ Reranker (qwen3-rerank) for improved retrieval relevance ordering.
+- ✅ Arena blind A/B evaluation with T-Test statistical analysis and downloadable charts.
+- ✅ Chinese system prompt with 辨证论治 framework, cite-then-explain, and explicit elaboration instructions.
+- ✅ Markdown-formatted RAG context (Pattern Priming) producing 3.7x longer, well-structured answers.
 - ✅ Multi-provider LLM support (Alibaba/Qwen, Gemini, OpenAI, Anthropic).
-- 🔄 KG subgraph visualization and arena statistical analysis in progress.
+- ✅ Welcome modal, notice banner, Google Form feedback integration.
+- 🔄 KG subgraph explorer page planned.
 
 For detailed planning artifacts and phase tracking, see `.planning/ROADMAP.md`.
 
@@ -137,6 +143,10 @@ A modern, interactive graph viewer powered by @xyflow/react renders subgraph nei
 All responses are backed by direct, verifiable citations from the 17-text classical corpus. The system quotes original text verbatim before explaining, and presents citations in a dedicated panel with full paragraph viewing and source reconstruction.
 
 ### ⚖️ **Arena Blind Evaluation**
+A blind A/B comparison system where TCM practitioners evaluate RAG-enhanced responses against plain LLM responses without knowing which is which. Includes a statistics page (`/arena/stats`) with paired T-Test analysis, win rate charts (downloadable as PNG), and per-query results table.
+
+### 📊 **Arena Statistics & T-Test**
+Live statistical analysis of arena votes with downloadable bar charts and pie charts. Computes t-statistic, p-value, Cohen's d effect size, and significance interpretation for FYP presentation.
 A blind A/B comparison system where TCM practitioners evaluate RAG-enhanced responses against plain LLM responses without knowing which is which. Results are analyzed with paired T-Test for statistical proof of RAG effectiveness.
 
 ### 🌐 **Multi-Provider Support**
