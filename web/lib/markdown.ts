@@ -126,5 +126,17 @@ export function createMarkdownComponents(
         hr() {
             return createElement("hr", { className: "my-4 border-[#dcd3b8]" });
         },
+        table({ children }: ComponentPropsWithoutRef<"table">) {
+            return createElement("table", { className: "w-full border-collapse my-4 text-sm" }, children);
+        },
+        thead({ children }: ComponentPropsWithoutRef<"thead">) {
+            return createElement("thead", { className: "bg-black/5 font-semibold" }, children);
+        },
+        th({ children }: ComponentPropsWithoutRef<"th">) {
+            return createElement("th", { className: "border border-[#dcd3b8] px-3 py-1.5 text-left" }, children);
+        },
+        td({ children }: ComponentPropsWithoutRef<"td">) {
+            return createElement("td", { className: "border border-[#dcd3b8] px-3 py-1.5" }, children);
+        },
     };
 }

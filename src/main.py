@@ -452,8 +452,12 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
             if chunk_id is None:
                 chunk_id = f"{source}_{i}"
 
-            # Add to context with citation number
-            context_parts.append(f"[{citation_number}] {source}\n{doc.page_content}\n")
+            # Add to context with markdown formatting for better LLM output quality
+            book = doc.metadata.get('book', source) if doc.metadata else source
+            context_parts.append(
+                f"### [{citation_number}] {book}·{source}\n\n"
+                f"> {doc.page_content.strip()}\n"
+            )
 
             # Build citation metadata
             content = doc.page_content.strip().replace('\n', ' ')
@@ -478,8 +482,11 @@ def format_docs_with_citations(docs) -> Tuple[str, List[dict]]:
             depth = doc.metadata.get('depth', 1) if doc.metadata else 1
             source_ref = doc.metadata.get('source_ref') if doc.metadata else None
 
-            # Add to context with citation number
-            context_parts.append(f"[{citation_number}] {doc.page_content}\n")
+            # Add graph fact to context with markdown formatting
+            context_parts.append(
+                f"### [{citation_number}] 相关医理\n\n"
+                f"> {doc.page_content.strip()}\n"
+            )
 
             citations.append({
                 "number": citation_number,
