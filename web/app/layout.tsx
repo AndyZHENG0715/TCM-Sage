@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { NoticeBanner } from "@/components/NoticeBanner";
+import { WelcomeModal } from "@/components/WelcomeModal";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,6 +31,8 @@ export default function RootLayout({
         className={`${inter.variable} ${notoSerifSC.variable} antialiased bg-background-dark text-parchment`}
       >
         <NoticeBanner />
+        <WelcomeModal />
+        {children}
         {children}
       </body>
     </html>
