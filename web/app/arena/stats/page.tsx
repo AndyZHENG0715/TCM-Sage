@@ -201,11 +201,11 @@ export default function ArenaStatsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-2">
             <Link
-              href="/arena"
+              href="/"
               className="inline-flex items-center text-sm text-primary hover:underline group"
             >
               <ArrowLeft size={16} className="mr-1 group-hover:-translate-x-1 transition-transform" />
-              Back to Arena
+              Back to TCM-Sage
             </Link>
             <h1 className="text-3xl font-serif font-bold tracking-tight">
               Arena Evaluation Results

@@ -33,7 +33,6 @@ export default function RootLayout({
         <NoticeBanner />
         <WelcomeModal />
         {children}
-        {children}
       </body>
     </html>
   );
