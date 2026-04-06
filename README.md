@@ -47,8 +47,6 @@ The project is in active development approaching FYP presentation:
 - ✅ Welcome modal, notice banner, Google Form feedback integration.
 - 🔄 KG subgraph explorer page planned.
 
-For detailed planning artifacts and phase tracking, see `.planning/ROADMAP.md`.
-
 ## Setup and Installation
 
 1. **Clone the repository:**

@@ -231,3 +231,24 @@ vectorstore/
 
 .gemini/
 gha-creds-*.json
+
+# Development artifacts
+.planning/
+.sisyphus/
+.playwright-mcp/
+.streamlit/
+.cursor/
+
+# Environment files
+.env.local
+
+# Logs
+debug-*.log
+ingest_output.log
+ingest_error.log
+
+# Backups
+vectorstore_backup_*/
+
+# Misc
+nul

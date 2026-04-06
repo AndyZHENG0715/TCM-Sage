@@ -1,9 +1,0 @@
-{
-  "questioning_mode": "adaptive",
-  "research_enabled": true,
-  "roadmap_style": "phased",
-  "verification_level": "high",
-  "workflow": {
-    "_auto_chain_active": false
-  }
-}
