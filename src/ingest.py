@@ -149,7 +149,8 @@ def split_into_clauses(content: str, book_name: str) -> List[Dict]:
             continue
         
         chapter = get_chapter_for_pos(clause_start)
-        chunk_id = f"{book_name}_clause_{clause_num}"
+        chapter_hash = hash(chapter) % 10000
+        chunk_id = f"{book_name}_clause_{clause_num}_{chapter_hash}"
         
         # Detect formula names in the clause
         formula_match = re.search(r'([\u4e00-\u9fff]{2,6}汤|[\u4e00-\u9fff]{2,6}散|[\u4e00-\u9fff]{2,6}丸|[\u4e00-\u9fff]{2,6}饮)主之', clause_text)
