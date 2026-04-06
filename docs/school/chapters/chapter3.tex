@@ -1,0 +1,105 @@
+\chapter{System Architecture and Design}
+
+This chapter describes the technical architecture and design principles of TCM-Sage. It details the evolution of the system through three planned phases, the construction of the specialized knowledge base, the hybrid retrieval mechanism, and the generation pipeline optimized for classical Chinese medical texts.
+
+\section{System Overview}
+
+TCM-Sage is a modular Retrieval-Augmented Generation (RAG) system designed for evidence synthesis from classical Traditional Chinese Medicine (TCM) literature. The high-level architecture follows a pipeline where classical texts are processed into a structured knowledge base, retrieved through a hybrid vector-graph mechanism, and synthesized by a Large Language Model (LLM) with a dedicated citation panel for verification.
+
+\subsection{Three-Phase Evolution}
+
+The development of TCM-Sage followed a structured, three-phase evolution planned from the project's inception. This narrative reflects a deliberate design progression rather than a reactive fix for technical failures.
+
+\begin{itemize}
+    \item \textbf{Phase 1: Naive RAG.} The initial prototype focused on a single foundational text, the \textit{Huangdi Neijing}. It utilized a lightweight all-MiniLM-L6-v2 embedding model (384 dimensions) and a basic vector search mechanism. This phase established the feasibility of retrieving classical Chinese text chunks for LLM synthesis.
+    \item \textbf{Phase 2: Hybrid RAG.} Planned as the core architectural shift, Phase 2 introduced the integration of the SymMap 2.0 knowledge graph and a Self-RAG verifier. This phase moved beyond simple semantic similarity to include structured medical relationships, allowing the system to bridge modern symptoms with classical entities.
+    \item \textbf{Phase 3: Production Hybrid RAG.} The final phase scaled the system to 17 classical texts and upgraded the technical stack. It implemented DashScope text-embedding-v4 (1024 dimensions) and the qwen3-rerank model for high-precision retrieval. This phase also introduced the crosswalk bridge for entity resolution and the full Arena evaluation system.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.8\textwidth}{\centering [PLACEHOLDER: System architecture diagram showing the flow from 17 texts to the final citation-backed response]}}
+    \caption{High-level architecture of the TCM-Sage production system.}
+    \label{fig:system_arch}
+\end{figure}
+
+\section{Knowledge Base Design}
+
+The knowledge base is the foundation of TCM-Sage, comprising 17 classical texts with a total of 3.72 million characters. These texts are divided into 12,204 chunks using a specialized chunking strategy.
+
+\subsection{Chunking Strategies}
+
+TCM-Sage employs two distinct chunking strategies based on the structural characteristics of the source material. Most texts use a chapter-based approach, where chunks are created at natural paragraph or section boundaries. However, for the canonical clinical texts \textit{Shanghan Lun} and \textit{Jingui Yaolue}, a clause-level strategy is used.
+
+\subsection{Clause-Level Chunking}
+
+The \textit{Shanghan Lun} is divided into its 388 original clauses, and the \textit{Jingui Yaolue} into 489 clauses. Each clause represents a natural semantic unit in TCM, typically containing a diagnostic statement followed by a corresponding formula. This granularity ensures that citations point to the exact clinical rule being referenced.
+
+To improve embedding quality, formula-aware contextual headers are prepended to each clause. For example, Clause 35 of the \textit{Shanghan Lun} is stored with the header "Shanghan Lun Di 35 Tiao Mahuang Tang:". This technique ensures that the embedding model captures both the clause number and the primary formula, significantly improving retrieval accuracy for specific clinical queries.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.8\textwidth}{\centering [PLACEHOLDER: Diagram comparing chapter-based chunking vs. clause-level chunking for Shanghan Lun]}}
+    \caption{Comparison of chunking strategies for different text types.}
+    \label{fig:chunking_strategy}
+\end{figure}
+
+\section{Hybrid Retrieval Architecture}
+
+The retrieval mechanism combines dense vector search with symbolic knowledge graph traversal to achieve high recall and precision.
+
+\subsection{Vector Search and Chronological Boost}
+
+The system uses DashScope text-embedding-v4 (1024 dimensions) for semantic vector search. To handle the large corpus, the retriever initially fetches a broader set of candidates (k $\times$ 3) before applying a reranking step.
+
+A unique feature of TCM-Sage is the source authority chronological boost. Distance scores are adjusted by a factor of 0.90 to 0.97 based on the historical authority of the text. This boost is topic-dependent rather than a simple linear ranking, ensuring that foundational texts like the \textit{Huangdi Neijing} are prioritized for theoretical queries, while later \textit{Wenbing} texts are favored for febrile disease queries.
+
+\subsection{Formula-Aware Canonical Retrieval}
+
+When the system detects a specific formula name in the user's query, it triggers a metadata-filtered search in canonical texts. This ensures that the primary source for a formula is always included in the context, even if other semantically similar but less authoritative texts are also retrieved.
+
+\subsection{Knowledge Graph and Crosswalk Bridge}
+
+The SymMap 2.0 knowledge graph is traversed using the NetworkX library. Entity matching is performed using the jieba segmentation tool combined with a custom alias map. The crosswalk bridge maps modern medical terms to classical entities, allowing the system to resolve queries like "hypertension" to classical patterns like "Gan Yang Shang Kang" (Liver Yang Rising).
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.8\textwidth}{\centering [PLACEHOLDER: Flowchart of the hybrid retrieval pipeline showing vector search, KG traversal, and reranking]}}
+    \caption{The hybrid retrieval pipeline combining vector and graph-based methods.}
+    \label{fig:retrieval_flow}
+\end{figure}
+
+\section{Generation Pipeline}
+
+The generation pipeline synthesizes the retrieved context into a coherent, evidence-backed response. It utilizes the DashScope Qwen series of LLMs, which are highly capable in processing classical Chinese.
+
+\subsection{System Prompt and Framework}
+
+The system prompt is structured around the "Bian Zheng Lun Zhi" (Pattern Differentiation and Treatment) framework and the "Yuan Liu" (Source and Development) methodology. It includes specific instructions for "Jun Chen Zuo Shi" (Sovereign, Minister, Assistant, and Courier) drug analysis for formulas.
+
+\subsection{Post-Context Instruction Anchoring}
+
+To prevent the model from ignoring formatting rules, TCM-Sage uses post-context instruction anchoring. Formatting instructions are placed after the retrieved context rather than before it. This ensures that the model's final attention is focused on the required output structure.
+
+\subsection{Pattern Priming and User Intent}
+
+The system employs "Pattern Priming" by providing the retrieved context in a structured markdown format (using headers and blockquotes). This encourages the LLM to produce similarly structured outputs. An ancient measurement conversion table is embedded in the prompt to ensure accurate dosage translations. Finally, a "User Intent Priority" block ensures that specific user preferences always override default formatting rules.
+
+\section{Arena Evaluation Design}
+
+The evaluation system is inspired by the LMSYS Chatbot Arena, providing a blind A/B testing framework for TCM practitioners.
+
+\subsection{Blind A/B Testing}
+
+The system compares the full TCM-Sage pipeline (RAG system) against a plain LLM baseline. The baseline model is given a generic "helpful assistant" prompt and access to a standard web search tool (DuckDuckGo). Both systems stream their responses simultaneously using Server-Sent Events (SSE), with their positions (Left vs. Right) randomly assigned to eliminate position bias.
+
+\subsection{Statistical Validation}
+
+The results of the arena votes are analyzed using a paired T-Test and Cohen's d effect size. These metrics provide statistical proof of the RAG system's effectiveness. The T-Test determines if the improvement is due to the system's design rather than random chance, while Cohen's d quantifies the magnitude of the improvement.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.8\textwidth}{\centering [PLACEHOLDER: Flowchart of the Arena evaluation process from query submission to statistical analysis]}}
+    \caption{The blind A/B Arena evaluation and statistical validation flow.}
+    \label{fig:arena_flow}
+\end{figure}
