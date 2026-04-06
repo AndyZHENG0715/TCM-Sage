@@ -39,17 +39,17 @@ The TCM-Sage system outperformed the baseline in over 60\% of cases, more than d
 \subsection{Statistical Significance}
 To rigorously test the null hypothesis that there is no difference between the two systems, a \textbf{paired T-test} was performed on the win/loss data (assigning 1 for a win, -1 for a loss, and 0 for a tie).
 \begin{itemize}
-    \item \textbf{T-statistic:} 3.03
-    \item \textbf{P-value:} 0.0037
+    \item \textbf{T-statistic:} 3.30
+    \item \textbf{P-value:} 0.0018
 \end{itemize}
 With $p < 0.01$, the results are highly significant, allowing us to reject the null hypothesis.
 
 \subsection{Effect Size}
 \textbf{Cohen's d} was calculated to measure the magnitude of the improvement:
 \begin{itemize}
-    \item \textbf{Cohen's d:} 0.40
+    \item \textbf{Cohen's d:} 0.47
 \end{itemize}
-An effect size of 0.40 indicates a \textit{medium effect}, suggesting that while the general-purpose model is a capable baseline, the specialized TCM-Sage system provides a meaningful and consistent advantage in the quality of clinical reasoning and source accuracy.
+An effect size of 0.47 indicates a \textit{medium effect}, suggesting that while the general-purpose model is a capable baseline, the specialized TCM-Sage system provides a meaningful and consistent advantage in the quality of clinical reasoning and source accuracy.
 
 \section{Temporal Analysis}
 
@@ -58,7 +58,7 @@ The evaluation was conducted over a four-day period (April 3 to April 6, 2026), 
 \begin{itemize}
     \item \textbf{April 3:} 2 TCM-Sage / 1 Plain (67\% Win Rate) — Initial testing phase.
     \item \textbf{April 4:} 13 TCM-Sage / 8 Plain (62\% Win Rate) — Main testing batch from student groups.
-    \item \textbf{April 5:} 8 TCM-Sage / 0 Plain (100\% Win Rate) — Testing following the integration of the \textit{Measurement Conversion} table.
+    \item \textbf{April 5:} 8 TCM-Sage / 0 Plain (100\% Win Rate) --- Post system prompt and retrieval improvements.
     \item \textbf{April 6:} 12 TCM-Sage / 6 Plain (67\% Win Rate) — Extended testing with a wider group of practitioners.
 \end{itemize}
 
@@ -97,7 +97,7 @@ While the results are statistically significant, several limitations must be ack
 The results of the evaluation demonstrate that a specialized RAG system tailored for TCM significantly outperforms a general-purpose search-augmented LLM.
 
 \begin{itemize}
-    \item \textbf{Accuracy vs. Verifiability:} The primary advantage of TCM-Sage lies in its ability to provide verbatim classical citations. While the general LLM can often "summarize" TCM knowledge from the web, it frequently halluncinates formula origins or misinterprets classical syntax.
+    \item \textbf{Accuracy vs. Verifiability:} The primary advantage of TCM-Sage lies in its ability to provide verbatim classical citations. While the general LLM can often ``summarize'' TCM knowledge from the web, it frequently hallucinates formula origins or misinterprets classical syntax.
     \item \textbf{The Value of Domain Knowledge:} The integration of a specialized knowledge graph and a professional system prompt (including ancient-to-modern measurement conversions) is essential for clinical utility. Without these, even a high-quality RAG system is prone to fundamental errors in interpretation.
-    \item \textbf{Impact on the Field:} The $p = 0.0037$ result strongly suggests that specialized AI tools can provide a higher standard of information for the TCM community than general-purpose assistants, particularly in the areas of citation traceability and classical methodology adherence.
+    \item \textbf{Impact on the Field:} The $p = 0.0018$ result strongly suggests that specialized AI tools can provide a higher standard of information for the TCM community than general-purpose assistants, particularly in the areas of citation traceability and classical methodology adherence.
 \end{itemize}

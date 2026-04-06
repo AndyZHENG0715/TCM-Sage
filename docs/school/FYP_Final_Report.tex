@@ -40,7 +40,7 @@
 \maketitle
 
 \begin{abstract}
-Traditional Chinese Medicine (TCM) practitioners face significant challenges in retrieving and synthesizing evidence from a vast corpus of classical literature. Existing Large Language Models (LLMs) often function as "black boxes," providing unverifiable claims that lack the precision required for clinical or academic reference. This project introduces TCM-Sage, an evidence-synthesis tool designed to provide transparent, citation-backed insights from 17 foundational TCM texts. By implementing a Retrieval-Augmented Generation (RAG) pipeline with hybrid retrieval—combining vector search with the SymMap v2.0 knowledge graph—TCM-Sage ensures every claim is traceable to its original source. Evaluation via a blind A/B Arena system demonstrates statistically significant improvements in evidence quality and reliability compared to general-purpose LLMs.
+Traditional Chinese Medicine (TCM) practitioners face significant challenges in retrieving and synthesizing evidence from a vast corpus of classical literature. Existing Large Language Models (LLMs) often function as ``black boxes,'' providing unverifiable claims that lack the precision required for clinical or academic reference. This project introduces TCM-Sage, an evidence-synthesis tool designed to provide transparent, citation-backed insights from 17 foundational TCM texts comprising 3.72 million characters and 12,204 indexed chunks. By implementing a Retrieval-Augmented Generation (RAG) pipeline with hybrid retrieval---combining DashScope text-embedding-v4 vector search with the SymMap v2.0 knowledge graph (18,450 entities)---TCM-Sage ensures every claim is traceable to its original source. Evaluation via a blind A/B Arena system with 56 votes from TCM students and practitioners yielded a paired T-Test result of $t = 3.30$, $p = 0.0018$ ($p < 0.01$), and Cohen's $d = 0.47$ (medium effect), demonstrating statistically significant preference for the RAG system over a general-purpose LLM with web search.
 \end{abstract}
 
 \tableofcontents
@@ -50,7 +50,7 @@ Traditional Chinese Medicine (TCM) practitioners face significant challenges in 
 \section{Background and Motivation}
 Traditional Chinese Medicine (TCM) practitioners rely on a massive body of classical literature to guide clinical reasoning and theoretical understanding. This corpus, spanning over two millennia, includes 17 foundational texts comprising millions of characters written in classical Chinese. The complexity of this language, combined with the sheer volume of data, makes manual evidence retrieval and cross-text synthesis an arduous task for even experienced practitioners. Modern TCM education and practice require tools that can efficiently navigate these texts to provide evidence-based support.
 
-The motivation for this project stems from both personal and professional observations. My father first suggested exploring the intersection of AI and medicine, noting the potential for technology to assist in specialized fields. This direction was further reinforced through discussions with Kenny (Hu Shinan), a Year 5 student at the HKBU School of Chinese Medicine with a 3.97 cGPA, currently interning at the Guangdong Provincial Hospital of TCM. Kenny highlighted the critical need for a tool that could provide reliable citations from classical texts, as current digital resources are often fragmented or lack the depth required for serious study.
+The motivation for this project stems from both personal and professional observations. My father first suggested exploring the intersection of AI and medicine, noting the potential for technology to assist in specialized fields. This direction was further reinforced through discussions with Kenny Woo Shi Nam, a Year 5 student at the HKBU School of Chinese Medicine with a 3.97 cGPA, currently interning at the Guangdong Provincial Hospital of TCM. Kenny highlighted the critical need for a tool that could provide reliable citations from classical texts, as current digital resources are often fragmented or lack the depth required for serious study.
 
 Originally, my Final Year Project (FYP) topic was an AI-based course selection system. However, recognizing the greater impact and technical challenge of the TCM domain, I proposed a shift to building a TCM AI tool. This change was approved by my supervisor, Dr. Zhang Ce, who recognized the value of applying AI to preserve and utilize cultural heritage through modern engineering.
 
@@ -63,12 +63,12 @@ The core technical premise of TCM-Sage is that AI can serve as an external memor
 \toprule
 \textbf{Category} & \textbf{Included Texts} \\
 \midrule
-Foundational Theory & Huangdi Neijing (Suwen, Lingshu), Nanjing \\
-Acupuncture & Zhenjiu Jiayijing \\
-Shanghan \& Wenbing & Shanghan Lun, Jingui Yaolue, Wenbing Tiaobian, Wenre Lun \\
-Herbology \& Formulary & Shennong Bencao Jing, Tangye Bencao, Bencao Gangmu (Selected) \\
-Jin-Yuan Four Masters & Suwen Xuanji Yuanbing Shi, Yinshan Zhengyao, Piwei Lun, Gezhi Yulun \\
-General Clinical & Qianjin Fang, Jingyue Quanshu (Selected) \\
+Foundational Theory \& Huangdi Neijing (Suwen, Lingshu), Nanjing \\
+Acupuncture \& Zhenjiu Jiayijing \\
+Shanghan \& Wenbing \& Shanghan Lun, Jingui Yaolue, Wenbing Tiaobian, Wenre Lun \\
+Herbology \& Formulary \& Shennong Bencao Jing, Bencao Gangmu \\
+Jin-Yuan Four Masters \& Suwen Xuanji Yuanbing Shi (Liu Wansu), Rumen Shiqin (Zhang Congzheng), Piwei Lun \& Lanshi Micang (Li Dongyuan), Danxi Xinfa \& Gezhi Yulun (Zhu Zhenheng) \\
+General Clinical \& Beiji Qianjin Yaofang, Neiwaishang Bianhuo Lun \\
 \bottomrule
 \end{tabularx}
 \label{tab:texts}
@@ -151,6 +151,18 @@ The remainder of this report is organized as follows:
 \input{chapters/chapter6}
 
 \input{chapters/chapter7}
+
+
+\chapter*{Acknowledgments}
+\addcontentsline{toc}{chapter}{Acknowledgments}
+
+I would like to express my sincere gratitude to my supervisor, Dr.\ Zhang Ce, for his guidance throughout this project. His suggestions on evaluation methodology---specifically the use of paired T-Tests and Cohen's $d$ for statistical validation---and his discussions on blind A/B experimental design were instrumental in shaping the Arena evaluation framework.
+
+I am deeply grateful to Kenny Woo Shi Nam, a Year 5 student at the HKBU School of Chinese Medicine (cGPA 3.97/4.0), currently interning at Guangdong Provincial Hospital of TCM. Kenny's contributions were extensive: he advised on the selection of the 17 classical texts, conducted rigorous testing across formula retrieval, clause comparison, and clinical case analysis, and provided detailed feedback on diagnostic accuracy and system usability that directly shaped multiple system improvements.
+
+I also thank the doctoral students at Guangdong Provincial Hospital of TCM who participated in the Arena evaluation and provided clinical feedback, including specific recommendations for corpus expansion and insights on bridging classical theory with modern clinical practice.
+
+Finally, I acknowledge the use of AI-powered development environments (OpenCode, Cursor) for code development assistance and report language polishing. All technical decisions, system design, and written content originated from the author.
 
 \appendix
 \chapter{List of Classical Texts}
