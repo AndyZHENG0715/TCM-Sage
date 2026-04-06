@@ -1,9 +1,10 @@
 "use client";
 
-import { ChunkContext, fetchChunkContext, fetchSubgraph, SubgraphResponse } from "@/lib/api";
+import { ChunkContext, fetchChunkContext } from "@/lib/api";
 import { getDisplaySourceLabel, getOcrArtifacts } from "@/lib/citations";
+import { useI18n } from "@/i18n/context";
 import { Citation, GraphCitation, TextCitation } from "@/lib/types";
-import { BookOpen, ExternalLink, Loader2, X } from "lucide-react";
+import { BookOpen, ExternalLink, Loader2, Network, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { KGViewer } from "./KGViewer";
@@ -50,6 +51,7 @@ function TextCitationContent({
     citation: TextCitation;
     onSourceLabelResolved?: (label: string) => void;
 }) {
+    const { t } = useI18n();
     const chunkId = citation.chunk_id;
     const [context, setContext] = useState<ChunkContext | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ function TextCitationContent({
                     setError(
                         fetchError instanceof Error
                             ? fetchError.message
-                            : "Failed to load context"
+                            : t.citation.loadingContext
                     );
                 }
             });
@@ -81,7 +83,7 @@ function TextCitationContent({
         return () => {
             isCancelled = true;
         };
-    }, [chunkId, showFullText, context]);
+    }, [chunkId, context, showFullText, t.citation.loadingContext]);
 
     useEffect(() => {
         const label = getDisplaySourceLabel(
@@ -92,9 +94,9 @@ function TextCitationContent({
         if (display) {
             onSourceLabelResolved?.(display);
         } else {
-            onSourceLabelResolved?.(label || "Source");
+            onSourceLabelResolved?.(label || t.citation.textSource);
         }
-    }, [citation.source, context, onSourceLabelResolved]);
+    }, [citation.source, context, onSourceLabelResolved, t.citation.textSource]);
 
     const loading = showFullText && !context && !error;
 
@@ -116,14 +118,14 @@ function TextCitationContent({
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
-                        Passage Content
+                        {t.citation.passageContent}
                     </h3>
                     {chunkId && (
                         <button
                             onClick={() => setShowFullText(!showFullText)}
                             className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
                         >
-                            {showFullText ? "View Snippet" : "View Full Paragraph"}
+                            {showFullText ? t.citation.viewSnippet : t.citation.viewFullParagraph}
                         </button>
                     )}
                 </div>
@@ -133,7 +135,7 @@ function TextCitationContent({
                         {loading ? (
                             <span className="inline-flex items-center gap-2 text-[#8c8578]">
                                 <Loader2 size={16} className="animate-spin" />
-                                Loading full paragraph context...
+                                {t.citation.loadingContext}
                             </span>
                         ) : (
                             <HighlightedText
@@ -148,7 +150,7 @@ function TextCitationContent({
 
             {ocrArtifacts.length > 0 && (
                 <div className="rounded-lg border border-amber-300/60 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">
-                    Possible OCR/source artifact detected in this passage: {ocrArtifacts.join(", ")}
+                    {t.citation.ocrWarning} {ocrArtifacts.join(", ")}
                 </div>
             )}
 
@@ -160,7 +162,7 @@ function TextCitationContent({
 
             <div className="flex gap-2">
                 <span className="inline-flex items-center px-2 py-1 rounded bg-[#dcd3b8]/50 text-[#5c5548] text-xs font-medium">
-                    Rel: {citation.relevance_percent.toFixed(1)}%
+                    {t.citation.relevance}: {citation.relevance_percent.toFixed(1)}%
                 </span>
             </div>
         </div>
@@ -168,64 +170,24 @@ function TextCitationContent({
 }
 
 function GraphCitationContent({ citation }: { citation: GraphCitation }) {
-    const [subgraph, setSubgraph] = useState<SubgraphResponse | null>(null);
-    const [loadingGraph, setLoadingGraph] = useState(false);
-
-    useEffect(() => {
-        let isCancelled = false;
-
-        async function loadGraph() {
-            const entityName = citation.fact.match(/^(.+?)\s*--/)?.[1]?.trim();
-
-            if (!entityName) {
-                if (!isCancelled) {
-                    setSubgraph(null);
-                    setLoadingGraph(false);
-                }
-                return;
-            }
-
-            if (!isCancelled) setLoadingGraph(true);
-            try {
-                const data = await fetchSubgraph(entityName, 2);
-                if (!isCancelled) setSubgraph(data);
-            } catch {
-                if (!isCancelled) setSubgraph({ nodes: [], edges: [], cited_ids: [] });
-            } finally {
-                if (!isCancelled) setLoadingGraph(false);
-            }
-        }
-
-        loadGraph();
-
-        return () => {
-            isCancelled = true;
-        };
-    }, [citation]);
-
+    const { t } = useI18n();
     return (
         <div className="space-y-6">
             <div className="space-y-2">
                 <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
-                    Fact Relationship
+                    {t.citation.factRelationship}
                 </h3>
-                {loadingGraph && (
-                    <div className="flex items-center gap-2 text-[#8c8578] text-sm">
-                        <Loader2 size={16} className="animate-spin" />
-                        Loading graph neighborhood...
-                    </div>
-                )}
-                <KGViewer citation={citation} subgraph={subgraph} />
+                <KGViewer citation={citation} />
             </div>
 
             <div className="space-y-3">
                 <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
-                    Traversal Metadata
+                    {t.citation.traversalMetadata}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-3 bg-[#f5f5f5] rounded-lg border border-gray-200">
-                        <p className="text-xs text-gray-500 uppercase">Depth</p>
-                        <p className="text-lg font-bold text-gray-800">{citation.depth}-hop</p>
+                        <p className="text-xs text-gray-500 uppercase">{t.citation.depth}</p>
+                        <p className="text-lg font-bold text-gray-800">{citation.depth}-{t.citation.hop}</p>
                     </div>
                 </div>
             </div>
@@ -233,7 +195,7 @@ function GraphCitationContent({ citation }: { citation: GraphCitation }) {
             {citation.source_ref && (
                 <div className="space-y-3">
                     <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
-                        Provenance
+                        {t.citation.provenance}
                     </h3>
                     <pre className="p-3 bg-gray-100 rounded text-xs overflow-x-auto text-gray-700">
                         {JSON.stringify(citation.source_ref, null, 2)}
@@ -245,6 +207,7 @@ function GraphCitationContent({ citation }: { citation: GraphCitation }) {
 }
 
 export function CitationPanel({ citation, onClose }: CitationPanelProps) {
+    const { t } = useI18n();
     const [sourceLabel, setSourceLabel] = useState<string>("");
 
     if (!citation) {
@@ -263,7 +226,7 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                     </div>
                     <div className="min-w-0 flex-1">
                         <h2 className="font-sans text-xs font-bold text-[#8c8578] uppercase tracking-wider">
-                            {isText ? "Classic Text Source" : "Knowledge Graph Fact"}
+                            {isText ? t.citation.textSource : t.citation.graphFact}
                         </h2>
                         <p className="font-serif font-bold text-parchment-text text-lg leading-tight truncate max-w-[250px]">
                             {sourceLabel || `Ref [${citation.number}]`}
@@ -278,6 +241,7 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                 <button
                     onClick={onClose}
                     className="p-2 text-[#8c8578] hover:text-primary-dark hover:bg-[#dcd3b8]/50 rounded-full transition-colors"
+                    aria-label={t.common.close}
                 >
                     <X size={20} />
                 </button>
@@ -303,9 +267,17 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white font-sans font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
                     >
                         <ExternalLink size={18} />
-                        View Full Context
+                        {t.citation.viewFullContext}
                     </Link>
-                ) : null}
+                ) : (
+                    <Link
+                        href={`/kg/${encodeURIComponent(citation.type === "graph" ? ((citation as GraphCitation).fact.match(/^(.+?)\s*--/)?.[1]?.trim() || "graph") : "graph")}`}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white font-sans font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
+                    >
+                        <Network size={18} />
+                        {t.citation.exploreFullGraph}
+                    </Link>
+                )}
             </div>
         </div>
     );

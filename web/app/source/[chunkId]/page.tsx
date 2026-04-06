@@ -2,6 +2,7 @@
 
 import { ChunkContext, fetchChunkContext } from "@/lib/api";
 import { getDisplaySourceLabel, getOcrArtifacts } from "@/lib/citations";
+import { useI18n } from "@/i18n/context";
 import { ArrowLeft, BookOpen, FileText, LayoutList, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -45,6 +46,7 @@ function HighlightedText({
 function SourceDocument({ chunkId }: { chunkId: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t } = useI18n();
     const fromChat = searchParams.get("from") === "chat";
     const [context, setContext] = useState<ChunkContext | null>(null);
     const [fullText, setFullText] = useState<string | null>(null);
@@ -104,7 +106,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                     setError(
                         fetchError instanceof Error
                             ? fetchError.message
-                            : "Failed to load chapter context"
+                            : t.common.loading
                     );
                 }
             }
@@ -115,7 +117,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
         return () => {
             isCancelled = true;
         };
-    }, [chunkId]);
+    }, [chunkId, t.common.loading]);
 
     useEffect(() => {
         if (!context || !markRef.current) {
@@ -136,7 +138,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
             <div className="min-h-screen bg-parchment flex items-center justify-center p-8" suppressHydrationWarning>
                 <div className="flex flex-col items-center gap-4 text-[#8c8578]">
                     <Loader2 size={40} className="animate-spin text-primary" suppressHydrationWarning />
-                    <p className="font-sans text-lg animate-pulse">Unrolling scrolls...</p>
+                    <p className="font-sans text-lg animate-pulse">{t.source.loading}</p>
                 </div>
             </div>
         );
@@ -150,15 +152,15 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                         <BookOpen size={48} />
                     </div>
                     <div className="space-y-2">
-                        <h1 className="text-2xl font-serif font-bold text-red-800">Cannot Read Scroll</h1>
-                        <p className="text-red-600/80 font-sans">{error || "Scroll not found."}</p>
+                        <h1 className="text-2xl font-serif font-bold text-red-800">{t.source.errorTitle}</h1>
+                        <p className="text-red-600/80 font-sans">{error || t.source.errorMessage}</p>
                     </div>
                     <Link
                         href="/"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-[#dcd3b8] hover:bg-[#cabe9e] text-[#5c5548] font-bold rounded-lg transition-colors shadow-sm"
                     >
                         <ArrowLeft size={20} />
-                        Return to Study
+                        {t.source.returnToStudy}
                     </Link>
                 </div>
             </div>
@@ -206,12 +208,12 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                         className="flex items-center gap-2 text-[#8c8578] hover:text-primary-dark transition-colors group"
                     >
                         <ArrowLeft size={20} className="transform group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-sans font-semibold">Back to Session</span>
+                        <span className="font-sans font-semibold">{t.source.backToSession}</span>
                     </button>
 
                     <div className="flex flex-col items-end">
                         <span className="font-sans text-xs font-bold text-[#8c8578] uppercase tracking-wider">
-                            Source Document
+                            {t.source.sourceDocument}
                         </span>
                         <span className="font-serif text-lg font-bold text-parchment-text leading-none">
                             {context.book}
@@ -224,7 +226,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                 <div className="space-y-8">
                     <header className="text-center space-y-4 mb-8 pb-8 border-b border-[#dcd3b8]/50 inline-block w-full">
                         <h1 className="font-serif text-4xl sm:text-5xl font-bold text-primary-dark tracking-wide">
-                            {viewMode === "chapter" ? (chapterTitle || "Source excerpt") : context.book}
+                            {viewMode === "chapter" ? (chapterTitle || t.citation.textSource) : context.book}
                         </h1>
                         <div className="flex items-center justify-center gap-3 text-sm font-sans font-medium text-[#c0b59a]">
                             <span>§</span>
@@ -245,7 +247,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                                     }`}
                                 >
                                     <LayoutList size={18} />
-                                    <span>Chapter View</span>
+                                    <span>{t.source.chapterView}</span>
                                 </button>
                                 <button
                                     onClick={() => setViewMode("full")}
@@ -256,7 +258,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                                     }`}
                                 >
                                     <FileText size={18} />
-                                    <span>Full Book</span>
+                                    <span>{t.source.fullBook}</span>
                                 </button>
                             </div>
                         </div>
@@ -264,7 +266,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
 
                     {ocrArtifacts.length > 0 && viewMode === "chapter" && (
                         <div className="rounded-lg border border-amber-300/60 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">
-                            Possible OCR/source artifact detected in this source: {ocrArtifacts.join(", ")}
+                            {t.source.ocrWarning} {ocrArtifacts.join(", ")}
                         </div>
                     )}
 

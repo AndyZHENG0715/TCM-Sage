@@ -1,6 +1,7 @@
 "use client";
 
 import { Settings, SettingsCapabilities } from "@/lib/types";
+import { useI18n } from "@/i18n/context";
 import { cn } from "@/lib/utils";
 import { RotateCcw, Save, X } from "lucide-react";
 import { ReactNode, useState } from "react";
@@ -191,6 +192,7 @@ export function SettingsModal({
 }: SettingsModalProps) {
     const [localSettings, setLocalSettings] = useState<Settings>(initialSettings);
     const [activeTab, setActiveTab] = useState<TabId>("model");
+    const { t } = useI18n();
 
     if (!isOpen) {
         return null;
@@ -211,20 +213,21 @@ export function SettingsModal({
     };
 
     const tabs: { id: TabId; label: string }[] = [
-        { id: "model", label: "Model Parameters" },
-        { id: "retrieval", label: "Retrieval & Knowledge" },
-        { id: "output", label: "Output Preferences" },
+        { id: "model", label: t.settings.tabModel },
+        { id: "retrieval", label: t.settings.tabRetrieval },
+        { id: "output", label: t.settings.tabOutput },
     ];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
             <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-primary/20 bg-[#1a2c2a] shadow-2xl">
                 <div className="flex items-center justify-between border-b border-white/5 bg-sidebar-dark p-6">
-                    <h2 className="text-xl font-serif font-bold text-parchment">Configuration</h2>
+                    <h2 className="text-xl font-serif font-bold text-parchment">{t.settings.title}</h2>
                     <button
                         type="button"
                         onClick={onClose}
                         className="rounded-full p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-parchment"
+                        aria-label={t.common.close}
                     >
                         <X size={20} />
                     </button>
@@ -252,43 +255,43 @@ export function SettingsModal({
                     {activeTab === "model" && (
                         <div className="space-y-6">
                             <Section
-                                title="Main LLM"
-                                description="These settings are sent with each query and now control live generation."
+                                title={t.settings.mainLlm}
+                                description={t.settings.mainLlmDesc}
                             >
                                 <ProviderSelect
-                                    label="LLM Provider"
+                                    label={t.settings.provider}
                                     value={localSettings.llmProvider}
                                     onChange={(value) => handleChange("llmProvider", value)}
                                 />
                                 <ModelInput
-                                    label="Model ID"
+                                    label={t.settings.modelId}
                                     value={localSettings.llmModel}
-                                    placeholder="e.g. qwen/qwen3.5-9b, gemini-2.5-flash"
+                                    placeholder={t.settings.modelPlaceholder}
                                     onChange={(value) => handleChange("llmModel", value)}
                                 />
                                 <TemperatureControl
-                                    label="Temperature (Informational)"
+                                    label={t.settings.tempInformational}
                                     value={localSettings.informationalTemperature}
-                                    minLabel="Precise"
-                                    maxLabel="Creative"
+                                    minLabel={t.settings.precise}
+                                    maxLabel={t.settings.creative}
                                     onChange={(value) => handleChange("informationalTemperature", value)}
                                 />
                                 <TemperatureControl
-                                    label="Temperature (Prescriptive)"
+                                    label={t.settings.tempPrescriptive}
                                     value={localSettings.prescriptiveTemperature}
-                                    minLabel="Conservative"
-                                    maxLabel="Flexible"
+                                    minLabel={t.settings.conservative}
+                                    maxLabel={t.settings.flexible}
                                     onChange={(value) => handleChange("prescriptiveTemperature", value)}
                                 />
                             </Section>
 
                             <Section
-                                title="Classifier"
-                                description="Used to route between informational and prescriptive handling. Temperature stays fixed at 0.0."
+                                title={t.settings.classifier}
+                                description={t.settings.classifierDesc}
                             >
                                 <FollowMainToggle
-                                    title="Follow main LLM"
-                                    description="Reuse the main provider and model for classification."
+                                    title={t.settings.followMainLlm}
+                                    description={t.settings.followMainLlmDesc}
                                     checked={localSettings.classifierFollowMain}
                                     onToggle={() =>
                                         handleChange("classifierFollowMain", !localSettings.classifierFollowMain)
@@ -297,14 +300,14 @@ export function SettingsModal({
                                 {!localSettings.classifierFollowMain && (
                                     <div className="space-y-4 border-l-2 border-primary/20 pl-4">
                                         <ProviderSelect
-                                            label="Classifier Provider"
+                                            label={t.settings.classifierProvider}
                                             value={localSettings.classifierProvider}
                                             onChange={(value) => handleChange("classifierProvider", value)}
                                         />
                                         <ModelInput
-                                            label="Classifier Model ID"
+                                            label={t.settings.classifierModel}
                                             value={localSettings.classifierModel}
-                                            placeholder="Optional, leave blank for provider default"
+                                            placeholder={t.settings.optionalPlaceholder}
                                             onChange={(value) => handleChange("classifierModel", value)}
                                         />
                                     </div>
@@ -312,12 +315,12 @@ export function SettingsModal({
                             </Section>
 
                             <Section
-                                title="Verifier"
-                                description="Used for support checks after generation. Temperature stays fixed at 0.0."
+                                title={t.settings.verifier}
+                                description={t.settings.verifierDesc}
                             >
                                 <FollowMainToggle
-                                    title="Follow main LLM"
-                                    description="Reuse the main provider and model for verification."
+                                    title={t.settings.followMainLlm}
+                                    description={t.settings.verifierFollowDesc}
                                     checked={localSettings.verifierFollowMain}
                                     onToggle={() =>
                                         handleChange("verifierFollowMain", !localSettings.verifierFollowMain)
@@ -326,14 +329,14 @@ export function SettingsModal({
                                 {!localSettings.verifierFollowMain && (
                                     <div className="space-y-4 border-l-2 border-primary/20 pl-4">
                                         <ProviderSelect
-                                            label="Verifier Provider"
+                                            label={t.settings.verifierProvider}
                                             value={localSettings.verifierProvider}
                                             onChange={(value) => handleChange("verifierProvider", value)}
                                         />
                                         <ModelInput
-                                            label="Verifier Model ID"
+                                            label={t.settings.verifierModel}
                                             value={localSettings.verifierModel}
-                                            placeholder="Optional, leave blank for provider default"
+                                            placeholder={t.settings.optionalPlaceholder}
                                             onChange={(value) => handleChange("verifierModel", value)}
                                         />
                                     </div>
@@ -341,13 +344,13 @@ export function SettingsModal({
                             </Section>
 
                             <Section
-                                title="Arena Models"
-                                description="Model IDs used for Arena blind evaluation. These map to the flash/plus/max tiers."
+                                title={t.settings.arenaModels}
+                                description={t.settings.arenaModelsDesc}
                             >
                                 <ModelInput
-                                    label="Flash (Fast)"
+                                    label={t.settings.flashLabel}
                                     value={localSettings.arenaModels.flash}
-                                    placeholder="e.g. qwen-turbo"
+                                    placeholder={t.settings.flashPlaceholder}
                                     onChange={(value) =>
                                         handleChange("arenaModels", {
                                             ...localSettings.arenaModels,
@@ -356,9 +359,9 @@ export function SettingsModal({
                                     }
                                 />
                                 <ModelInput
-                                    label="Plus (Balanced)"
+                                    label={t.settings.plusLabel}
                                     value={localSettings.arenaModels.plus}
-                                    placeholder="e.g. qwen-plus"
+                                    placeholder={t.settings.plusPlaceholder}
                                     onChange={(value) =>
                                         handleChange("arenaModels", {
                                             ...localSettings.arenaModels,
@@ -367,9 +370,9 @@ export function SettingsModal({
                                     }
                                 />
                                 <ModelInput
-                                    label="Max (Quality)"
+                                    label={t.settings.maxLabel}
                                     value={localSettings.arenaModels.max}
-                                    placeholder="e.g. qwen-max"
+                                    placeholder={t.settings.maxPlaceholder}
                                     onChange={(value) =>
                                         handleChange("arenaModels", {
                                             ...localSettings.arenaModels,
@@ -383,13 +386,13 @@ export function SettingsModal({
 
                     {activeTab === "retrieval" && (
                         <div className="space-y-6">
-                            <div className="space-y-4">
-                                <div className="flex justify-between">
-                                    <label className="text-sm font-medium text-gray-300">Retrieval Depth (K)</label>
-                                    <span className="text-xs font-mono text-primary">
-                                        {localSettings.retrievalK} chunks
-                                    </span>
-                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between">
+                                        <label className="text-sm font-medium text-gray-300">{t.settings.retrievalK}</label>
+                                        <span className="text-xs font-mono text-primary">
+                                            {localSettings.retrievalK} {t.settings.chunks}
+                                        </span>
+                                    </div>
                                 <input
                                     type="range"
                                     min="1"
@@ -402,18 +405,18 @@ export function SettingsModal({
                                     className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-primary"
                                 />
                                 <div className="flex justify-between text-xs text-gray-500">
-                                    <span>Faster</span>
-                                    <span>More Context</span>
+                                    <span>{t.settings.faster}</span>
+                                    <span>{t.settings.moreContext}</span>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-4">
                                 <div>
-                                    <span className="block text-sm font-medium">Knowledge Graph</span>
+                                    <span className="block text-sm font-medium">{t.settings.knowledgeGraph}</span>
                                     <span className="text-xs text-gray-400">
                                         {capabilities.hybridAvailable
-                                            ? "Enable hybrid retrieval with KG facts"
-                                            : "Not available on this backend because graph data is missing"}
+                                            ? t.settings.kgEnable
+                                            : t.settings.kgUnavailable}
                                     </span>
                                 </div>
                                 <button
@@ -440,10 +443,10 @@ export function SettingsModal({
                                 <div className="space-y-4 border-l-2 border-primary/20 pl-4">
                                     <div className="flex justify-between">
                                         <label className="text-sm font-medium text-gray-300">
-                                            Graph Traversal Depth
+                                            {t.settings.graphDepth}
                                         </label>
                                         <span className="text-xs font-mono text-primary">
-                                            {localSettings.graphDepth}-hop
+                                            {localSettings.graphDepth}-{t.citation.hop}
                                         </span>
                                     </div>
                                     <input
@@ -461,10 +464,10 @@ export function SettingsModal({
                                     <div className="space-y-4">
                                         <div className="flex justify-between">
                                             <label className="text-sm font-medium text-gray-300">
-                                                KG Max Results
+                                                {t.settings.kgMaxResults}
                                             </label>
                                             <span className="text-xs font-mono text-primary">
-                                                {localSettings.graphMaxResults} results
+                                                {localSettings.graphMaxResults} {t.settings.results}
                                             </span>
                                         </div>
                                         <input
@@ -479,8 +482,8 @@ export function SettingsModal({
                                             className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-primary"
                                         />
                                         <div className="flex justify-between text-xs text-gray-500">
-                                            <span>Fewer</span>
-                                            <span>More</span>
+                                            <span>{t.settings.fewer}</span>
+                                            <span>{t.settings.more}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -491,33 +494,37 @@ export function SettingsModal({
                     {activeTab === "output" && (
                         <div className="space-y-6">
                             <div className="rounded-xl border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-100">
-                                `Response Style`, `Citation Format`, and `Theme Mode` are not yet applied at runtime in this build.
+                                {t.settings.outputNotice}
                             </div>
 
                             <fieldset disabled className="space-y-6 opacity-50">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Response Style</label>
+                                    <label className="text-sm font-medium text-gray-300">{t.settings.responseStyle}</label>
                                     <div className="grid grid-cols-3 gap-2">
-                                        {(["concise", "detailed", "academic"] as const).map((style) => (
+                                        {([
+                                            { value: "concise", label: t.settings.concise },
+                                            { value: "detailed", label: t.settings.detailed },
+                                            { value: "academic", label: t.settings.academic },
+                                        ] as const).map((style) => (
                                             <button
-                                                key={style}
+                                                key={style.value}
                                                 type="button"
-                                                onClick={() => handleChange("responseStyle", style)}
+                                                onClick={() => handleChange("responseStyle", style.value)}
                                                 className={cn(
-                                                    "rounded-lg border px-3 py-2 text-sm capitalize transition-colors",
-                                                    localSettings.responseStyle === style
+                                                    "rounded-lg border px-3 py-2 text-sm transition-colors",
+                                                    localSettings.responseStyle === style.value
                                                         ? "border-primary bg-primary/20 text-primary"
                                                         : "border-white/10 bg-background-dark text-gray-400"
                                                 )}
                                             >
-                                                {style}
+                                                {style.label}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Citation Format</label>
+                                    <label className="text-sm font-medium text-gray-300">{t.settings.citationFormat}</label>
                                     <div className="flex gap-4">
                                         <label className="group flex items-center gap-2">
                                             <input
@@ -528,7 +535,7 @@ export function SettingsModal({
                                                 onChange={() => handleChange("citationFormat", "chapter")}
                                                 className="accent-primary"
                                             />
-                                            <span className="text-sm text-gray-400">Chapter/Verse</span>
+                                            <span className="text-sm text-gray-400">{t.settings.chapterVerse}</span>
                                         </label>
                                         <label className="group flex items-center gap-2">
                                             <input
@@ -539,16 +546,16 @@ export function SettingsModal({
                                                 onChange={() => handleChange("citationFormat", "section")}
                                                 className="accent-primary"
                                             />
-                                            <span className="text-sm text-gray-400">Modern Section</span>
+                                            <span className="text-sm text-gray-400">{t.settings.modernSection}</span>
                                         </label>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Theme Mode</label>
+                                    <label className="text-sm font-medium text-gray-300">{t.settings.themeMode}</label>
                                     <input
                                         type="text"
-                                        value="Dark mode is currently fixed"
+                                        value={t.settings.darkModeFixed}
                                         disabled
                                         className="w-full rounded-lg border border-white/10 bg-background-dark px-3 py-2 text-parchment"
                                     />
@@ -565,7 +572,7 @@ export function SettingsModal({
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 transition-colors hover:text-white"
                     >
                         <RotateCcw size={16} />
-                        Reset Default
+                        {t.settings.resetDefault}
                     </button>
                     <div className="flex gap-3">
                         <button
@@ -573,7 +580,7 @@ export function SettingsModal({
                             onClick={onClose}
                             className="rounded-lg px-4 py-2 text-sm text-parchment transition-colors hover:bg-white/5"
                         >
-                            Cancel
+                            {t.common.cancel}
                         </button>
                         <button
                             type="button"
@@ -581,7 +588,7 @@ export function SettingsModal({
                             className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-bold text-background-dark shadow-[0_0_15px_rgba(25,230,212,0.2)] transition-colors hover:bg-primary-dark"
                         >
                             <Save size={16} />
-                            Save Configuration
+                            {t.settings.saveConfig}
                         </button>
                     </div>
                 </div>

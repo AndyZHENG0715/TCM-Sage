@@ -13,7 +13,7 @@ export function stripTrailingReferenceSection(content: string): string {
     }
 
     const headingPattern =
-        /^\s*(?:\*\*|__)?\s*(sources?|references?|citations?|bibliography|参考资料|参考文献|资料来源)\s*:?\s*(?:\*\*|__)?\s*$/i;
+        /^\s*(?:\*\*|__)?\s*(?:#{1,3}\s*)?(?:sources?|references?|citations?|bibliography|参考资料|参考文献|资料来源|引用来源|引用文献|参考来源|出处|参考)\s*[：:]*\s*(?:\*\*|__)?\s*$/i;
     const itemPattern =
         /^\s*(?:[-*•]|\d+[.)]|(?:\[\d+\]))\s+\S+/;
 
@@ -45,7 +45,18 @@ export function stripTrailingReferenceSection(content: string): string {
 }
 
 export function postProcessAssistantContent(content: string): string {
-    const withoutTrailingReferences = stripTrailingReferenceSection(content);
+    // Fix malformed markdown: missing space after formatters
+    const fixed = content
+        // ## Title, ### Title etc (also handles Chinese characters after #)
+        .replace(/(^|\n)(#{1,6})([^\s#])/gm, "$1$2 $3")
+        // 1.Item → 1. Item (numbered lists)
+        .replace(/(^|\n)(\d+)\.([^\s.])/gm, "$1$2. $3")
+        // -Item → - Item (unordered lists)
+        .replace(/(^|\n)-([^\s-])/gm, "$1- $2")
+        // *Item → * Item (alternative unordered lists, but not **bold**)
+        .replace(/(^|\n)\*([^\s*])/gm, "$1* $2");
+
+    const withoutTrailingReferences = stripTrailingReferenceSection(fixed);
     const withCiteMarkers = withoutTrailingReferences.replace(
         /\[(\d+)\]/g,
         (_match, num) => `\`${CITE_PREFIX}${num}${CITE_SUFFIX}\``

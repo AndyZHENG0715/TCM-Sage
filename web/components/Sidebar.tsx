@@ -1,21 +1,22 @@
 "use client";
 
-import { ChatSession } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useState } from "react";
 import {
+    BarChart3,
+    ExternalLink,
+    MessageSquare,
     MessageSquarePlus,
-    Settings,
-    User,
     PanelLeftClose,
     PanelLeftOpen,
-    MessageSquare,
-    Trash2,
+    Settings,
     Swords,
-    BarChart3,
-    ExternalLink
+    Trash2,
+    User,
 } from "lucide-react";
-import { useState } from "react";
-import Link from "next/link";
+import { useI18n } from "@/i18n/context";
+import { ChatSession } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
     sessions: ChatSession[];
@@ -27,6 +28,8 @@ interface SidebarProps {
     className?: string;
 }
 
+type SessionGroupKey = "today" | "yesterday" | "lastWeek" | "older";
+
 export function Sidebar({
     sessions,
     currentSessionId,
@@ -37,16 +40,22 @@ export function Sidebar({
     className,
 }: SidebarProps) {
     const [collapsed, setCollapsed] = useState(false);
+    const { locale, t, toggleLocale } = useI18n();
+    const localeToggle =
+        locale === "zh"
+            ? { label: "繁", ariaLabel: "切换到繁體中文" }
+            : locale === "zh-Hant"
+              ? { label: "EN", ariaLabel: "切換到英文" }
+              : { label: "简", ariaLabel: "Switch to Simplified Chinese" };
 
     const handleDelete = (e: React.MouseEvent<HTMLButtonElement>, sessionId: string) => {
         e.preventDefault();
         e.stopPropagation();
-        if (window.confirm("Delete this conversation? This cannot be undone.")) {
+        if (window.confirm(`${t.sidebar.deleteChat}?`)) {
             onDeleteSession(sessionId);
         }
     };
 
-    // Group sessions
     const groupedSessions = sessions.reduce((acc, session) => {
         const date = new Date(session.updatedAt);
         const today = new Date();
@@ -54,113 +63,117 @@ export function Sidebar({
         yesterday.setDate(today.getDate() - 1);
 
         const isToday = date.toDateString() === today.toDateString();
-        const isYesterday =
-            yesterday.toDateString() === date.toDateString();
+        const isYesterday = yesterday.toDateString() === date.toDateString();
 
-        let group = "Older";
-        if (isToday) group = "Today";
-        else if (isYesterday) group = "Yesterday";
-        else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000)
-            group = "Last Week";
+        let group: SessionGroupKey = "older";
+        if (isToday) group = "today";
+        else if (isYesterday) group = "yesterday";
+        else if (today.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) group = "lastWeek";
 
         if (!acc[group]) acc[group] = [];
         acc[group].push(session);
         return acc;
-    }, {} as Record<string, ChatSession[]>);
+    }, {} as Record<SessionGroupKey, ChatSession[]>);
 
-    const groupOrder = ["Today", "Yesterday", "Last Week", "Older"];
+    const groupOrder: SessionGroupKey[] = ["today", "yesterday", "lastWeek", "older"];
+    const groupLabels: Record<SessionGroupKey, string> = {
+        today: t.sidebar.today,
+        yesterday: t.sidebar.yesterday,
+        lastWeek: t.sidebar.lastWeek,
+        older: t.sidebar.older,
+    };
 
     return (
         <div
             className={cn(
-                "flex flex-col h-full bg-sidebar-dark border-r border-white/5 transition-all duration-300 relative",
+                "relative flex h-full flex-col border-r border-white/5 bg-sidebar-dark transition-all duration-300",
                 collapsed ? "w-16" : "w-64 md:w-72",
                 className
             )}
         >
-            {/* Header */}
-            <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center justify-between p-4">
                 {!collapsed && (
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-primary-dark/50 flex items-center justify-center font-bold text-background-dark">
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-gradient-to-br from-primary to-primary-dark/50 font-bold text-background-dark">
                             S
                         </div>
-                        <h1 className="font-serif font-bold text-lg text-parchment tracking-wide">
-                            TCM-Sage
-                        </h1>
+                        <h1 className="font-serif text-lg font-bold tracking-wide text-parchment">{t.common.appName}</h1>
                     </div>
                 )}
                 <button
+                    type="button"
                     onClick={() => setCollapsed(!collapsed)}
-                    className="p-2 text-gray-400 hover:text-parchment transition-colors rounded-lg hover:bg-white/5"
+                    className="min-h-11 min-w-11 rounded-lg p-2.5 text-gray-400 transition-colors hover:bg-white/5 hover:text-parchment"
+                    aria-label={collapsed ? t.common.confirm : t.common.close}
                 >
                     {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
                 </button>
             </div>
 
-            {/* New Chat Button */}
-            <div className="px-3 mb-1">
+            <div className="mb-1 px-3">
                 <button
+                    type="button"
                     onClick={onNewChat}
                     className={cn(
-                        "flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group",
-                        collapsed ? "justify-center" : ""
+                        "flex min-h-11 w-full items-center gap-3 rounded-lg border border-primary/20 p-3 transition-all hover:bg-white/5 group",
+                        collapsed && "justify-center"
                     )}
                 >
                     <MessageSquarePlus
                         size={20}
-                        className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all"
+                        className="text-primary transition-all group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)]"
                     />
-                    {!collapsed && (
-                        <span className="font-sans font-medium text-parchment text-sm">
-                            New Research Chat
-                        </span>
-                    )}
+                    {!collapsed && <span className="font-sans text-sm font-medium text-parchment">{t.sidebar.newChat}</span>}
                 </button>
             </div>
 
-            {/* Arena Links */}
-            <div className="px-3 mb-2 space-y-1">
+            <div className="mb-2 space-y-1 px-3">
                 <Link
                     href="/arena"
                     className={cn(
-                        "flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group",
-                        collapsed ? "justify-center" : ""
+                        "flex min-h-11 w-full items-center gap-3 rounded-lg border border-primary/20 p-3 transition-all hover:bg-white/5 group",
+                        collapsed && "justify-center"
                     )}
                 >
-                    <Swords size={20} className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all" />
-                    {!collapsed && <span className="font-sans font-medium text-parchment text-sm">Arena</span>}
+                    <Swords size={20} className="text-primary transition-all group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)]" />
+                    {!collapsed && <span className="font-sans text-sm font-medium text-parchment">{t.sidebar.arena}</span>}
                 </Link>
                 <Link
                     href="/arena/stats"
                     className={cn(
-                        "flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group",
-                        collapsed ? "justify-center" : ""
+                        "flex min-h-11 w-full items-center gap-3 rounded-lg border border-primary/20 p-3 transition-all hover:bg-white/5 group",
+                        collapsed && "justify-center"
                     )}
                 >
-                    <BarChart3 size={20} className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all" />
-                    {!collapsed && <span className="font-sans font-medium text-parchment text-sm">Arena Stats</span>}
+                    <BarChart3 size={20} className="text-primary transition-all group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)]" />
+                    {!collapsed && <span className="font-sans text-sm font-medium text-parchment">{t.sidebar.arenaStats}</span>}
                 </Link>
-                <a href="https://forms.gle/Sm62ucNSKQzGGPJ76" target="_blank" rel="noopener noreferrer" className={cn("flex items-center gap-3 w-full p-3 rounded-lg border border-primary/20 hover:bg-white/5 transition-all group", collapsed ? "justify-center" : "")}>
-                    <ExternalLink size={20} className="text-primary group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)] transition-all" />
-                    {!collapsed && <span className="font-sans font-medium text-parchment text-sm">Give Feedback</span>}
+                <a
+                    href="https://forms.gle/Sm62ucNSKQzGGPJ76"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                        "flex min-h-11 w-full items-center gap-3 rounded-lg border border-primary/20 p-3 transition-all hover:bg-white/5 group",
+                        collapsed && "justify-center"
+                    )}
+                >
+                    <ExternalLink size={20} className="text-primary transition-all group-hover:drop-shadow-[0_0_8px_rgba(25,230,212,0.5)]" />
+                    {!collapsed && <span className="font-sans text-sm font-medium text-parchment">{t.sidebar.feedback}</span>}
                 </a>
             </div>
 
-            {/* Chat History List */}
-            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <div className="flex-1 space-y-6 overflow-y-auto px-3 py-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {collapsed ? (
-                    // Collapsed view: just icons or simple list?
-                    // Just show recent icons
-                    sessions.slice(0, 5).map(session => (
+                    sessions.slice(0, 5).map((session) => (
                         <button
                             key={session.id}
+                            type="button"
                             onClick={() => onSelectSession(session)}
                             className={cn(
-                                "w-full p-2 flex justify-center rounded-lg hover:bg-white/5 transition-colors relative group",
+                                "relative flex min-h-11 w-full justify-center rounded-lg p-2 transition-colors hover:bg-white/5 group",
                                 currentSessionId === session.id && "bg-white/10 text-primary"
                             )}
-                            title={session.title}
+                            title={session.title || t.sidebar.newChat}
                         >
                             <MessageSquare size={18} />
                         </button>
@@ -172,8 +185,8 @@ export function Sidebar({
 
                         return (
                             <div key={group}>
-                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">
-                                    {group}
+                                <h3 className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                                    {groupLabels[group]}
                                 </h3>
                                 <div className="space-y-1">
                                     {groupSessions.map((session) => (
@@ -189,10 +202,10 @@ export function Sidebar({
                                             <button
                                                 type="button"
                                                 onClick={() => onSelectSession(session)}
-                                                className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden p-2 text-left"
+                                                className="flex min-h-11 min-w-0 flex-1 items-center gap-3 overflow-hidden p-2 text-left"
                                             >
-                                                <span className="text-sm truncate font-medium">
-                                                    {session.title || "New Chat"}
+                                                <span className="truncate text-sm font-medium">
+                                                    {session.title || t.sidebar.newChat}
                                                 </span>
                                             </button>
 
@@ -200,9 +213,9 @@ export function Sidebar({
                                                 type="button"
                                                 onPointerDown={(e) => e.stopPropagation()}
                                                 onClick={(e) => handleDelete(e, session.id)}
-                                                className="shrink-0 rounded p-2 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
-                                                title="Delete chat"
-                                                aria-label={`Delete ${session.title || "chat"}`}
+                                                className="min-h-11 min-w-11 shrink-0 rounded p-2 opacity-0 transition group-hover:opacity-100 hover:text-red-400"
+                                                title={t.sidebar.deleteChat}
+                                                aria-label={`${t.sidebar.deleteChat} ${session.title || t.sidebar.newChat}`}
                                             >
                                                 <Trash2 size={14} />
                                             </button>
@@ -215,19 +228,35 @@ export function Sidebar({
                 )}
             </div>
 
-            {/* Footer / User Profile */}
-            <div className="p-4 border-t border-white/5 flex flex-col gap-2">
-                <div className={cn(
-                    "flex items-center gap-3 w-full p-2 rounded-lg hover:bg-white/5 transition-colors text-left",
-                    collapsed ? "justify-center" : ""
-                )}>
-                    <div className="w-8 h-8 rounded-full bg-parchment text-background-dark flex items-center justify-center font-bold shrink-0">
+            <div className="flex flex-col gap-2 border-t border-white/5 p-4">
+                <button
+                    type="button"
+                    onClick={toggleLocale}
+                    className={cn(
+                        "flex min-h-11 items-center rounded-full border border-primary/20 bg-primary/10 text-primary transition-colors hover:bg-primary/15",
+                        collapsed ? "justify-center px-0" : "justify-between px-3 py-2"
+                    )}
+                    aria-label={localeToggle.ariaLabel}
+                >
+                    {!collapsed && <span className="text-xs uppercase tracking-[0.2em] text-parchment/70">简→繁→EN→简</span>}
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        {localeToggle.label}
+                    </span>
+                </button>
+
+                <div
+                    className={cn(
+                        "flex min-h-11 w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-white/5",
+                        collapsed && "justify-center"
+                    )}
+                >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-parchment text-background-dark font-bold">
                         <User size={16} />
                     </div>
                     {!collapsed && (
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-medium text-parchment truncate">Dr. Zhang</p>
-                            <p className="text-xs text-gray-500 truncate">Pro Plan</p>
+                            <p className="truncate text-sm font-medium text-parchment">{t.sidebar.userName}</p>
+                            <p className="truncate text-xs text-gray-500">{t.sidebar.userPlan}</p>
                         </div>
                     )}
                     {!collapsed && (
@@ -237,7 +266,8 @@ export function Sidebar({
                                 e.stopPropagation();
                                 onOpenSettings();
                             }}
-                            className="p-2 text-gray-400 hover:text-parchment hover:rotate-90 transition-all"
+                            className="min-h-11 min-w-11 p-2 text-gray-400 transition-all hover:rotate-90 hover:text-parchment"
+                            aria-label={t.settings.title}
                         >
                             <Settings size={18} />
                         </button>

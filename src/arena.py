@@ -24,7 +24,6 @@ if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
 from config import PROJECT_ROOT
-from main import DEFAULT_SYSTEM_PROMPT, create_llm
 from ui_backend import run_query_stream
 
 load_dotenv()
@@ -33,7 +32,7 @@ load_dotenv()
 # Arena model tiers — override with ARENA_MODELS env var (JSON string)
 # ---------------------------------------------------------------------------
 _DEFAULT_ARENA_MODELS: Dict[str, str] = {
-    "flash": "qwen-turbo",
+    "flash": "qwen-flash",
     "plus": "qwen-plus",
     "max": "qwen-max",
 }
@@ -92,12 +91,15 @@ async def generate_raw_llm_response(
     """
     provider = os.getenv("LLM_PROVIDER", "alibaba").lower()
 
-    llm = create_llm(
-        provider=provider,
+    from langchain_openai import ChatOpenAI
+    api_key = os.getenv('DASHSCOPE_API_KEY', '')
+    llm_base = ChatOpenAI(
         model=model_name,
         streaming=True,
+        api_key=api_key,
+        base_url='https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
     )
-
+    llm = llm_base
     # Build a simple history string (last 6 turns, same as ui_backend)
     history_lines: list[str] = []
     for msg in (chat_history or [])[-6:]:
@@ -106,15 +108,28 @@ async def generate_raw_llm_response(
         history_lines.append(f"{role}: {content}")
     history_text = "\n".join(history_lines)
 
-    from main import DEFAULT_SYSTEM_PROMPT
-    
-    prompt_text = (
-        f"{DEFAULT_SYSTEM_PROMPT}\n\n"
-    )
+    # Web search for grounding (mirrors what users get from ChatGPT/Gemini/Kimi)
+    search_context = ""
+    try:
+        from ddgs import DDGS
+        results = list(DDGS().text(question, max_results=5))
+        if results:
+            snippets = []
+            for i, r in enumerate(results, 1):
+                snippets.append(f"[{i}] {r.get('title', '')}: {r.get('body', '')}")
+            search_context = "Web search results:\n" + "\n".join(snippets) + "\n\n"
+            print(f'[Debug] Arena plain LLM: {len(results)} web search results for "{question[:30]}"')
+    except Exception as e:
+        print(f'[Debug] Arena web search failed (non-fatal): {e}')
+
+    # Plain LLM uses default prompt + web search (no TCM-specific instructions)
+    # — the system prompt and curated retrieval are part of TCM-Sage's engineering
+    prompt_text = "You are a helpful assistant.\n\n"
+    if search_context:
+        prompt_text += search_context
     if history_text:
         prompt_text += f"Chat History:\n{history_text}\n\n"
     prompt_text += f"Question:\n{question}\n\n"
-
     async for chunk in llm.astream(prompt_text):
         # LangChain ChatModel chunks have a .content attribute
         text = chunk.content if hasattr(chunk, "content") else str(chunk)

@@ -11,7 +11,7 @@ export interface ArenaRoundVote {
     query: string;
     responseA: string;
     responseB: string;
-    positionMapping: Record<string, string>; // {"a": "rag"} or {"a": "plain"}
+    positionMapping: Record<string, string>;
     vote: VoteOption;
     comment?: string | null;
     citationsA?: Citation[];
@@ -19,25 +19,21 @@ export interface ArenaRoundVote {
 }
 
 export interface ArenaState {
-    // Per-round streaming state
     responseA: string;
     responseB: string;
     isStreamingA: boolean;
     isStreamingB: boolean;
     errorA: string | null;
     errorB: string | null;
+    voteError: string | null;
     metadataA: Record<string, unknown> | null;
     metadataB: Record<string, unknown> | null;
     arenaConfig: { position_mapping: Record<string, string> } | null;
-
-    // Session state
     sessionId: string;
     roundNumber: number;
     votes: ArenaRoundVote[];
     selectedModel: string;
-
-    // UI state
-    canVote: boolean; // true when both streams done
+    canVote: boolean;
     hasVotedThisRound: boolean;
     showReveal: boolean;
 }
@@ -50,6 +46,7 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
         isStreamingB: false,
         errorA: null,
         errorB: null,
+        voteError: null,
         metadataA: null,
         metadataB: null,
         arenaConfig: null,
@@ -62,7 +59,6 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
         showReveal: false,
     });
 
-    // Independent chat histories for A and B
     const chatHistoryARef = useRef<{ role: string; content: string }[]>([]);
     const chatHistoryBRef = useRef<{ role: string; content: string }[]>([]);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -72,10 +68,13 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
         async (question: string) => {
             if (!question.trim()) return;
 
-            // Abort any in-flight streams
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
             currentQueryRef.current = question;
+
+            const selectedModel = state.selectedModel;
+            const sessionId = state.sessionId;
+            const roundNumber = state.roundNumber;
 
             setState((prev) => ({
                 ...prev,
@@ -85,6 +84,7 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                 isStreamingB: true,
                 errorA: null,
                 errorB: null,
+                voteError: null,
                 metadataA: null,
                 metadataB: null,
                 arenaConfig: null,
@@ -97,9 +97,9 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                     question,
                     chatHistoryARef.current,
                     chatHistoryBRef.current,
-                    state.selectedModel,
-                    state.sessionId,
-                    state.roundNumber,
+                    selectedModel,
+                    sessionId,
+                    roundNumber,
                     abortControllerRef.current.signal
                 );
 
@@ -128,6 +128,7 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                             ...prev,
                             metadataA: event.data,
                             isStreamingA: false,
+                            responseA: collectedA,
                             canVote: doneA && doneB,
                         }));
                     } else if (event.type === "metadata_b") {
@@ -136,38 +137,32 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                             ...prev,
                             metadataB: event.data,
                             isStreamingB: false,
+                            responseB: collectedB,
                             canVote: doneA && doneB,
                         }));
                     } else if (event.type === "arena_config") {
                         setState((prev) => ({ ...prev, arenaConfig: event.data }));
                     } else if (event.type === "error") {
                         const panel = (event.data as { panel?: string }).panel;
+                        const message = String((event.data as { message?: string }).message ?? "Error");
                         if (panel === "a") {
                             doneA = true;
-                            setState((prev) => ({
-                                ...prev,
-                                errorA: String((event.data as { message?: string }).message ?? "Error"),
-                                isStreamingA: false,
-                                canVote: doneA && doneB,
-                            }));
+                            setState((prev) => ({ ...prev, errorA: message, isStreamingA: false, canVote: doneB }));
                         } else {
                             doneB = true;
-                            setState((prev) => ({
-                                ...prev,
-                                errorB: String((event.data as { message?: string }).message ?? "Error"),
-                                isStreamingB: false,
-                                canVote: doneA && doneB,
-                            }));
+                            setState((prev) => ({ ...prev, errorB: message, isStreamingB: false, canVote: doneA }));
                         }
                     }
                 }
 
-                // Ensure streaming flags cleared at end
                 setState((prev) => ({
                     ...prev,
+                    responseA: collectedA || prev.responseA,
+                    responseB: collectedB || prev.responseB,
                     isStreamingA: false,
                     isStreamingB: false,
-                    canVote: true,
+                    canVote: (collectedA.length > 0 || prev.responseA.length > 0) &&
+                             (collectedB.length > 0 || prev.responseB.length > 0),
                 }));
             } catch (err) {
                 if ((err as Error).name !== "AbortError") {
@@ -177,18 +172,18 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                         errorB: "Stream failed",
                         isStreamingA: false,
                         isStreamingB: false,
+                        canVote: false,
                     }));
                 }
             }
         },
-        [state.selectedModel, state.sessionId, state.roundNumber]
+        [state.roundNumber, state.selectedModel, state.sessionId]
     );
 
     const submitVote = useCallback(
         async (vote: VoteOption, comment?: string) => {
-            const currentState = state; // capture snapshot
+            const currentState = state;
 
-            // Build vote record
             const roundVote: ArenaRoundVote = {
                 roundNumber: currentState.roundNumber,
                 query: currentQueryRef.current,
@@ -206,32 +201,42 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                 votes: [...prev.votes, roundVote],
                 roundNumber: prev.roundNumber + 1,
                 hasVotedThisRound: true,
+                voteError: null,
             }));
 
-            // Fire-and-forget to backend
-            await submitArenaVote({
-                session_id: currentState.sessionId,
-                round_number: roundVote.roundNumber,
-                query: roundVote.query,
-                response_a: roundVote.responseA,
-                response_b: roundVote.responseB,
-                model_name: currentState.selectedModel,
-                position_mapping: roundVote.positionMapping,
-                vote,
-                comment: comment ?? null,
-            });
+            try {
+                await submitArenaVote({
+                    session_id: currentState.sessionId,
+                    round_number: roundVote.roundNumber,
+                    query: roundVote.query,
+                    response_a: roundVote.responseA,
+                    response_b: roundVote.responseB,
+                    model_name: currentState.selectedModel,
+                    position_mapping: roundVote.positionMapping,
+                    vote,
+                    comment: comment ?? null,
+                });
 
-            // Append to independent histories
-            chatHistoryARef.current = [
-                ...chatHistoryARef.current,
-                { role: "user", content: currentQueryRef.current },
-                { role: "assistant", content: currentState.responseA },
-            ];
-            chatHistoryBRef.current = [
-                ...chatHistoryBRef.current,
-                { role: "user", content: currentQueryRef.current },
-                { role: "assistant", content: currentState.responseB },
-            ];
+                chatHistoryARef.current = [
+                    ...chatHistoryARef.current,
+                    { role: "user", content: currentQueryRef.current },
+                    { role: "assistant", content: currentState.responseA },
+                ];
+                chatHistoryBRef.current = [
+                    ...chatHistoryBRef.current,
+                    { role: "user", content: currentQueryRef.current },
+                    { role: "assistant", content: currentState.responseB },
+                ];
+            } catch {
+                setState((prev) => ({
+                    ...prev,
+                    votes: prev.votes.slice(0, -1),
+                    roundNumber: currentState.roundNumber,
+                    canVote: currentState.canVote,
+                    hasVotedThisRound: false,
+                    voteError: "Unable to save your vote. Please try again.",
+                }));
+            }
         },
         [state]
     );
@@ -256,10 +261,14 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
             isStreamingB: false,
             errorA: null,
             errorB: null,
+            voteError: null,
             metadataA: null,
             metadataB: null,
             arenaConfig: null,
-            sessionId: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36),
+            sessionId:
+                typeof crypto !== "undefined" && crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : Math.random().toString(36).slice(2) + Date.now().toString(36),
             roundNumber: 1,
             votes: [],
             selectedModel: state.selectedModel,

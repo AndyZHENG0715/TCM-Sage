@@ -22,6 +22,7 @@ export function useChat(settings: Settings) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isStreaming, setIsStreaming] = useState(false);
     const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -50,6 +51,7 @@ export function useChat(settings: Settings) {
 
             setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
             setIsStreaming(true);
+            setError(null);
 
             try {
                 abortControllerRef.current = new AbortController();
@@ -88,7 +90,7 @@ export function useChat(settings: Settings) {
                         continue;
                     }
 
-                    console.error("Stream error:", event.message);
+                    setError(event.message || "The response stream reported an error.");
                     fullContent += `\n\n[Error: ${event.message}]`;
                     setMessages((prev) =>
                         updateLastAssistantMessage(prev, (message) => ({
@@ -98,7 +100,11 @@ export function useChat(settings: Settings) {
                     );
                 }
             } catch (error) {
-                console.error("Chat error:", error);
+                if (error instanceof Error && error.name === "AbortError") {
+                    return;
+                }
+
+                setError("Failed to send message. Please try again.");
                 setMessages((prev) =>
                     updateLastAssistantMessage(prev, (message) => ({
                         ...message,
@@ -120,6 +126,7 @@ export function useChat(settings: Settings) {
     return {
         messages,
         isStreaming,
+        error,
         sendMessage,
         setMessages: setMessagesList,
         activeCitation,

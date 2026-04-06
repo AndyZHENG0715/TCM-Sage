@@ -14,7 +14,6 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useEffect, useMemo } from "react";
 import type { SubgraphResponse } from "@/lib/api";
-import { getLayoutedElements } from "@/lib/graph-layout";
 import { GraphCitation } from "@/lib/types";
 
 interface KGViewerProps {
@@ -71,7 +70,7 @@ export function KGViewer({ citation, subgraph = null }: KGViewerProps) {
                     data: { label: node.label },
                     style: {
                         background: isCited ? "#f59e0b" : "#3e382d",
-                        color: isCited ? "#2C2825" : "#F3EFE0",
+                        color: isCited ? "var(--color-primary)" : "var(--color-parchment)",
                         border: "1px solid #8c8578",
                         borderRadius: "8px",
                         padding: "10px 15px",
@@ -107,7 +106,26 @@ export function KGViewer({ citation, subgraph = null }: KGViewerProps) {
                 },
             }));
 
-            return getLayoutedElements(baseNodes, baseEdges, "LR");
+            // Radial/star layout: center cited node, fan others around it
+            const centerX = 300;
+            const centerY = 200;
+            const radius = 160;
+            const nonCited = baseNodes.filter(n => !citedIds.has(n.id));
+            const cited = baseNodes.filter(n => citedIds.has(n.id));
+            const angleStep = nonCited.length > 0 ? (2 * Math.PI) / nonCited.length : 0;
+
+            cited.forEach(n => {
+                n.position = { x: centerX, y: centerY };
+            });
+
+            nonCited.forEach((n, i) => {
+                n.position = {
+                    x: centerX + radius * Math.cos(angleStep * i - Math.PI / 2),
+                    y: centerY + radius * Math.sin(angleStep * i - Math.PI / 2),
+                };
+            });
+
+            return { nodes: [...cited, ...nonCited], edges: baseEdges };
         }
 
         const match = citation.fact.match(/^(.+?)\s*--(.+?)-->\s*(.+)$/);
@@ -132,7 +150,7 @@ export function KGViewer({ citation, subgraph = null }: KGViewerProps) {
                 targetPosition: Position.Left,
                 style: {
                     background: "#3e382d",
-                    color: "#F3EFE0",
+                    color: "var(--color-parchment)",
                     border: "1px solid #8c8578",
                     borderRadius: "8px",
                     padding: "10px 15px",
@@ -150,7 +168,7 @@ export function KGViewer({ citation, subgraph = null }: KGViewerProps) {
                 targetPosition: Position.Left,
                 style: {
                     background: "#3e382d",
-                    color: "#F3EFE0",
+                    color: "var(--color-parchment)",
                     border: "1px solid #8c8578",
                     borderRadius: "8px",
                     padding: "10px 15px",

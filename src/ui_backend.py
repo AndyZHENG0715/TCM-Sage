@@ -354,11 +354,206 @@ def _search_graph_documents(
     return graph_docs[:max_results]
 
 
+import re as _re
+
+
+# Chinese numeral to int conversion for clause detection
+_CN_DIGITS = {'零': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
+              '六': 6, '七': 7, '八': 8, '九': 9, '十': 10,
+              '百': 100, '千': 1000}
+
+
+def _cn_num_to_int(cn: str) -> int | None:
+    """Convert Chinese numeral string to integer. E.g., '八十二' -> 82."""
+    try:
+        # Try simple Arabic numeral first
+        return int(cn)
+    except ValueError:
+        pass
+    result = 0
+    current = 0
+    for ch in cn:
+        if ch not in _CN_DIGITS:
+            return None
+        val = _CN_DIGITS[ch]
+        if val >= 10:  # multiplier (十, 百, 千)
+            if current == 0:
+                current = 1
+            result += current * val
+            current = 0
+        else:
+            current = val
+    result += current
+    return result if result > 0 else None
+
+
+# Pattern: 伤寒论/金匮要略 + 第X条 (Arabic or Chinese numerals)
+_CLAUSE_QUERY_PATTERN = _re.compile(
+    r'(?:《?(?P<book>伤寒论|金匮要略方论|金匮要略)》?)?'
+    r'.*?第(?P<num>[\d一二三四五六七八九十百千]+)条'
+)
+
+
+def _extract_clause_reference(query: str) -> tuple[str | None, int | None]:
+    """Detect if query asks for a specific clause number. Returns (book, clause_num) or (None, None)."""
+    m = _CLAUSE_QUERY_PATTERN.search(query)
+    if not m:
+        return None, None
+    book = m.group('book')
+    num_str = m.group('num')
+    clause_num = _cn_num_to_int(num_str)
+    if clause_num is None:
+        return None, None
+    # Default to 伤寒论 if no book specified but clause reference found
+    if not book:
+        book = '伤寒论'
+    # Normalize 金匮要略 variants
+    if book in ('金匮要略', '金匮要略方论'):
+        book = '金匮要略方论'
+    return book, clause_num
+
+
+_CLAUSE_MULTI_PATTERN = _re.compile(
+    r'(?:第([\d一二三四五六七八九十百千]+)条?|([\d一二三四五六七八九十百千]+)条)'
+)
+
+
+def _extract_clause_references(query: str) -> list[tuple[str, int]]:
+    book_match = _re.search(r'《?(?P<book>伤寒论|金匮要略方论|金匮要略)》?', query)
+    book = '伤寒论'
+    if book_match:
+        book = book_match.group('book')
+        if book in ('金匮要略', '金匮要略方论'):
+            book = '金匮要略方论'
+    results = []
+    for m in _CLAUSE_MULTI_PATTERN.finditer(query):
+        num_str = m.group(1) or m.group(2)
+        num = _cn_num_to_int(num_str)
+        if num is not None:
+            results.append((book, num))
+    return results
+
+_FORMULA_PATTERN = _re.compile(
+    r'([\u4e00-\u9fff]{2,8}(?:汤|散|丸|饮|膏|酒|方|丹))'
+)
+
+_CANONICAL_FORMULA_BOOKS = {'伤寒论', '金匮要略方论'}
+
+
+def _extract_formula_name(query: str) -> str | None:
+    m = _FORMULA_PATTERN.search(query)
+    return m.group(1) if m else None
+
+
+def _fetch_canonical_formula_docs(
+    vs: 'Chroma', formula: str, query: str, k: int = 3
+) -> list[Document]:
+    """Search canonical texts for a specific formula via metadata filter."""
+    results: list[Document] = []
+    for book in _CANONICAL_FORMULA_BOOKS:
+        try:
+            docs = vs.similarity_search(
+                query,
+                k=k,
+                filter={'$and': [{'formula': formula}, {'book': book}]},
+            )
+            for doc in docs:
+                if doc.metadata is None:
+                    doc.metadata = {}
+                doc.metadata['source_type'] = 'vector'
+                doc.metadata['score'] = 0.0
+            results.extend(docs)
+        except Exception:
+            pass
+    if results:
+        print(f'[Debug] Formula filter: found {len(results)} canonical docs for "{formula}"')
+    return results
+
+_SOURCE_CHRONOLOGICAL_BOOST: dict[str, float] = {
+    '黄帝内经': 0.90,
+    '难经': 0.90,
+    '伤寒论': 0.90,
+    '金匮要略方论': 0.90,
+    '神农本草经': 0.90,
+    '灵枢': 0.90,
+    '千金要方': 0.93,
+    '备急千金要方': 0.93,
+    '外台秘要': 0.95,
+    '针灸甲乙经': 0.95,
+    '内外伤辨惑论': 0.97,
+    '脾胃论': 0.97,
+    '兰室秘藏': 0.97,
+    '丹溪心法': 0.97,
+    '宣明论方': 0.97,
+    '儒门事亲': 0.97,
+    '本草纲目': 0.97,
+    '温病条辨': 0.97,
+}
+
+
+def _apply_source_authority_boost(docs: list[Document]) -> list[Document]:
+    """Gently boost earlier/canonical texts by reducing their distance scores.
+
+    ChromaDB scores are distances (lower = better). Multiplying by < 1.0
+    makes a doc rank higher. The boost is small (0.90-0.97) so it only
+    tips the balance when semantic scores are close — it won't override
+    a clearly more relevant chunk from a later text.
+    """
+    for doc in docs:
+        if not doc.metadata or 'score' not in doc.metadata:
+            continue
+        book = doc.metadata.get('book', '')
+        boost = _SOURCE_CHRONOLOGICAL_BOOST.get(book, 1.0)
+        if boost < 1.0:
+            original = doc.metadata['score']
+            doc.metadata['score'] = round(original * boost, 3)
+
+    docs.sort(key=lambda d: d.metadata.get('score', 999) if d.metadata else 999)
+    return docs
+
+
 def _retrieve_documents(query: str, config: PipelineConfig) -> list[Document]:
+    # Check for specific clause reference (e.g., "伤寒论第八十二条")
+    # If found, use metadata filter for exact match instead of pure vector search
+    clause_refs = _extract_clause_references(query)
+    if clause_refs:
+        vs = get_shared_vectorstore()
+        clause_docs: list[Document] = []
+        try:
+            for clause_book, clause_num in clause_refs:
+                hits = vs.similarity_search(
+                    query,
+                    k=3,
+                    filter={'$and': [{'clause_number': clause_num}, {'book': clause_book}]},
+                )
+                for doc in hits:
+                    if doc.metadata is None:
+                        doc.metadata = {}
+                    doc.metadata['source_type'] = 'vector'
+                    doc.metadata['score'] = 0.0
+                clause_docs.extend(hits)
+            if clause_docs:
+                print(f'[Debug] Clause filter matched: {len(clause_refs)} refs, {len(clause_docs)} docs')
+                supplementary = vector_search_with_scores(vs, query, config.retrieval_k)
+                clause_ids = {d.page_content[:80] for d in clause_docs}
+                supplementary = [d for d in supplementary
+                                 if d.page_content[:80] not in clause_ids]
+                return clause_docs + supplementary[:config.retrieval_k - len(clause_docs)]
+        except Exception as e:
+            print(f'[Debug] Clause filter failed, falling back to normal search: {e}')
+
+    formula_name = _extract_formula_name(query)
+    canonical_formula_docs: list[Document] = []
+    if formula_name:
+        canonical_formula_docs = _fetch_canonical_formula_docs(
+            get_shared_vectorstore(), formula_name, query
+        )
+
+    broader_k = max(config.retrieval_k * 3, 20)
     vector_docs = vector_search_with_scores(
         get_shared_vectorstore(),
         query,
-        config.retrieval_k,
+        broader_k,
     )
 
     if not config.hybrid_enabled:
@@ -392,7 +587,19 @@ def _retrieve_documents(query: str, config: PipelineConfig) -> list[Document]:
     
     if len(deduped_vector) < len(vector_docs):
         print(f"[Debug] Deduplication: {len(vector_docs)} -> {len(deduped_vector)} vector docs")
-    
+
+    deduped_vector = _apply_source_authority_boost(deduped_vector)
+
+    if canonical_formula_docs:
+        canon_keys = set()
+        for doc in canonical_formula_docs:
+            if doc.metadata:
+                canon_keys.add(doc.page_content[:80])
+        deduped_vector = [d for d in deduped_vector
+                          if d.page_content[:80] not in canon_keys]
+        deduped_vector = canonical_formula_docs + deduped_vector
+
+    deduped_vector = deduped_vector[:config.retrieval_k]
     return deduped_vector + graph_docs
 
 

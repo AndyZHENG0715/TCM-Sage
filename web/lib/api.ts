@@ -64,6 +64,10 @@ export type ChunkContext = {
     total_chunks_in_chapter: number;
 };
 
+export type BookContent = {
+    content: string;
+};
+
 export interface SubgraphResponse {
     nodes: Array<{ id: string; label: string; type: string }>;
     edges: Array<{ source: string; target: string; label: string }>;
@@ -329,6 +333,22 @@ export async function fetchSubgraph(entity: string, hops: number = 2): Promise<S
     return res.json() as Promise<SubgraphResponse>;
 }
 
+export interface GraphSearchResult {
+    id: string;
+    label: string;
+    type: string;
+}
+
+export async function fetchGraphSearch(query: string, limit: number = 20): Promise<GraphSearchResult[]> {
+    const params = new URLSearchParams({ q: query, limit: String(limit) });
+    const res = await fetch(`${BACKEND_URL}/graph/search?${params.toString()}`);
+    if (!res.ok) {
+        return [];
+    }
+    const data = (await res.json()) as { results: GraphSearchResult[] };
+    return data.results;
+}
+
 export async function fetchBookContent(bookName: string): Promise<BookContent> {
     const res = await fetch(`${BACKEND_URL}/books/${encodeURIComponent(bookName)}`);
     if (!res.ok) {
@@ -463,6 +483,7 @@ export async function fetchArenaModels(): Promise<Partial<Settings["arenaModels"
         if (!res.ok) return {};
         return (await res.json()) as Partial<Settings["arenaModels"]>;
     } catch {
+        return {};
     }
 }
 

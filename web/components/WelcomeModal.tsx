@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore, useCallback } from "react";
 import Link from "next/link";
 import { Swords, MessageSquareText, X } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 function useHasSeenWelcome() {
     return useSyncExternalStore(
@@ -15,6 +16,7 @@ function useHasSeenWelcome() {
 export function WelcomeModal() {
     const hasSeen = useHasSeenWelcome();
     const [dismissed, setDismissed] = useState(false);
+    const { t } = useI18n();
 
     const dismiss = useCallback(() => {
         setDismissed(true);
@@ -29,16 +31,16 @@ export function WelcomeModal() {
                 <button
                     onClick={dismiss}
                     className="absolute top-4 right-4 p-1 text-gray-500 hover:text-parchment transition-colors"
-                    aria-label="Close"
+                    aria-label={t.common.close}
                 >
                     <X size={18} />
                 </button>
 
                 <h1 className="text-2xl font-serif font-bold text-parchment mb-2">
-                    Welcome to TCM-Sage
+                    {t.welcome.title}
                 </h1>
                 <p className="text-sm text-gray-400 mb-6">
-                    An evidence-based Traditional Chinese Medicine research assistant powered by RAG (Retrieval-Augmented Generation) and classical text citations.
+                    {t.welcome.description}
                 </p>
 
                 <div className="space-y-3">
@@ -52,13 +54,13 @@ export function WelcomeModal() {
                         </div>
                         <div>
                             <h3 className="font-semibold text-parchment text-base">
-                                Arena — Blind Evaluation
+                                {t.welcome.arenaTitle}
                                 <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                                    Help us!
+                                    {t.welcome.arenaHelp}
                                 </span>
                             </h3>
                             <p className="text-sm text-gray-400 mt-1 leading-relaxed">
-                                Compare two AI responses side by side and vote for the better one — you won&apos;t know which uses our RAG system until after voting. Your votes help us evaluate and improve the system.
+                                {t.welcome.arenaDescription}
                             </p>
                         </div>
                     </Link>
@@ -73,17 +75,20 @@ export function WelcomeModal() {
                         </div>
                         <div>
                             <h3 className="font-semibold text-parchment text-base">
-                                Main Chat — Full Features
+                                {t.welcome.mainChatTitle}
                             </h3>
                             <p className="text-sm text-gray-400 mt-1 leading-relaxed">
-                                Explore the complete RAG system with citation panel, knowledge graph visualization, source verification, and multi-turn conversation.
+                                {t.welcome.mainChatDescription}
                             </p>
                         </div>
                     </Link>
                 </div>
 
                 <p className="text-xs text-gray-500 mt-5 text-center">
-                    This is an academic research project (FYP). Thank you for participating!
+                    {t.welcome.footer}
+                </p>
+                <p className="text-[10px] text-gray-600 mt-2 text-center leading-relaxed">
+                    {t.welcome.corpusNote}
                 </p>
             </div>
         </div>

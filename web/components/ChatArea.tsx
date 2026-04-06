@@ -1,9 +1,11 @@
 "use client";
 
 import { Message, Citation } from "@/lib/types";
+import { useI18n } from "@/i18n/context";
 import { MessageBubble } from "./MessageBubble";
 import { ChatInput } from "./ChatInput";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { ArrowDown } from "lucide-react";
 
 interface ChatAreaProps {
     messages: Message[];
@@ -21,26 +23,52 @@ export function ChatArea({
     onCitationClick,
 }: ChatAreaProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+    const { t } = useI18n();
 
+    const isNearBottom = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) return true;
+        return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    }, []);
+
+    // Auto-scroll only when user hasn't scrolled up
     useEffect(() => {
-        if (scrollRef.current) {
-            // Auto scroll to bottom
+        if (scrollRef.current && !isUserScrolledUp) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages, isStreaming]);
+    }, [messages, isStreaming, isUserScrolledUp]);
+
+    // Re-lock auto-scroll when user sends a message
+    const handleSend = useCallback((message: string) => {
+        setIsUserScrolledUp(false);
+        onSend(message);
+    }, [onSend]);
+
+    const handleScroll = useCallback(() => {
+        setIsUserScrolledUp(!isNearBottom());
+    }, [isNearBottom]);
+
+    const scrollToBottom = useCallback(() => {
+        setIsUserScrolledUp(false);
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, []);
 
     return (
         <div className="flex flex-col h-full bg-background-dark relative">
             {/* Header */}
             <div className="px-6 py-4 border-b border-white/5 bg-background-dark/80 backdrop-blur-md sticky top-0 z-10">
                 <h2 className="text-lg font-serif font-medium text-parchment truncate text-center">
-                    {title || "New Investigation"}
+                    {title || t.chat.newInvestigation}
                 </h2>
             </div>
 
             {/* Messages */}
             <div
                 ref={scrollRef}
+                onScroll={handleScroll}
                 className="flex-1 overflow-y-auto w-full px-4 sm:px-6 py-6 scroll-smooth"
             >
                 <div className="w-full max-w-4xl mx-auto min-h-full">
@@ -50,29 +78,11 @@ export function ChatArea({
                                 <span className="text-4xl">☯</span>
                             </div>
                             <h3 className="text-xl font-serif font-bold text-parchment mb-2">
-                                TCM-Sage Research Assistant
+                                {t.chat.welcomeTitle}
                             </h3>
-                            <p className="text-sm text-gray-400 max-w-md mb-6">
-                                Ask clinical questions, explore classic texts, and synthesize TCM knowledge with verifiable citations.
+                            <p className="text-sm text-gray-400 max-w-md">
+                                {t.chat.welcomeDescription}
                             </p>
-                            <div className="flex flex-wrap justify-center gap-2 max-w-lg">
-                                {[
-                                    { label: "水蛭性味功效", query: "水蛭的性味是什么？出自哪本经典？主治什么？" },
-                                    { label: "蛇床子配伍禁忌", query: "蛇床子有哪些配伍禁忌？恶什么药？" },
-                                    { label: "麻黄汤组成剂量", query: "麻黄汤的完整药物组成和剂量是什么？请引用原文。" },
-                                    { label: "独活寄生汤全方", query: "独活寄生汤有多少味药？请全部列出并注明剂量。" },
-                                    { label: "丹溪痰证治法", query: "《丹溪心法》中关于痰证的治法有哪些？分别用什么药？" },
-                                ].map((item) => (
-                                    <button
-                                        key={item.label}
-                                        type="button"
-                                        onClick={() => onSend(item.query)}
-                                        className="text-xs px-3 py-1.5 rounded-full border border-primary/20 text-primary/70 hover:text-primary hover:bg-primary/10 transition-colors"
-                                    >
-                                        {item.label}
-                                    </button>
-                                ))}
-                            </div>
                         </div>
                     ) : (
                         messages
@@ -99,9 +109,20 @@ export function ChatArea({
                 </div>
             </div>
 
+            {/* Scroll to bottom button */}
+            {isUserScrolledUp && (
+                <button
+                    onClick={scrollToBottom}
+                    className="absolute bottom-28 right-6 p-2.5 bg-sidebar-dark/90 hover:bg-sidebar-dark border border-white/10 text-parchment/70 hover:text-primary rounded-full shadow-lg backdrop-blur-sm transition-all z-20"
+                    aria-label={t.common.scrollToBottom}
+                >
+                    <ArrowDown size={18} />
+                </button>
+            )}
+
             {/* Input */}
             <div className="w-full bg-gradient-to-t from-background-dark to-transparent pt-4">
-                <ChatInput onSend={onSend} isLoading={isStreaming} />
+                <ChatInput onSend={handleSend} isLoading={isStreaming} />
             </div>
         </div>
     );

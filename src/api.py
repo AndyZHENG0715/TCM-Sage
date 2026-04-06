@@ -15,7 +15,7 @@ import sys
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, AsyncGenerator, Dict, Generator, Literal
+from typing import Any, AsyncGenerator, AsyncIterator, Dict, Generator, Literal, cast
 from urllib.parse import unquote
 
 from dotenv import load_dotenv
@@ -116,6 +116,22 @@ class ArenaVoteRequest(BaseModel):
     vote: Literal["a", "b", "tie"]
     comment: str | None = None
     timestamp: str = ""
+
+
+DEFAULT_ARENA_STREAM_TIMEOUT_SECONDS = 60.0
+
+
+def resolve_arena_stream_timeout_seconds(timeout_override: float | None = None) -> float:
+    if timeout_override is not None and timeout_override > 0:
+        return float(timeout_override)
+
+    raw_timeout = os.getenv("ARENA_STREAM_TIMEOUT_SECONDS", str(DEFAULT_ARENA_STREAM_TIMEOUT_SECONDS))
+    try:
+        timeout_value = float(raw_timeout)
+    except ValueError:
+        return DEFAULT_ARENA_STREAM_TIMEOUT_SECONDS
+
+    return timeout_value if timeout_value > 0 else DEFAULT_ARENA_STREAM_TIMEOUT_SECONDS
 
 
 @app.get("/health")
@@ -508,6 +524,31 @@ async def get_graph_subgraph(entity: str, hops: int = 2) -> Dict[str, Any]:
         "cited_ids": [seed_id],
     }
 
+@app.get("/graph/search")
+async def search_graph_entities(q: str, limit: int = 20) -> Dict[str, Any]:
+    """Search KG entities by name for autocomplete / explorer search bar."""
+    from ui_backend import _get_knowledge_graph
+
+    try:
+        config = get_runtime_config()
+        if not config.hybrid_available:
+            return {"results": []}
+        kg = _get_knowledge_graph(config.graph_data_path)
+    except Exception:
+        return {"results": []}
+
+    entity_ids = kg.search_by_name(q)
+    results = []
+    for eid in entity_ids[:limit]:
+        attrs = kg.graph.nodes.get(eid, {})
+        results.append({
+            "id": eid,
+            "label": attrs.get("name", eid),
+            "type": attrs.get("type", "Unknown"),
+        })
+
+    return {"results": results}
+
 
 async def generate_arena_sse_stream(
     question: str,
@@ -516,8 +557,13 @@ async def generate_arena_sse_stream(
     model_name: str,
     session_id: str,
     round_number: int,
+    stream_timeout_seconds: float | None = None,
 ) -> AsyncGenerator[str, None]:
     import json as _json
+
+    timeout_seconds = resolve_arena_stream_timeout_seconds(stream_timeout_seconds)
+    poll_timeout_seconds = min(1.0, timeout_seconds)
+    loop = asyncio.get_running_loop()
 
     assignment = random.choice(["rag_a_plain_b", "rag_b_plain_a"])
     if assignment == "rag_a_plain_b":
@@ -530,45 +576,91 @@ async def generate_arena_sse_stream(
         gen_b = generate_rag_response(question, chat_history_b, model_name)
 
     queue: asyncio.Queue[tuple[str, object | None]] = asyncio.Queue()
+    open_panels = {"a", "b"}
+    panel_last_activity = {
+        "a": loop.time(),
+        "b": loop.time(),
+    }
+    errored_panels: set[str] = set()
 
-    async def drain_a() -> None:
+    async def close_async_generator(generator: AsyncIterator[Any]) -> None:
+        aclose = getattr(generator, "aclose", None)
+        if aclose is None:
+            return
+
         try:
-            async for item in gen_a:
-                await queue.put(("a", item))
-        except Exception as exc:
-            await queue.put(("error_a", str(exc)))
-        finally:
-            await queue.put(("done_a", None))
+            await aclose()
+        except Exception:
+            return
 
-    async def drain_b() -> None:
+    async def drain_panel(panel: Literal["a", "b"], generator: AsyncIterator[Any]) -> None:
         try:
-            async for item in gen_b:
-                await queue.put(("b", item))
+            async for item in generator:
+                await queue.put((panel, item))
+        except asyncio.CancelledError:
+            await close_async_generator(generator)
+            raise
         except Exception as exc:
-            await queue.put(("error_b", str(exc)))
+            await queue.put((f"error_{panel}", str(exc)))
         finally:
-            await queue.put(("done_b", None))
+            await queue.put((f"done_{panel}", None))
 
-    producers = asyncio.gather(drain_a(), drain_b(), return_exceptions=True)
-    done_count = 0
+    producer_tasks: dict[str, asyncio.Task[None]] = {
+        "a": asyncio.create_task(drain_panel("a", gen_a)),
+        "b": asyncio.create_task(drain_panel("b", gen_b)),
+    }
 
     try:
-        while done_count < 2:
-            slot, item = await queue.get()
+        while open_panels:
+            now = loop.time()
+            timed_out_panels = [
+                panel for panel in tuple(open_panels) if now - panel_last_activity[panel] >= timeout_seconds
+            ]
+            for panel in timed_out_panels:
+                errored_panels.add(panel)
+                open_panels.discard(panel)
+                producer_task = producer_tasks[panel]
+                if not producer_task.done():
+                    producer_task.cancel()
+                yield (
+                    "event: error\n"
+                    f"data: {_json.dumps({'panel': panel, 'message': f'Stream timed out after {int(timeout_seconds)} seconds'})}\n\n"
+                )
 
-            if slot == "done_a" or slot == "done_b":
-                done_count += 1
+            if not open_panels:
+                break
+
+            try:
+                slot, item = await asyncio.wait_for(queue.get(), timeout=poll_timeout_seconds)
+            except asyncio.TimeoutError:
+                continue
+
+            if slot == "done_a":
+                open_panels.discard("a")
+                continue
+
+            if slot == "done_b":
+                open_panels.discard("b")
                 continue
 
             if slot == "error_a":
+                errored_panels.add("a")
+                open_panels.discard("a")
+                panel_last_activity["a"] = loop.time()
                 yield f"event: error\ndata: {_json.dumps({'panel': 'a', 'message': str(item)})}\n\n"
                 continue
 
             if slot == "error_b":
+                errored_panels.add("b")
+                open_panels.discard("b")
+                panel_last_activity["b"] = loop.time()
                 yield f"event: error\ndata: {_json.dumps({'panel': 'b', 'message': str(item)})}\n\n"
                 continue
 
             if slot == "a":
+                if "a" not in open_panels:
+                    continue
+                panel_last_activity["a"] = loop.time()
                 if isinstance(item, dict):
                     if item.get("type") == "metadata":
                         yield f"event: metadata_a\ndata: {_json.dumps(item)}\n\n"
@@ -579,6 +671,9 @@ async def generate_arena_sse_stream(
                     chunk = str(item).replace("\n", "\\n")
                     yield f"event: text_a\ndata: {chunk}\n\n"
             elif slot == "b":
+                if "b" not in open_panels:
+                    continue
+                panel_last_activity["b"] = loop.time()
                 if isinstance(item, dict):
                     if item.get("type") == "metadata":
                         yield f"event: metadata_b\ndata: {_json.dumps(item)}\n\n"
@@ -589,11 +684,43 @@ async def generate_arena_sse_stream(
                     chunk = str(item).replace("\n", "\\n")
                     yield f"event: text_b\ndata: {chunk}\n\n"
     finally:
-        producers.cancel()
+        for producer_task in producer_tasks.values():
+            if not producer_task.done():
+                producer_task.cancel()
+
         try:
-            await producers
-        except Exception:
-            pass
+            producer_results = await asyncio.wait_for(
+                asyncio.gather(*producer_tasks.values(), return_exceptions=True),
+                timeout=timeout_seconds,
+            )
+        except asyncio.CancelledError:
+            raise
+        except asyncio.TimeoutError:
+            for panel, producer_task in producer_tasks.items():
+                if not producer_task.done() and panel not in errored_panels:
+                    errored_panels.add(panel)
+                    yield (
+                        "event: error\n"
+                        f"data: {_json.dumps({'panel': panel, 'message': f'Stream cancellation timed out after {int(timeout_seconds)} seconds'})}\n\n"
+                    )
+
+            try:
+                producer_results = await asyncio.wait_for(
+                    asyncio.gather(*producer_tasks.values(), return_exceptions=True),
+                    timeout=1.0,
+                )
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                producer_results = [None, None]
+        except Exception as exc:
+            producer_results = [exc, exc]
+
+        for panel, result in zip(("a", "b"), producer_results):
+            if panel in errored_panels:
+                continue
+            if isinstance(result, Exception) and not isinstance(result, asyncio.CancelledError):
+                yield f"event: error\ndata: {_json.dumps({'panel': panel, 'message': str(result)})}\n\n"
 
     yield (
         "event: arena_config\n"
@@ -711,17 +838,25 @@ async def get_arena_stats():
         mean_score = np.mean(rag_scores)
         std_score = np.std(rag_scores, ddof=1)
         cohens_d = (mean_score - 0.5) / std_score if std_score > 0 else 0
+        t_stat_value = t_stat[0] if isinstance(t_stat, tuple) else t_stat
+        p_value_value = p_value[0] if isinstance(p_value, tuple) else p_value
+        cohens_d_value = cohens_d[0] if isinstance(cohens_d, tuple) else cohens_d
+        mean_score_value = mean_score[0] if isinstance(mean_score, tuple) else mean_score
+        t_stat_float = float(t_stat_value)
+        p_value_float = float(p_value_value)
+        cohens_d_float = float(cohens_d_value)
+        mean_score_float = float(mean_score_value)
         
         t_test = {
-            "t_statistic": round(float(t_stat), 4),
-            "p_value": round(float(p_value), 6),
-            "cohens_d": round(float(cohens_d), 4),
-            "mean_rag_score": round(float(mean_score), 4),
+            "t_statistic": round(t_stat_float, 4),
+            "p_value": round(p_value_float, 6),
+            "cohens_d": round(cohens_d_float, 4),
+            "mean_rag_score": round(mean_score_float, 4),
             "sample_size": len(rag_scores),
-            "significant": float(p_value) < 0.05,
+            "significant": bool(p_value_float < 0.05),
             "interpretation": (
-                "Statistically significant preference for RAG" if float(p_value) < 0.05 and float(mean_score) > 0.5
-                else "Statistically significant preference for Plain LLM" if float(p_value) < 0.05 and float(mean_score) < 0.5
+                "Statistically significant preference for RAG" if p_value_float < 0.05 and mean_score_float > 0.5
+                else "Statistically significant preference for Plain LLM" if p_value_float < 0.05 and mean_score_float < 0.5
                 else "No statistically significant difference detected"
             ),
         }

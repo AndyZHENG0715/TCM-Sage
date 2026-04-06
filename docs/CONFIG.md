@@ -28,6 +28,8 @@ RETRIEVAL_K=5                 # Number of document chunks to retrieve (3-10 reco
 
 # System Prompt Configuration
 SYSTEM_PROMPT="You are an expert assistant specializing in Traditional Chinese Medicine, specifically the Huangdi Neijing (黄帝内经). Your task is to answer questions accurately based ONLY on the provided source text. If a direct definition is not present, explain the concept using the information available. Your answer must be in the same language as the question. After providing the answer, cite the source chapter for the information you provide in a \"Sources:\" section."
+SYSTEM_PROMPT_OVERRIDE=...       # Overrides the built-in default prompt in src/main.py
+VERIFICATION_PROMPT=...          # Optional custom verifier prompt for answer faithfulness checks
 
 # Output Format Configuration (Future UI Support)
 OUTPUT_FORMAT=detailed        # detailed, concise, academic
@@ -94,6 +96,9 @@ TCM-Sage now includes an intelligent query classification system that automatica
 - **`CLASSIFIER_LLM_PROVIDER`**: Provider for the classification model (recommended: same as main provider)
 - **`CLASSIFIER_LLM_MODEL`**: Lightweight model for fast classification (recommended: `qwen3-0.6b`, `gemini-2.5-flash`)
 - **`CLASSIFIER_LLM_TEMPERATURE`**: Keep at 0.0 for consistent classification
+- **`VERIFIER_LLM_PROVIDER`**: Provider for the verification model (defaults to the main provider)
+- **`VERIFIER_LLM_MODEL`**: Model used for the answer-faithfulness check
+- **`VERIFIER_LLM_TEMPERATURE`**: Keep at 0.0 for deterministic verification
 - **`PRESCRIPTIVE_TEMPERATURE`**: Temperature for medical/prescriptive queries (keep at 0.0 unless necessary)
 
 ### Best Practices
@@ -102,11 +107,32 @@ TCM-Sage now includes an intelligent query classification system that automatica
 - **For prescriptive queries**: Always keep `PRESCRIPTIVE_TEMPERATURE` at 0.0 to ensure medical accuracy
 - **Classifier model**: Use a small, fast model to minimize latency and cost
 
+## Arena Configuration
+
+### ARENA_MODELS Parameter
+
+`ARENA_MODELS` overrides the arena tier-to-model mapping as a JSON string.
+
+```bash
+ARENA_MODELS='{"flash":"qwen-flash","plus":"qwen-plus","max":"qwen-max"}'
+ARENA_STREAM_TIMEOUT_SECONDS=60  # Optional timeout for arena SSE responses
+```
+
 ## Prototype UI (Optional)
 
 - The Streamlit demo (`streamlit run src/ui_app.py`) provides a quick way to showcase TCM-Sage to stakeholders without disrupting the CLI workflow.
 - It reuses all configuration options documented here, so ensure your `.env` is set up before launching.
 - The UI is meant for discovery and may be deprecated later; the CLI remains the primary interface.
+
+## Web Frontend / API Integration
+
+```bash
+# FastAPI CORS + Next.js backend proxy target
+ALLOWED_ORIGINS=http://localhost:3000,https://your-production-domain.com  # Comma-separated CORS whitelist for the API
+BACKEND_URL=http://127.0.0.1:8000                                          # Server-side backend URL for the Next.js proxy route
+NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000                              # Client-visible fallback backend URL
+FEEDBACK_FORM_URL=https://forms.gle/your-feedback-form                     # Optional feedback link used by the UI
+```
 
 ## Supported Providers
 

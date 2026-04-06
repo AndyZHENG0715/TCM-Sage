@@ -1,6 +1,7 @@
 "use client";
 
 import { getDisplaySourceLabel } from "@/lib/citations";
+import { useI18n } from "@/i18n/context";
 import {
     createMarkdownComponents,
     postProcessAssistantContent,
@@ -23,6 +24,7 @@ export function MessageBubble({
 }: MessageBubbleProps) {
     const isUser = message.role === "user";
     const [copied, setCopied] = useState(false);
+    const { t } = useI18n();
 
     const handleCopy = () => {
         navigator.clipboard.writeText(message.content);
@@ -82,12 +84,12 @@ export function MessageBubble({
                             <div className="flex gap-2">
                                 {message.severity === "informational" && (
                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-100/50 text-blue-800 text-xs font-bold border border-blue-200">
-                                        <Info size={12} /> INFORMATIONAL
+                                        <Info size={12} /> {t.verification.informational}
                                     </span>
                                 )}
                                 {message.severity === "prescriptive" && (
                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-100/50 text-amber-800 text-xs font-bold border border-amber-200">
-                                        <AlertTriangle size={12} /> CLINICAL CONTEXT
+                                        <AlertTriangle size={12} /> {t.verification.clinicalContext}
                                     </span>
                                 )}
                             </div>
@@ -110,15 +112,15 @@ export function MessageBubble({
                                     <AlertTriangle size={12} />
                                 )}
                                 {message.verification.status === "SUPPORTED"
-                                    ? "Verified against sources"
-                                    : "May contain unsupported claims"}
+                                    ? t.verification.supported
+                                    : t.verification.unsupported}
                             </div>
                         )}
 
                         {message.citations && message.citations.length > 0 && (
                             <div className="mt-6 pt-4 border-t border-[#dcd3b8]">
                                 <p className="text-xs font-sans font-semibold text-[#8c8578] mb-2 uppercase tracking-wider">
-                                    Sources:
+                                    {t.citation.sources}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                     {message.citations.map((citation) => (
@@ -130,10 +132,10 @@ export function MessageBubble({
                                             <span className="flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-primary rounded-full group-hover:bg-primary-dark">
                                                 {citation.number}
                                             </span>
-                                            <span className="text-xs text-[#5c5548] truncate max-w-[150px]">
-                                                {citation.type === "text"
-                                                    ? getDisplaySourceLabel(citation.source) || "Source excerpt"
-                                                    : citation.fact}
+                                                <span className="text-xs text-[#5c5548] truncate max-w-[150px]">
+                                                    {citation.type === "text"
+                                                        ? getDisplaySourceLabel(citation.source) || t.citation.textSource
+                                                        : citation.fact}
                                             </span>
                                         </button>
                                     ))}
@@ -150,13 +152,15 @@ export function MessageBubble({
                         <button
                             onClick={handleCopy}
                             className="p-1.5 text-gray-500 hover:text-primary transition-colors rounded-full hover:bg-primary/10"
-                            title="Copy response"
+                            title={copied ? t.common.copied : t.chat.copyResponse}
+                            aria-label={copied ? t.common.copied : t.chat.copyResponse}
                         >
                             {copied ? <Check size={16} /> : <Copy size={16} />}
                         </button>
                         <button
                             className="p-1.5 text-gray-500 hover:text-primary transition-colors rounded-full hover:bg-primary/10"
-                            title="Helpful"
+                            title={t.chat.helpful}
+                            aria-label={t.chat.helpful}
                         >
                             <ThumbsUp size={16} />
                         </button>

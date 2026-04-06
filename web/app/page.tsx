@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { ChatArea } from "@/components/ChatArea";
 import { CitationPanel } from "@/components/CitationPanel";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SettingsModal } from "@/components/SettingsModal";
+import { useI18n } from "@/i18n/context";
 import { useChat } from "@/hooks/useChat";
 import { useHistory } from "@/hooks/useHistory";
 import { useKeepAlive } from "@/hooks/useKeepAlive";
@@ -23,19 +25,19 @@ function getCitationPanelKey(citation: Citation | null) {
     return `graph-${citation.number}-${citation.fact}`;
 }
 
-function buildSessionTitle(messages: Message[], existingTitle?: string) {
-    if (existingTitle && existingTitle !== "New Research Chat") {
+function buildSessionTitle(messages: Message[], defaultTitle: string, existingTitle?: string) {
+    if (existingTitle && existingTitle !== defaultTitle && existingTitle !== "New Research Chat") {
         return existingTitle;
     }
 
     const firstUserMessage = messages.find((message) => message.role === "user");
     if (!firstUserMessage) {
-        return existingTitle ?? "New Research Chat";
+        return existingTitle ?? defaultTitle;
     }
 
     const trimmed = firstUserMessage.content.trim();
     if (!trimmed) {
-        return existingTitle ?? "New Research Chat";
+        return existingTitle ?? defaultTitle;
     }
 
     return `${trimmed.slice(0, 30)}${trimmed.length > 30 ? "..." : ""}`;
@@ -55,6 +57,7 @@ function areSessionsEquivalent(current: ChatSession | null, draft: ChatSession) 
 }
 
 export default function Home() {
+    const { t } = useI18n();
     const {
         defaultSettings,
         settings,
@@ -77,6 +80,7 @@ export default function Home() {
         setMessages,
         activeCitation,
         setActiveCitation,
+        error: chatError,
     } = useChat(settings);
 
     useKeepAlive();
@@ -95,7 +99,7 @@ export default function Home() {
 
         const draftSession: ChatSession = {
             id: currentSessionId,
-            title: buildSessionTitle(messages, currentSession?.title),
+            title: buildSessionTitle(messages, t.sidebar.newChat, currentSession?.title),
             messages,
             createdAt: currentSession?.createdAt ?? Date.now(),
             updatedAt: Date.now(),
@@ -106,7 +110,7 @@ export default function Home() {
         }
 
         saveSession(draftSession);
-    }, [currentSession, currentSessionId, messages, saveSession]);
+    }, [currentSession, currentSessionId, messages, saveSession, t.sidebar.newChat]);
 
     const handleNewChat = () => {
         const newSession = createSession();
@@ -133,8 +137,8 @@ export default function Home() {
     };
 
     const currentTitle = useMemo(
-        () => currentSession?.title ?? buildSessionTitle(messages),
-        [currentSession, messages]
+        () => currentSession?.title ?? buildSessionTitle(messages, t.chat.newInvestigation),
+        [currentSession, messages, t.chat.newInvestigation]
     );
 
     if (!isSettingsLoaded || !isHistoryLoaded) {
@@ -142,7 +146,7 @@ export default function Home() {
             <div className="flex items-center justify-center h-screen bg-background-dark text-parchment">
                 <div className="animate-pulse flex flex-col items-center">
                     <div className="w-12 h-12 bg-primary/20 rounded-full mb-4" />
-                    Loading TCM-Sage...
+                    {t.common.loading}
                 </div>
             </div>
         );
@@ -161,13 +165,20 @@ export default function Home() {
             />
 
             <main className="flex-1 relative flex flex-col min-w-0 transition-all duration-300">
-                <ChatArea
-                    messages={messages}
-                    isStreaming={isStreaming}
-                    title={currentTitle}
-                    onSend={sendMessage}
-                    onCitationClick={setActiveCitation}
-                />
+                <ErrorBoundary>
+                    <ChatArea
+                        messages={messages}
+                        isStreaming={isStreaming}
+                        title={currentTitle}
+                        onSend={sendMessage}
+                        onCitationClick={setActiveCitation}
+                    />
+                </ErrorBoundary>
+                {chatError ? (
+                    <div className="border-t border-primary/20 bg-background-dark px-4 py-2 text-sm text-primary">
+                        {chatError}
+                    </div>
+                ) : null}
             </main>
 
             <CitationPanel
