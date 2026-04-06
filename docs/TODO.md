@@ -1,23 +1,57 @@
 # TCM-Sage — Remaining Tasks & Future Plans
 
-Last updated: April 7, 2026
+Last updated: April 7, 2026 (post-Oracle review)
 
-## Immediate (Before FYP Submission — April 8, 5pm)
+## CRITICAL — Must Fix Before Submission (April 8, 5pm)
 
-### Report
-- [ ] Student reviews all 7 chapters for voice/tone — ensure it sounds like the student, not AI
-- [ ] Fill in Student ID in FYP_Final_Report.tex (currently [REDACTED])
-- [ ] Replace all [PLACEHOLDER] figures with actual screenshots/diagrams:
-  - System architecture overview (Ch1, Ch3)
-  - Chunking strategy comparison (Ch3)
-  - Retrieval pipeline flowchart (Ch3)
-  - Arena evaluation flow (Ch3)
-  - Arena results bar chart (Ch5)
-  - Vote distribution by date (Ch5)
-  - TCM-Sage vs competitors comparison table (Ch6)
-- [ ] Show draft to Dr. Zhang Ce for feedback, iterate if needed
+### Report Fixes (from Oracle review)
+- [ ] **Student ID**: Fill in real ID (currently [REDACTED]) in FYP_Final_Report.tex:32
+- [ ] **Placeholders**: Replace all [PLACEHOLDER] figures — they render as empty boxes in PDF
+  - FYP_Final_Report.tex:104, chapter3.tex:21/42/67/102, chapter6.tex:53
+- [ ] **Ch5 vote total mismatch**: Daily breakdown (lines 59-63) totals 50 votes not 56 — missing 6 ties
+  - Fix: add tie counts to each date row, or add a note explaining ties are excluded from daily breakdown
+- [ ] **Ch5 stats methodology**: Line 40 says encoding is "1 for win, -1 for loss, 0 for tie"
+  - This may not match the actual API code which uses 1/0/0.5 scoring against 0.5 baseline
+  - Fix: verify the actual scoring method in api.py and match the description
+- [ ] **LaTeX compile risk**: chapter4.tex:100 has raw Unicode 【Formatting Requirements】
+  - Fix: replace with ASCII or escape: \texttt{[Formatting Requirements]}
+- [ ] **Ye Tianshi error**: chapter7.tex:30 lists him as "modern clinical master" — he's Qing dynasty
+  - Wenre Lun is already in the corpus (FYP_Final_Report.tex:68)
+  - Fix: remove from future work modern masters list, or reword
+- [ ] Student reviews all 7 chapters for voice/tone
+- [ ] Show draft to Dr. Zhang Ce for feedback
 - [ ] Compile LaTeX → PDF, verify formatting
 - [ ] Submit by 5pm April 8
+
+### Report Improvements (Important but not blocking)
+- [ ] **Uncited claims about competitors** — examiner will ask for sources:
+  - Qihuang <15% usage, 320B params (Ch1:82, Ch2:35-39, Ch6:9)
+  - iFlytek 107 clinics, 9800 diagnoses
+  - Fix: add proper citations or soften to "reportedly"
+- [ ] **"Full local deployment" overstated** — current code uses DashScope cloud embeddings
+  - Fix: reword to "local LLM inference is supported; full local pipeline requires local embedding model"
+- [ ] **Citation Panel description wrong** — Ch4:125 says Cytoscape.js mini-view
+  - Actually: CitationPanel uses KGViewer with @xyflow/react, not Cytoscape
+  - Cytoscape is only on the dedicated /kg/ explorer page
+- [ ] **Shanghan Lun clause count**: report says 388, some project docs say 398 — verify which is correct
+- [ ] **AI filler language to soften/remove**:
+  - Ch2:7 "dominant architecture" → "widely adopted architecture"
+  - Ch2:61 "gold standard" → "widely recognized benchmark"
+  - Ch2:65 "robust mathematical foundation" → "statistical foundation"
+  - Ch4:8 "modern full-stack architecture designed for high-performance..." → simplify
+  - Ch4:107 "current state-of-the-art" → "a representative general-purpose configuration"
+- [ ] **Terminology consistency**:
+  - T-Test → t-test (lowercase) everywhere
+  - Xunfei vs iFlytek — pick one
+  - markdown → Markdown
+  - Black Box / Glass Box capitalization
+- [ ] **Soften strong claims**:
+  - Ch5:102 "Impact on the Field" → too strong for 56 votes
+  - Ch6:25 "held consistently" → "was observed across"
+  - Ch1:89 "clear gap in the market" → "apparent gap"
+- [ ] **Bibliography entries to complete**:
+  - chatbotarena2024: add access date, fuller metadata
+  - luo2024medrag: add arXiv ID
 
 ### System
 - [ ] Test measurement conversion prompt fix — ask "麻黄汤的完整药物组成和剂量" and verify 1两≈13.8g
