@@ -171,3 +171,69 @@ See the full audit report pasted by the user in conversation. Key highlights:
 - "Full local deployment" reworded to accurately describe cloud embeddings + local LLM option
 - Hallucination framing: core issue is unverifiability/black box, not hallucination per se
 - SymMap is modern (not classical) — the TEXTS are classical, KG bridges modern↔classical
+
+---
+
+## 7. Pending Code Changes (do AFTER report submission)
+
+### Must Do (confirmed by user)
+- M-04: Change `ttest_1samp` → `ttest_rel` in api.py:835 (paired t-test)
+- M-07: Add `duckduckgo-search>=7.0.0` to requirements.txt
+- M-08: Fix model name qwen-turbo → qwen-flash in:
+  - web/lib/types.ts:84
+  - web/hooks/useArena.ts:41
+  - web/lib/arenaPrompts.ts:17
+- M-13: Add 'general' category to query classifier (skip retrieval for non-medical queries)
+  - Also change informational temp from 0.1 → 0.7
+  - Document first, then code
+- M-02: Delete dead CLI fallback prompt in main.py:730-741
+- M-03: Update docs to state arena baseline mirrors common AI platforms (LLM + web search)
+- M-06: Wire verify_citation_bounds() into post-generation check
+  - Combine with verify_answer() result in metadata
+  - User-facing message: '部分引用来源未在检索结果中找到' not technical jargon
+- C-01: Delete or annotate verifier.py as experimental/future
+- M-09: Delete dead LLM constants from config.py (DEFAULT_LLM_PROVIDER/MODEL/TEMPERATURE)
+  - Keep paths and DEFAULT_RETRIEVAL_K only
+  - CLI path (main.py) and Streamlit (ui_app.py) can be archived/deprecated
+- M-11: Centralize os.getenv into config.py (future, post-FYP)
+- M-12: NOT a problem — qwen3-rerank supports 500 docs/request, not 10. Fix AGENTS.md docs.
+
+### Future Work (user approved but after FYP)
+- DuckDuckGo tool calling: Let LLM choose search keywords instead of raw user query
+  - Current bug: '水蛭性味' returns adult content because DDG splits on /性
+  - Quick interim fix possible: prefix search with '中医'
+- RAG step display in UI: Show retrieval progress (classifying → retrieving → reranking → generating)
+  - SSE status events + frontend display, ArenaPanel already has similar loading messages
+- TCMEval-SDT benchmark: Investigate if runnable against our system
+- Adaptive Retrieval merged with classifier: 'general' category skips retrieval entirely
+
+## 8. Report Fixes Still Needed
+
+### Critical (before submission Apr 8 5pm)
+- [ ] Declaration Page — standard 'I declare this is my own work' page
+- [ ] Ch7 Goal Completion Statement — compare proposed aims (from Project Statement) with actual delivery
+- [ ] Acknowledgments AI Disclosure — update with specific tools, scope, level of use
+- [ ] Appendix System Setup Guide — clone, install, configure, run
+- [ ] References format — change from numeric [1] to author-year (Lewis et al., 2020)
+- [ ] Re-render Mermaid architecture diagram (updated version with classifier + multi-provider)
+- [ ] 4 UI screenshots (main chat, arena, KG explorer, settings)
+- [ ] Replace all PLACEHOLDER figures
+- [ ] Full section-by-section review with user for accuracy
+
+### Important Corrections from User
+- Student concentration is CST (Computing and Software Technologies), NOT AI
+- Proposed aims from Project Statement: evidence-synthesis tool, glass box, hybrid retrieval, citation traceability, user testing
+- Evaluation: proposal said TCMEval-SDT + Likert scale surveys — actually did Arena T-Test + qualitative feedback
+  - Had a Google Form (1-7 rating) but only 2 responses during early bad version, decided not to use
+- Testers: Kenny (core), 广东省中医院 doctoral students, 1 TCM practitioner (张新昂医生), 1 HKU TCM student
+- Kenny's contributions: 17 book selection, extensive testing, feedback, recruited other testers from HKBU SCM + 广东省中医院大德道分院
+- 张新昂医生: provided future direction (中西结合, modern clinical masters)
+- Hybrid RAG was planned from start; reranker was NOT planned, emerged from scaling needs
+- 'query the entire corpus in seconds' = concept description, not about specific book count
+
+## 9. Key Design Decisions (for future reference)
+- Arena baseline generic prompt: DELIBERATE design choice, mirrors how typical AI platforms work (LLM + web search)
+- verify_answer() SUPPORTED/UNSUPPORTED chosen over complex SelfCritiqueVerifier for performance: 1 LLM call vs 3
+- Post-streaming verification: SSE architecture cannot pre-verify, this is by design not a bug
+- config.py LLM constants are dead code — main.py and ui_backend.py read env vars independently
+- CLI and Streamlit paths are legacy, web UI is the production interface
