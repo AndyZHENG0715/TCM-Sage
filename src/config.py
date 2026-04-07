@@ -22,8 +22,7 @@ GRAPH_DATA_DEFAULT_RELATIVE = "data/graph/symmap/symmap_entities.json"
 # ============================================================================
 # Embedding Configuration
 # ============================================================================
-EMBEDDING_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
-EMBEDDING_MODEL_KWARGS = {"trust_remote_code": True}
+# Embeddings: DashScope text-embedding-v4 (configured in src/embeddings.py)
 
 # ============================================================================
 # LLM Configuration (defaults, can be overridden by .env)
