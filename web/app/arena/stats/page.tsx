@@ -13,12 +13,13 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import ChartDataLabels, { type Context as ChartDataLabelsContext } from "chartjs-plugin-datalabels";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useI18n } from "@/i18n/context";
 import { fetchArenaStats } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
 type QueryResult = {
   query: string;
@@ -98,6 +99,7 @@ export default function ArenaStatsPage() {
         <div className="text-center">
           <p className="mb-4 text-red-400">{error || t.arenaStats.noData}</p>
           <button
+            type="button"
             onClick={() => void loadStats()}
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 transition hover:bg-white/10"
           >
@@ -134,11 +136,19 @@ export default function ArenaStatsPage() {
         color: "#F3EFE0",
         font: { size: 16, family: "serif" },
       },
+      datalabels: {
+        anchor: "end",
+        align: "top",
+        color: "#F3EFE0",
+        font: { weight: "bold", size: 14 },
+        formatter: (value: number) => value.toFixed(1) + "%",
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 100,
+        title: { display: true, text: "Percentage (%)", color: "#9ca3af" },
         ticks: { color: "#9ca3af" },
         grid: { color: "rgba(255, 255, 255, 0.1)" },
       },
@@ -172,6 +182,16 @@ export default function ArenaStatsPage() {
         color: "#F3EFE0",
         font: { size: 16, family: "serif" },
       },
+      datalabels: {
+        color: "#F3EFE0",
+        font: { weight: "bold", size: 13 },
+        formatter: (value: number, ctx: ChartDataLabelsContext) => {
+          const data = ctx.dataset.data as number[];
+          const total = data.reduce((a: number, b: number) => a + b, 0);
+          const pct = ((value / total) * 100).toFixed(1);
+          return value + " (" + pct + "%)";
+        },
+      },
     },
   };
 
@@ -185,12 +205,13 @@ export default function ArenaStatsPage() {
               {t.common.backToApp}
             </Link>
             <h1 className="text-3xl font-serif font-bold tracking-tight">{t.arenaStats.title}</h1>
-            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm">
+          <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm">
               <span className="font-semibold">{stats.total_votes}</span>
               <span className="ml-1 text-gray-400">{t.arenaStats.totalVotes}</span>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => void loadStats()}
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-sidebar-dark px-4 py-2 font-medium transition hover:bg-white/5"
           >
@@ -260,6 +281,7 @@ export default function ArenaStatsPage() {
               <Bar ref={barChartRef} data={barData} options={barOptions} />
             </div>
             <button
+              type="button"
               onClick={() => downloadChart(barChartRef, "arena-win-rate.png")}
               className="mt-auto flex self-end rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm transition hover:bg-white/10"
             >
@@ -272,6 +294,7 @@ export default function ArenaStatsPage() {
               <Pie ref={pieChartRef} data={pieData} options={pieOptions} />
             </div>
             <button
+              type="button"
               onClick={() => downloadChart(pieChartRef, "arena-vote-distribution.png")}
               className="mt-auto flex self-end rounded border border-white/10 bg-white/5 px-3 py-1.5 text-sm transition hover:bg-white/10"
             >
@@ -302,8 +325,8 @@ export default function ArenaStatsPage() {
                     </td>
                   </tr>
                 ) : (
-                  stats.query_results.map((result, idx) => (
-                    <tr key={idx} className="transition-colors hover:bg-white/5">
+                  stats.query_results.map((result) => (
+                    <tr key={`${result.session_id}-${result.timestamp}-${result.query}`} className="transition-colors hover:bg-white/5">
                       <td className="whitespace-nowrap px-6 py-4 text-gray-400">
                         {new Date(result.timestamp).toLocaleString(undefined, {
                           month: "short",

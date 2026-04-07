@@ -12,6 +12,7 @@
     "@types/dagre": "^0.7.54",
     "@xyflow/react": "^12.10.1",
     "chart.js": "^4.5.1",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "clsx": "^2.1.1",
     "cytoscape": "^3.33.1",
     "cytoscape-dagre": "^2.5.0",
