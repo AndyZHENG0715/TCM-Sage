@@ -5,8 +5,8 @@ import os
 from dotenv import load_dotenv
 from langchain_core.embeddings import Embeddings
 
-INGESTION_PREFIX = "为这个句子生成表示以用于检索中文段落："
-QUERY_PREFIX = "为这个句子生成表示以用于检索中文段落："
+INGESTION_PREFIX = "为这段中医古籍文本生成语义表示用于检索："
+QUERY_PREFIX = "为这个中医临床问题生成语义表示以检索相关古籍段落："
 _BATCH_LIMIT = 10
 
 
