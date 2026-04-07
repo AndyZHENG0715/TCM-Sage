@@ -47,13 +47,13 @@ The TCM-Sage system outperformed the baseline in over 60\% of cases, more than d
 \begin{minipage}{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/arena-vote-distribution.png}
-    \caption{Total vote distribution (N=56).}
+    \caption{Total vote distribution (N=59).}
     \label{fig:votedist}
 \end{minipage}
 \end{figure}
 
 \subsection{Statistical Significance}
-To rigorously test the null hypothesis that there is no difference between the two systems, a \textbf{paired t-test} was performed. Each vote was encoded as a score: 1 for a TCM-Sage win, 0.5 for a tie, and 0 for a Plain LLM win. The test evaluated whether the mean score was significantly different from the null expectation of 0.5 (no preference).
+To rigorously test the null hypothesis that there is no difference between the two systems, a \textbf{paired t-test} was performed. Each vote was encoded as a paired score: 1 for a TCM-Sage win and 0 for a Plain LLM win (with ties encoded as 0.5 for both). The test evaluated whether the mean paired difference between RAG and plain scores was significantly different from zero.
 \begin{itemize}
     \item \textbf{t-statistic:} 3.44
     \item \textbf{p-value:} 0.0011
@@ -65,7 +65,7 @@ With $p < 0.01$, the results are highly significant, allowing us to reject the n
 \begin{itemize}
     \item \textbf{Cohen's d:} 0.45
 \end{itemize}
-An effect size of 0.47 indicates a \textit{medium effect}, suggesting that while the general-purpose model is a capable baseline, the specialized TCM-Sage system provides a meaningful and consistent advantage in the quality of clinical reasoning and source accuracy.
+An effect size of 0.45 indicates a \textit{medium effect}, suggesting that while the general-purpose model is a capable baseline, the specialized TCM-Sage system provides a meaningful and consistent advantage in the quality of clinical reasoning and source accuracy.
 
 \section{Temporal Analysis}
 
@@ -76,7 +76,7 @@ The evaluation was conducted over a four-day period (April 3 to April 6, 2026), 
     \item \textbf{April 4:} 13 RAG / 8 Plain / 6 Ties (27 votes) --- Main testing batch from student groups.
     \item \textbf{April 5:} 8 RAG / 0 Plain / 0 Ties (8 votes) --- Post system prompt and retrieval improvements.
     \item \textbf{April 6:} 12 RAG / 6 Plain / 0 Ties (18 votes) --- Extended testing with a wider group of practitioners.
-\end{itemize}
+    \item \textbf{April 7:} 3 RAG / 0 Plain / 0 Ties (3 votes) --- Continued testing.
 
 The cumulative trend shows a consistent preference for TCM-Sage, with a notable peak in performance after specific clinical knowledge (e.g., unit conversions) was hard-coded into the system prompt.
 
@@ -85,7 +85,7 @@ The cumulative trend shows a consistent preference for TCM-Sage, with a notable 
 Qualitative feedback from TCM professionals provided deeper insights into the specific strengths and weaknesses of both systems.
 
 \subsection{Dosage and Unit Conversion}
-A doctoral student at the Guangdong Provincial Hospital of TCM tested a query regarding the dosage of \textit{Mahuang Tang}. He observed that the general LLM (Baseline) correctly identified modern dosage ranges but the TCM-Sage system (at that time) provided a literal translation of Han Dynasty units that the model incorrectly converted (1 \textit{liang} $\approx$ 3g). 
+A doctoral student at Guangzhou University of Chinese Medicine, who also practices at the Guangdong Provincial Hospital of TCM, tested a query regarding the dosage of \textit{Mahuang Tang}. He observed that the general LLM (Baseline), aided by its web search capability, correctly identified the modern unit conversion for Han Dynasty weights. By contrast, the TCM-Sage system at that time provided an incorrect conversion (1 \textit{liang} $\approx$ 3g instead of $\approx$ 13.8g), because the classical texts in the knowledge base do not contain modern unit conversion data.
 
 \textit{Outcome:} This feedback led to the immediate implementation of the \textit{Measurement Conversion} table (1 \textit{liang} $\approx$ 13.8g) in the system prompt. Subsequent tests showed that practitioners found the corrected system far superior to the baseline, as it provided both historical accuracy and modern relevance.
 
@@ -93,7 +93,7 @@ A doctoral student at the Guangdong Provincial Hospital of TCM tested a query re
 Students consistently highlighted the \textbf{Citation Panel} as the most valuable feature. One student noted: "The ability to see the original classical text immediately, without having to copy-paste the formula name into a search engine to verify the source, is the key value of this system." This indicates that the \textit{traceability} provided by RAG is as important as the \textit{content} of the generated response.
 
 \subsection{Diagnostic Hedging and Safety}
-A senior practitioner noted that the early version of the system was "over-assertive" in its diagnosis of \textit{Pi Xu} (Spleen Deficiency) based on limited symptoms. Following this, \textbf{Hedging Principles} were added to the prompt, requiring the system to use more tentative language ("The symptoms suggest a possibility of...") when data is incomplete. The practitioner later confirmed that the updated responses felt more like a professional consultation than a "black-box" diagnosis.
+A doctoral student who also practices as a physician noted that the early version of the system was ``over-assertive'' in its diagnosis of \textit{Pi Xu} (Spleen Deficiency) based on limited symptoms. Following this, \textbf{Hedging Principles} were added to the prompt, requiring the system to use more tentative language (``The symptoms suggest a possibility of...'') when data is incomplete. The practitioner later confirmed that the updated responses felt more like a professional consultation than a ``black-box'' diagnosis.
 
 \subsection{Novel Clinical Insights}
 In one recorded case, a student consulted the system for a sore throat. The system suggested \textit{Jiegeng Tang}, a classical formula the student had not considered. Upon reviewing the provided citations, the student confirmed the validity of the recommendation. This demonstrates the system's potential as a "clinical co-pilot" that can surface relevant but overlooked classical knowledge.
