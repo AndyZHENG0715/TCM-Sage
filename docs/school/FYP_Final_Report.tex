@@ -165,8 +165,40 @@ I also thank the doctoral students at Guangdong Provincial Hospital of TCM who p
 Finally, I acknowledge the use of AI-powered development environments (OpenCode, Cursor) for code development assistance and report language polishing. All technical decisions, system design, and written content originated from the author.
 
 \appendix
-\chapter{List of Classical Texts}
-\chapter{Arena Evaluation Prompts}
+\chapter{Classical Text Corpus}
+
+Table~\ref{tab:corpus_detail} provides the complete list of classical TCM texts included in TCM-Sage, with their dynasty of origin, attributed author, chunking strategy, and resulting chunk count.
+
+\begin{table}[H]
+\centering
+\caption{Detailed corpus breakdown of the 17 classical texts.}
+\label{tab:corpus_detail}
+\begin{tabularx}{\textwidth}{lllrr}
+\toprule
+\textbf{Text} & \textbf{Dynasty} & \textbf{Author} & \textbf{Chunks} & \textbf{Strategy} \\
+\midrule
+Bencao Gangmu & Ming & Li Shizhen & 5,169 & Chapter \\
+Beiji Qianjin Yaofang & Tang & Sun Simiao & 2,326 & Chapter \\
+Rumen Shiqin & Jin & Zhang Congzheng & 920 & Chapter \\
+Jingui Yaolue & E. Han & Zhang Zhongjing & 489 & Clause \\
+Danxi Xinfa & Yuan & Zhu Zhenheng & 413 & Chapter \\
+Shennong Bencao Jing & W. Han & Unknown & 401 & Chapter \\
+Shanghan Lun & E. Han & Zhang Zhongjing & 388 & Clause \\
+Zhenjiu Jiayijing & W. Jin & Huangfu Mi & 376 & Chapter \\
+Lanshi Micang & Yuan & Li Dongyuan & 318 & Chapter \\
+Wenbing Tiaobian & Qing & Wu Jutong & 313 & Chapter \\
+Huangdi Neijing Suwen & W. Han & Unknown & 295 & Chapter \\
+Huangdi Neijing Lingshu & W. Han & Unknown & 227 & Chapter \\
+Suwen Xuanji Yuanbing Shi & Jin & Liu Wansu & 205 & Chapter \\
+Piwei Lun & Yuan & Li Dongyuan & 158 & Chapter \\
+Neiwaishang Bianhuo Lun & Yuan & Li Dongyuan & 95 & Chapter \\
+Bashiyi Nanjing & E. Han & Unknown & 88 & Chapter \\
+Wenre Lun & Qing & Ye Tianshi & 23 & Chapter \\
+\midrule
+\textbf{Total} & & & \textbf{12,204} & \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \bibliographystyle{abbrvnat}
 \bibliography{references}

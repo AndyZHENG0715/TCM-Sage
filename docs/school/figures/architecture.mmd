@@ -1,0 +1,64 @@
+graph TB
+    subgraph Input["User Query"]
+        Q[User Question]
+    end
+
+    subgraph Retrieval["Hybrid Retrieval Pipeline"]
+        direction TB
+        Q --> CR{Query Analysis}
+        CR -->|Formula Detected| FM[Formula-Aware<br/>Canonical Retrieval]
+        CR -->|Clause Reference| CL[Multi-Clause<br/>Extraction]
+        CR -->|General Query| VS[Vector Search<br/>DashScope text-embedding-v4<br/>1024d]
+        
+        FM --> ChromaDB[(ChromaDB<br/>12,204 chunks)]
+        CL --> ChromaDB
+        VS --> ChromaDB
+        
+        ChromaDB --> RR[Reranker<br/>qwen3-rerank]
+        RR --> SAB[Source Authority<br/>Boost 0.90-0.97x]
+        SAB --> DD[Deduplication]
+        
+        CR -->|Entity Match| KG[Knowledge Graph<br/>SymMap v2.0<br/>18,450 entities]
+        KG --> CW[Crosswalk Bridge<br/>Modern ↔ Classical]
+        CW --> KGR[Graph Traversal<br/>BFS depth=2]
+    end
+
+    subgraph KnowledgeBase["Knowledge Base"]
+        direction LR
+        T17[17 Classical Texts<br/>3.72M characters] --> Chunk[Chunking Engine]
+        Chunk -->|Chapter-based| C1[Standard Chunks]
+        Chunk -->|Clause-level| C2[388 + 489 Clauses<br/>Shanghan Lun + Jingui Yaolue]
+        C1 --> EMB[DashScope Embedding<br/>text-embedding-v4]
+        C2 --> EMB
+        EMB --> ChromaDB
+        SM[SymMap v2.0<br/>JSON + XLSX] --> KG
+    end
+
+    subgraph Generation["Generation Pipeline"]
+        DD --> CTX[Retrieved Context<br/>Markdown Formatted]
+        KGR --> CTX
+        CTX --> SP[System Prompt<br/>辨证论治 Framework<br/>源流 Methodology<br/>Measurement Table]
+        SP --> LLM[LLM<br/>Qwen Series<br/>DashScope API]
+        LLM --> VER[Self-RAG Verifier]
+    end
+
+    subgraph Output["User Interface"]
+        VER --> RESP[Streamed Response<br/>SSE with Citations]
+        RESP --> CP[Citation Panel<br/>Source Text + KG Mini-View]
+        RESP --> KGE[KG Explorer<br/>Cytoscape.js]
+    end
+
+    subgraph Arena["Arena Evaluation"]
+        Q --> AR{Random A/B<br/>Assignment}
+        AR -->|Position A| RAG[TCM-Sage<br/>Full Pipeline]
+        AR -->|Position B| PLN[Plain LLM<br/>+ DuckDuckGo]
+        RAG --> VOTE[Blind Vote<br/>t=3.30 p=0.0018]
+        PLN --> VOTE
+    end
+
+    style Input fill:#1a1a2e,stroke:#19e6d4,color:#F3EFE0
+    style Retrieval fill:#112120,stroke:#19e6d4,color:#F3EFE0
+    style KnowledgeBase fill:#112120,stroke:#fbbf24,color:#F3EFE0
+    style Generation fill:#112120,stroke:#19e6d4,color:#F3EFE0
+    style Output fill:#1a1a2e,stroke:#19e6d4,color:#F3EFE0
+    style Arena fill:#1a1a2e,stroke:#fbbf24,color:#F3EFE0
