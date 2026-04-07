@@ -50,7 +50,7 @@ The retrieval mechanism combines dense vector search with symbolic knowledge gra
 
 \subsection{Vector Search and Chronological Boost}
 
-The system uses DashScope text-embedding-v4 (1024 dimensions) for semantic vector search. To handle the large corpus, the retriever initially fetches a broader set of candidates (k $\times$ 3) before applying a reranking step.
+The system uses DashScope text-embedding-v4 (1024 dimensions) for semantic vector search. To handle the large corpus, the retriever initially fetches a broader set of candidates (k $\times$ 3), followed by reranking with the qwen3-rerank cross-encoder model to re-order results by semantic relevance before applying further filtering.
 
 A unique feature of TCM-Sage is the source authority chronological boost. Distance scores are adjusted by a factor of 0.90 to 0.97 based on the historical authority of the text. This boost is topic-dependent rather than a simple linear ranking, ensuring that foundational texts like the \textit{Huangdi Neijing} are prioritized for theoretical queries, while later \textit{Wenbing} texts are favored for febrile disease queries.
 
@@ -60,7 +60,7 @@ When the system detects a specific formula name in the user's query, it triggers
 
 \subsection{Knowledge Graph and Crosswalk Bridge}
 
-The SymMap 2.0 knowledge graph is traversed using the NetworkX library. Entity matching is performed using the jieba segmentation tool combined with a custom alias map. The crosswalk bridge maps modern medical terms to classical entities, allowing the system to resolve queries like "hypertension" to classical patterns like "Gan Yang Shang Kang" (Liver Yang Rising).
+The SymMap 2.0 knowledge graph is traversed using the NetworkX library. Entity matching is performed using the jieba segmentation tool combined with a custom alias map that bridges colloquial modern Chinese terms to their classical equivalents. For example, a user query mentioning a modern symptom name is resolved to its classical counterpart in SymMap, enabling retrieval of related herbs, formulas, and syndromes that would otherwise be missed by vector search alone.
 
 \begin{figure}[H]
     \centering
@@ -78,7 +78,7 @@ The generation pipeline synthesizes the retrieved context into a coherent, evide
 Before generation, a dedicated classifier LLM (running at temperature 0.0 for deterministic output) categorizes each query as either \textit{informational} (general knowledge, definitions, explanations) or \textit{prescriptive} (diagnoses, treatments, formula recommendations). This classification determines the generation temperature:
 
 \begin{itemize}
-    \item \textbf{Informational:} Temperature 0.1 --- allows moderate creativity for educational explanations.
+    \item \textbf{Informational:} Temperature 0.7 --- allows natural language generation for educational explanations.
     \item \textbf{Prescriptive:} Temperature 0.0 --- maximizes precision and reproducibility for clinical queries where accuracy is critical.
 \end{itemize}
 
@@ -106,7 +106,7 @@ The system compares the full TCM-Sage pipeline (RAG system) against a plain LLM 
 
 \subsection{Statistical Validation}
 
-The results of the arena votes are analyzed using a paired T-Test and Cohen's d effect size. These metrics provide statistical proof of the RAG system's effectiveness. The T-Test determines if the improvement is due to the system's design rather than random chance, while Cohen's d quantifies the magnitude of the improvement.
+The results of the arena votes are analyzed using a paired t-test and Cohen's $d$ effect size. These metrics provide statistical proof of the RAG system's effectiveness. The t-test determines if the improvement is due to the system's design rather than random chance, while Cohen's $d$ quantifies the magnitude of the improvement.
 
 \begin{figure}[H]
     \centering
