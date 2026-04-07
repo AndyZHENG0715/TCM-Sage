@@ -829,19 +829,22 @@ async def get_arena_stats():
     
     total = rag_wins + plain_wins + ties
     
-    # T-Test: H0 = no preference (mean = 0.5), H1 = preference exists
+    # Paired t-test: compare RAG scores vs Plain scores for same queries
     t_test = None
     if len(rag_scores) >= 3:
-        t_stat, p_value = scipy_stats.ttest_1samp(rag_scores, 0.5)
+        plain_scores = [1.0 - s for s in rag_scores]  # mirror: RAG win=1→Plain=0, tie=0.5→0.5
+        t_stat, p_value = scipy_stats.ttest_rel(rag_scores, plain_scores)
         # Cohen's d effect size
         import numpy as np
-        mean_score = np.mean(rag_scores)
-        std_score = np.std(rag_scores, ddof=1)
-        cohens_d = (mean_score - 0.5) / std_score if std_score > 0 else 0
+        diffs = np.array(rag_scores) - np.array(plain_scores)
+        mean_diff = np.mean(diffs)
+        std_diff = np.std(diffs, ddof=1)
+        cohens_d = mean_diff / std_diff if std_diff > 0 else 0
         t_stat_value = t_stat[0] if isinstance(t_stat, tuple) else t_stat
         p_value_value = p_value[0] if isinstance(p_value, tuple) else p_value
         cohens_d_value = cohens_d[0] if isinstance(cohens_d, tuple) else cohens_d
-        mean_score_value = mean_score[0] if isinstance(mean_score, tuple) else mean_score
+        mean_score = float(np.mean(rag_scores))
+        mean_score_value = mean_score
         t_stat_float = float(t_stat_value)
         p_value_float = float(p_value_value)
         cohens_d_float = float(cohens_d_value)

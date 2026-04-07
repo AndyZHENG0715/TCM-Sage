@@ -15,7 +15,7 @@ Two distinct system configurations were compared:
 \end{enumerate}
 
 \subsection{Blind A/B Design}
-A total of 56 votes were collected from a pool of TCM students and practitioners. The evaluation used a blind design:
+A total of 59 votes were collected from a pool of TCM students and practitioners. The evaluation used a blind design:
 \begin{itemize}
     \item \textbf{Randomization:} The positions of the Treatment and Baseline responses (A/B) were randomized for each query.
     \item \textbf{Interaction:} Voters entered a clinical or theoretical query and received two simultaneous streams.
@@ -27,11 +27,11 @@ A total of 56 votes were collected from a pool of TCM students and practitioners
 The primary goal of the quantitative analysis was to determine if the TCM-Sage system provided a statistically significant improvement over a general-purpose LLM.
 
 \subsection{Comparative Performance}
-The distribution of the 56 votes is summarized below:
+The distribution of the 59 votes is summarized below:
 \begin{itemize}
-    \item \textbf{TCM-Sage Wins:} 35 (62.5\%)
-    \item \textbf{Plain LLM Wins:} 15 (26.8\%)
-    \item \textbf{Ties:} 6 (10.7\%)
+    \item \textbf{TCM-Sage Wins:} 38 (64.4\%)
+    \item \textbf{Plain LLM Wins:} 15 (25.4\%)
+    \item \textbf{Ties:} 6 (10.2\%)
 \end{itemize}
 
 The TCM-Sage system outperformed the baseline in over 60\% of cases, more than doubling the win rate of the general-purpose search-augmented model.
@@ -55,15 +55,15 @@ The TCM-Sage system outperformed the baseline in over 60\% of cases, more than d
 \subsection{Statistical Significance}
 To rigorously test the null hypothesis that there is no difference between the two systems, a \textbf{paired t-test} was performed. Each vote was encoded as a score: 1 for a TCM-Sage win, 0.5 for a tie, and 0 for a Plain LLM win. The test evaluated whether the mean score was significantly different from the null expectation of 0.5 (no preference).
 \begin{itemize}
-    \item \textbf{T-statistic:} 3.30
-    \item \textbf{P-value:} 0.0018
+    \item \textbf{t-statistic:} 3.44
+    \item \textbf{p-value:} 0.0011
 \end{itemize}
 With $p < 0.01$, the results are highly significant, allowing us to reject the null hypothesis.
 
 \subsection{Effect Size}
 \textbf{Cohen's d} was calculated to measure the magnitude of the improvement:
 \begin{itemize}
-    \item \textbf{Cohen's d:} 0.47
+    \item \textbf{Cohen's d:} 0.45
 \end{itemize}
 An effect size of 0.47 indicates a \textit{medium effect}, suggesting that while the general-purpose model is a capable baseline, the specialized TCM-Sage system provides a meaningful and consistent advantage in the quality of clinical reasoning and source accuracy.
 
@@ -102,7 +102,7 @@ In one recorded case, a student consulted the system for a sore throat. The syst
 
 While the results are statistically significant, several limitations must be acknowledged:
 \begin{enumerate}
-    \item \textbf{Sample Size:} 56 votes are sufficient for statistical significance but do not represent a comprehensive clinical trial.
+    \item \textbf{Sample Size:} 59 votes are sufficient for statistical significance but do not represent a comprehensive clinical trial.
     \item \textbf{Voter Demographic:} The majority of voters were TCM students rather than senior clinicians with decades of experience.
     \item \textbf{Evaluation Format:} The Arena tests overall user preference, which includes factors like formatting and tone, not just clinical accuracy.
     \item \textbf{Prompt Influence:} Because the system prompts differed between the two models, the evaluation measures the effectiveness of the \textit{entire pipeline} (Prompt + RAG + KG), not just the retrieval component in isolation.
@@ -115,5 +115,5 @@ The results of the evaluation demonstrate that a specialized RAG system tailored
 \begin{itemize}
     \item \textbf{Accuracy vs. Verifiability:} The primary advantage of TCM-Sage lies in its ability to provide verbatim classical citations. While the general LLM can often ``summarize'' TCM knowledge from the web, it frequently hallucinates formula origins or misinterprets classical syntax.
     \item \textbf{The Value of Domain Knowledge:} The integration of a specialized knowledge graph and a professional system prompt (including ancient-to-modern measurement conversions) is essential for clinical utility. Without these, even a high-quality RAG system is prone to fundamental errors in interpretation.
-    \item \textbf{Impact on the Field:} The $p = 0.0018$ result strongly suggests that specialized AI tools can provide a higher standard of information for the TCM community than general-purpose assistants, particularly in the areas of citation traceability and classical methodology adherence.
+    \item \textbf{Impact on the Field:} The $p = 0.0011$ result strongly suggests that specialized AI tools can provide a higher standard of information for the TCM community than general-purpose assistants, particularly in the areas of citation traceability and classical methodology adherence.
 \end{itemize}
