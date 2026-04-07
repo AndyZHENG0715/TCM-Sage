@@ -24,7 +24,16 @@ The SymMap v2.0 knowledge graph deserves specific mention. Unlike the classical 
 
 The Arena evaluation provides quantitative evidence: with $p = 0.0018$ and Cohen's $d = 0.47$, the preference for TCM-Sage over the baseline is statistically significant at the 1\% level with a medium effect size. This result held consistently across four days of testing with different tester groups.
 
-Qualitative feedback reinforced specific strengths. The Citation Panel received the strongest endorsement from practitioners, who described it as eliminating the need to manually verify AI-generated claims against source texts. One tester, a Year 5 TCM student, noted that the system recommended \textit{Jiegeng Tang} (Platycodon Decoction) for a sore throat case that he had not considered. Upon review, he confirmed this as a valid and potentially superior approach from a classical perspective. This case demonstrates that RAG-based evidence synthesis can surface treatment options that human practitioners might overlook due to training focus or cognitive bias.
+Qualitative feedback reinforced specific strengths. A TCM student consultant summarized four key advantages observed during extended testing:
+
+\begin{enumerate}
+    \item \textbf{Focused, relevant responses:} The system provides adequately elaborated answers with valid arguments while avoiding irrelevant details. Unlike general LLMs that tend to produce verbose, unfocused responses mixing TCM with Western medicine or unrelated topics, TCM-Sage stays within the classical framework.
+    \item \textbf{Credible source extraction and integration:} The system extracts and integrates credible sources directly from TCM classics, presenting them alongside the generated response through the Citation Panel.
+    \item \textbf{TCM-perspective clinical guidance:} The system guides practitioners in thinking from TCM perspectives, including \textit{Materia Medica} recommendations and treatment approach demonstrations grounded in classical methodology (\textit{Bian Zheng Lun Zhi}).
+    \item \textbf{Practitioner-informed tuning:} The system prompt and retrieval pipeline were iteratively refined based on feedback from TCM students, resulting in output that aligns with how practitioners expect clinical information to be structured.
+\end{enumerate}
+
+The Citation Panel received the strongest individual endorsement, with testers describing it as eliminating the need to manually verify AI-generated claims against source texts. In one case, the system recommended \textit{Jiegeng Tang} (Platycodon Decoction) for a sore throat that the consulting student had not considered. Upon review, he confirmed this as a valid and potentially superior approach from a classical perspective, demonstrating the system's ability to surface overlooked classical formulas.
 
 The modular architecture received indirect validation when practitioners at Guangdong Provincial Hospital of TCM suggested expanding the corpus to include modern clinical masters' works (Zhang Xichun's \textit{Yi Xue Zhong Zhong Can Xi Lu}, Shi Xuemin's acupuncture texts, and Dong's Extraordinary Points system). The fact that such expansion is architecturally straightforward confirms that the design decision to use RAG over fine-tuning was sound.
 

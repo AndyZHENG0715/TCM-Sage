@@ -1,57 +1,53 @@
 # TCM-Sage — Remaining Tasks & Future Plans
 
-Last updated: April 7, 2026 (post-Oracle review)
+Last updated: April 8, 2026 (post-audit session)
 
-## CRITICAL — Must Fix Before Submission (April 8, 5pm)
+## Already Fixed (this session)
+- [x] Student ID: 22231153
+- [x] Ch5 daily vote total: added ties to each row (sums to 56)
+- [x] Ch5 stats methodology: corrected to 1/0.5/0 encoding against 0.5 baseline
+- [x] LaTeX Unicode brackets: replaced with ASCII
+- [x] Ye Tianshi: replaced with Zhang Jingyue in Ch7 future work
+- [x] AI filler language: cleaned across Ch2/Ch4
+- [x] Terminology: t-test lowercase, iFlytek consistent
+- [x] "clear gap" softened to "apparent gap"
+- [x] Local deployment wording: accurately describes cloud embeddings + local LLM support
+- [x] Citation Panel: corrected to xyflow/React Flow (not Cytoscape)
+- [x] Shanghan Lun clause count: verified 388 is correct
+- [x] Arena charts: added data labels to bar+pie charts
+- [x] Appendix: filled with 17-text corpus detail table
+- [x] Acknowledgments: added (Kenny, Guangdong practitioners, AI disclosure)
+- [x] Query Classification + dual temperature: added to Ch3 and Ch4
+- [x] Multi-provider support (8 providers): added to Ch3 and Ch4
+- [x] Reranker pipeline wiring: reflected in Ch4 (now actually integrated)
+- [x] TCM-specific embedding prefixes: added to Ch4
+- [x] Kenny's qualitative feedback (4 selling points): added to Ch6
+- [x] Reranker fixed in code: wired into hybrid_search() (separate audit session)
+- [x] Embedding prefixes fixed in code: TCM domain-specific (separate audit session)
+- [x] Dead nomic config removed from config.py (separate audit session)
 
-### Report Fixes (from Oracle review)
-- [ ] **Student ID**: Fill in real ID (currently [REDACTED]) in FYP_Final_Report.tex:32
-- [ ] **Placeholders**: Replace all [PLACEHOLDER] figures — they render as empty boxes in PDF
-  - FYP_Final_Report.tex:104, chapter3.tex:21/42/67/102, chapter6.tex:53
-- [ ] **Ch5 vote total mismatch**: Daily breakdown (lines 59-63) totals 50 votes not 56 — missing 6 ties
-  - Fix: add tie counts to each date row, or add a note explaining ties are excluded from daily breakdown
-- [ ] **Ch5 stats methodology**: Line 40 says encoding is "1 for win, -1 for loss, 0 for tie"
-  - This may not match the actual API code which uses 1/0/0.5 scoring against 0.5 baseline
-  - Fix: verify the actual scoring method in api.py and match the description
-- [ ] **LaTeX compile risk**: chapter4.tex:100 has raw Unicode 【Formatting Requirements】
-  - Fix: replace with ASCII or escape: \texttt{[Formatting Requirements]}
-- [ ] **Ye Tianshi error**: chapter7.tex:30 lists him as "modern clinical master" — he's Qing dynasty
-  - Wenre Lun is already in the corpus (FYP_Final_Report.tex:68)
-  - Fix: remove from future work modern masters list, or reword
+## CRITICAL — Must Do Before Submission (April 8, 5pm)
+
+### Report
+- [ ] **Re-render architecture Mermaid diagram** — updated version at docs/school/figures/architecture.mmd
+  - Now includes Query Classification, dual temperature, multi-provider support
+- [ ] **Take 4 UI screenshots** and add to docs/school/figures/:
+  - Main chat with Citation Panel open
+  - Arena dual-panel view with vote buttons
+  - KG Explorer (cytoscape graph)
+  - Settings Panel (provider/model/temperature)
+- [ ] **Replace remaining PLACEHOLDER** in Ch1 (FYP_Final_Report.tex:104) with rendered architecture.png
+- [ ] **Replace PLACEHOLDERs** in Ch3 (chapter3.tex) with appropriate figures
 - [ ] Student reviews all 7 chapters for voice/tone
 - [ ] Show draft to Dr. Zhang Ce for feedback
 - [ ] Compile LaTeX → PDF, verify formatting
 - [ ] Submit by 5pm April 8
 
 ### Report Improvements (Important but not blocking)
-- [ ] **Uncited claims about competitors** — examiner will ask for sources:
-  - Qihuang <15% usage, 320B params (Ch1:82, Ch2:35-39, Ch6:9)
+- [ ] **Uncited claims** — add citations or soften:
+  - Qihuang <15% usage, 320B params
   - iFlytek 107 clinics, 9800 diagnoses
-  - Fix: add proper citations or soften to "reportedly"
-- [ ] **"Full local deployment" overstated** — current code uses DashScope cloud embeddings
-  - Fix: reword to "local LLM inference is supported; full local pipeline requires local embedding model"
-- [ ] **Citation Panel description wrong** — Ch4:125 says Cytoscape.js mini-view
-  - Actually: CitationPanel uses KGViewer with @xyflow/react, not Cytoscape
-  - Cytoscape is only on the dedicated /kg/ explorer page
-- [ ] **Shanghan Lun clause count**: report says 388, some project docs say 398 — verify which is correct
-- [ ] **AI filler language to soften/remove**:
-  - Ch2:7 "dominant architecture" → "widely adopted architecture"
-  - Ch2:61 "gold standard" → "widely recognized benchmark"
-  - Ch2:65 "robust mathematical foundation" → "statistical foundation"
-  - Ch4:8 "modern full-stack architecture designed for high-performance..." → simplify
-  - Ch4:107 "current state-of-the-art" → "a representative general-purpose configuration"
-- [ ] **Terminology consistency**:
-  - T-Test → t-test (lowercase) everywhere
-  - Xunfei vs iFlytek — pick one
-  - markdown → Markdown
-  - Black Box / Glass Box capitalization
-- [ ] **Soften strong claims**:
-  - Ch5:102 "Impact on the Field" → too strong for 56 votes
-  - Ch6:25 "held consistently" → "was observed across"
-  - Ch1:89 "clear gap in the market" → "apparent gap"
-- [ ] **Bibliography entries to complete**:
-  - chatbotarena2024: add access date, fuller metadata
-  - luo2024medrag: add arXiv ID
+- [ ] **Bibliography** — complete entries for chatbotarena2024, luo2024medrag
 
 ### System
 - [ ] Test measurement conversion prompt fix — ask "麻黄汤的完整药物组成和剂量" and verify 1两≈13.8g

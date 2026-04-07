@@ -16,8 +16,8 @@ The user interface is developed with \textbf{Next.js 16} (App Router) and \textb
 \subsection{Language Models and Embeddings}
 \begin{itemize}
     \item \textbf{LLM:} The system utilizes the \textbf{DashScope API} (Qwen series), specifically targeting the international endpoint (\texttt{dashscope-intl.aliyuncs.com}) for consistent availability.
-    \item \textbf{Embedding Model:} \textbf{DashScope text-embedding-v4} is employed for vectorization, producing 1024-dimensional dense embeddings optimized for Chinese semantic retrieval.
-    \item \textbf{Reranker:} Post-retrieval ranking is performed using \textbf{qwen3-rerank}, which applies a cross-encoder architecture to refine the initial retrieval results based on query-document relevance.
+    \item \textbf{Embedding Model:} \textbf{DashScope text-embedding-v4} (1024 dimensions) with TCM domain-specific asymmetric prefixes. Ingestion uses the prefix ``Generate semantic representation for this classical TCM text for retrieval'' while queries use ``Generate semantic representation for this TCM clinical question to retrieve relevant classical passages.'' This asymmetric strategy follows DashScope best practices for domain-specific retrieval.
+    \item \textbf{Reranker:} \textbf{qwen3-rerank} cross-encoder, wired into the \texttt{hybrid\_search()} pipeline. The reranker operates on vector search results \textit{before} combining with knowledge graph results, as KG facts (structured entity relationships) do not benefit from semantic reranking. Both the original distance score and the reranker's relevance score are preserved in metadata for downstream use.
 \end{itemize}
 
 \subsection{Knowledge Graph and Local Support}
