@@ -21,7 +21,7 @@ from langchain_core.documents import Document
 
 from crosswalk_bridge import resolve_query_to_symmap_ids
 from config import GRAPH_DATA_PATH
-from embeddings import get_embedding_model
+from embeddings import get_embedding_model, rerank_documents
 from graph_builder import TCMKnowledgeGraph, create_graph_from_json
 
 
@@ -231,6 +231,20 @@ class HybridRetriever:
         """
         # Get vector results (text chunks)
         vector_docs = self.vector_search(query, k=vector_k)
+
+        if vector_docs:
+            doc_texts = [doc.page_content for doc in vector_docs]
+            reranked = rerank_documents(query, doc_texts, top_n=len(vector_docs))
+
+            if reranked:
+                ranked_vector_docs = []
+                for item in reranked:
+                    doc = vector_docs[item["index"]]
+                    if doc.metadata is None:
+                        doc.metadata = {}
+                    doc.metadata["relevance_score"] = item["relevance_score"]
+                    ranked_vector_docs.append(doc)
+                vector_docs = ranked_vector_docs
 
         # Get graph results (entity facts)
         graph_docs = self.graph_search(query, depth=graph_depth)
