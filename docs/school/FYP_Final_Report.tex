@@ -29,7 +29,7 @@
 
 % Title Page Info
 \title{TCM-Sage: A Glass-Box Evidence-Synthesis System for Classical Traditional Chinese Medicine via Hybrid RAG and Knowledge Graph Integration}
-\author{Andy Zheng (Student ID: [REDACTED]) \\ 
+\author{Andy Zheng (Student ID: 22231153) \\ 
         Department of Computer Science \\ 
         Hong Kong Baptist University \\
         AI Concentration}
@@ -86,7 +86,7 @@ Existing TCM AI products, such as HuatuoGPT, Qihuang, and Xunfei, have largely p
     \item \textbf{Lack of Evidence:} None of these tools focus on the synthesis of evidence from classical texts with traceable, clause-level citations.
 \end{enumerate}
 
-There is a clear gap in the market and in research for a tool that prioritizes evidence synthesis over direct diagnosis. Practitioners need a "Glass Box" system where every claim is backed by a traceable citation, allowing the human expert to remain the final decision-maker while the AI handles the heavy lifting of literature retrieval.
+There is an apparent gap for a tool that prioritizes evidence synthesis over direct diagnosis. Practitioners need a ``Glass Box'' system where every claim is backed by a traceable citation, allowing the human expert to remain the final decision-maker while the AI handles the literature retrieval.
 
 \section{Proposed Solution}
 TCM-Sage is designed as an Evidence-Synthesis Tool rather than an AI Doctor. It adopts a "Glass Box" architecture, ensuring that every piece of information provided to the user is directly traceable to a source in the 17 classical texts. The system does not replace the practitioner; it empowers them by providing a synthesized view of the literature relevant to a specific case or query.
@@ -113,7 +113,7 @@ The project aims to achieve the following technical and functional objectives:
     \item \textbf{Knowledge Graph Integration:} Integrate the SymMap v2.0 knowledge graph, which contains 18,450 entities and 21,476 relationships. This includes developing a "crosswalk bridge" to map modern symptoms to classical entities.
     \item \textbf{Clause-Level Chunking:} Implement a structured chunking strategy for key texts. For instance, the \textit{Shanghan Lun} is divided into its 388 original clauses, and the \textit{Jingui Yaolue} into 489 clauses, ensuring that citations point to specific, meaningful units of text.
     \item \textbf{Arena Evaluation System:} Develop a blind A/B evaluation system inspired by the LMSYS Chatbot Arena. This system will allow for statistical validation of the RAG output using T-Tests and Cohen's d effect size calculations.
-    \item \textbf{Local Deployment:} Ensure the system supports full local deployment to address data privacy concerns. Both the embedding models and the LLM (e.g., Qwen-7B or Llama-3) must be capable of running on consumer-grade hardware.
+    \item \textbf{Local Deployment Support:} Design the system architecture to support local LLM inference via Ollama or LMStudio, addressing data privacy concerns. The current deployment uses cloud-based DashScope embeddings, but the modular design allows substitution with local embedding models for fully offline operation.
     \item \textbf{Transparent Citation UI:} Provide a dedicated citation panel in the frontend that allows users to click through from a claim to the exact source text, including metadata about the text's origin and context.
 \end{enumerate}
 

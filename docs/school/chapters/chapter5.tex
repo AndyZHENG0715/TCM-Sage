@@ -36,8 +36,24 @@ The distribution of the 56 votes is summarized below:
 
 The TCM-Sage system outperformed the baseline in over 60\% of cases, more than doubling the win rate of the general-purpose search-augmented model.
 
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/arena-win-rate.png}
+    \caption{Win rate distribution across the three outcomes.}
+    \label{fig:winrate}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/arena-vote-distribution.png}
+    \caption{Total vote distribution (N=56).}
+    \label{fig:votedist}
+\end{minipage}
+\end{figure}
+
 \subsection{Statistical Significance}
-To rigorously test the null hypothesis that there is no difference between the two systems, a \textbf{paired T-test} was performed on the win/loss data (assigning 1 for a win, -1 for a loss, and 0 for a tie).
+To rigorously test the null hypothesis that there is no difference between the two systems, a \textbf{paired t-test} was performed. Each vote was encoded as a score: 1 for a TCM-Sage win, 0.5 for a tie, and 0 for a Plain LLM win. The test evaluated whether the mean score was significantly different from the null expectation of 0.5 (no preference).
 \begin{itemize}
     \item \textbf{T-statistic:} 3.30
     \item \textbf{P-value:} 0.0018
@@ -56,10 +72,10 @@ An effect size of 0.47 indicates a \textit{medium effect}, suggesting that while
 The evaluation was conducted over a four-day period (April 3 to April 6, 2026), during which the system underwent minor iterative refinements based on initial feedback.
 
 \begin{itemize}
-    \item \textbf{April 3:} 2 TCM-Sage / 1 Plain (67\% Win Rate) — Initial testing phase.
-    \item \textbf{April 4:} 13 TCM-Sage / 8 Plain (62\% Win Rate) — Main testing batch from student groups.
-    \item \textbf{April 5:} 8 TCM-Sage / 0 Plain (100\% Win Rate) --- Post system prompt and retrieval improvements.
-    \item \textbf{April 6:} 12 TCM-Sage / 6 Plain (67\% Win Rate) — Extended testing with a wider group of practitioners.
+    \item \textbf{April 3:} 2 RAG / 1 Plain / 0 Ties (3 votes) --- Initial testing phase.
+    \item \textbf{April 4:} 13 RAG / 8 Plain / 6 Ties (27 votes) --- Main testing batch from student groups.
+    \item \textbf{April 5:} 8 RAG / 0 Plain / 0 Ties (8 votes) --- Post system prompt and retrieval improvements.
+    \item \textbf{April 6:} 12 RAG / 6 Plain / 0 Ties (18 votes) --- Extended testing with a wider group of practitioners.
 \end{itemize}
 
 The cumulative trend shows a consistent preference for TCM-Sage, with a notable peak in performance after specific clinical knowledge (e.g., unit conversions) was hard-coded into the system prompt.

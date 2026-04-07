@@ -4,7 +4,7 @@ This chapter examines the theoretical foundations and existing research relevant
 
 \section{Retrieval-Augmented Generation (RAG)}
 
-Retrieval-Augmented Generation (RAG) has emerged as a dominant architecture for addressing the inherent limitations of static Large Language Models (LLMs). Standard LLMs suffer from "knowledge cutoff" and hallucinations, where the model generates factually incorrect but plausible-sounding information. RAG mitigates these issues by combining a pre-trained generator with an external retrieval mechanism \cite{lewis2020rag}.
+Retrieval-Augmented Generation (RAG) has emerged as a widely adopted architecture for addressing the inherent limitations of static Large Language Models (LLMs). Standard LLMs suffer from ``knowledge cutoff'' and hallucinations, where the model generates factually incorrect but plausible-sounding information. RAG mitigates these issues by combining a pre-trained generator with an external retrieval mechanism \cite{lewis2020rag}.
 
 \subsection{RAG Fundamentals and Architecture}
 
@@ -58,8 +58,8 @@ Evaluating the quality of LLM-generated medical advice is difficult due to the s
 
 \subsection{LMSYS Chatbot Arena and Blind A/B Testing}
 
-The LMSYS Chatbot Arena has popularized blind A/B testing as a gold standard for evaluating LLM performance \cite{chatbotarena2024}. In this framework, users compare two anonymized outputs and vote for the superior response. This method captures human preferences and nuances that automated rubrics miss.
+The LMSYS Chatbot Arena has popularized blind A/B testing as a widely recognized benchmark for evaluating LLM performance \cite{chatbotarena2024}. In this framework, users compare two anonymized outputs and vote for the superior response. This method captures human preferences and nuances that automated rubrics miss.
 
 \subsection{Statistical Validation}
 
-To ensure that the results of blind A/B testing are scientifically valid, TCM-Sage employs rigorous statistical methods. The paired T-Test is used to determine if the difference in scores between the RAG system and a baseline LLM is statistically significant. Cohen's d is calculated to measure the effect size, providing an indication of the practical significance of the improvement. These methods provide a robust mathematical foundation for claims of system superiority, moving beyond anecdotal evidence.
+To ensure that the results of blind A/B testing are scientifically valid, TCM-Sage employs standard statistical methods. The paired t-test determines whether the difference in scores between the RAG system and a baseline LLM is statistically significant. Cohen's $d$ quantifies the effect size, indicating the practical magnitude of any improvement. Together, these methods provide a statistical foundation for evaluating system performance beyond anecdotal evidence.
