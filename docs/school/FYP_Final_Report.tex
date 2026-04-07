@@ -40,7 +40,7 @@
 \maketitle
 
 \begin{abstract}
-Traditional Chinese Medicine (TCM) practitioners face significant challenges in retrieving and synthesizing evidence from a vast corpus of classical literature. Existing Large Language Models (LLMs) often function as ``black boxes,'' providing unverifiable claims that lack the precision required for clinical or academic reference. This project introduces TCM-Sage, an evidence-synthesis tool designed to provide transparent, citation-backed insights from 17 foundational TCM texts comprising 3.72 million characters and 12,204 indexed chunks. By implementing a Retrieval-Augmented Generation (RAG) pipeline with hybrid retrieval---combining DashScope text-embedding-v4 vector search with the SymMap v2.0 knowledge graph (18,450 entities)---TCM-Sage ensures every claim is traceable to its original source. Evaluation via a blind A/B Arena system with 56 votes from TCM students and practitioners yielded a paired T-Test result of $t = 3.30$, $p = 0.0018$ ($p < 0.01$), and Cohen's $d = 0.47$ (medium effect), demonstrating statistically significant preference for the RAG system over a general-purpose LLM with web search.
+Traditional Chinese Medicine (TCM) practitioners face significant challenges in retrieving and synthesizing evidence from a vast corpus of classical literature. Existing Large Language Models (LLMs) often function as ``black boxes,'' providing unverifiable claims that lack the precision required for clinical or academic reference. This project introduces TCM-Sage, an evidence-synthesis tool designed to provide transparent, citation-backed insights from 17 foundational TCM texts comprising 3.72 million characters and 12,204 indexed chunks. By implementing a Retrieval-Augmented Generation (RAG) pipeline with hybrid retrieval---combining DashScope text-embedding-v4 vector search with the SymMap v2.0 knowledge graph (18,450 entities)---TCM-Sage ensures every claim is traceable to its original source. Evaluation via a blind A/B Arena system with 56 votes from TCM students and practitioners yielded a paired t-test result of $t = 3.30$, $p = 0.0018$ ($p < 0.01$), and Cohen's $d = 0.47$ (medium effect), demonstrating statistically significant preference for the RAG system over a general-purpose LLM with web search.
 \end{abstract}
 
 \tableofcontents
@@ -63,12 +63,12 @@ The core technical premise of TCM-Sage is that AI can serve as an external memor
 \toprule
 \textbf{Category} & \textbf{Included Texts} \\
 \midrule
-Foundational Theory \& Huangdi Neijing (Suwen, Lingshu), Nanjing \\
-Acupuncture \& Zhenjiu Jiayijing \\
-Shanghan \& Wenbing \& Shanghan Lun, Jingui Yaolue, Wenbing Tiaobian, Wenre Lun \\
-Herbology \& Formulary \& Shennong Bencao Jing, Bencao Gangmu \\
-Jin-Yuan Four Masters \& Suwen Xuanji Yuanbing Shi (Liu Wansu), Rumen Shiqin (Zhang Congzheng), Piwei Lun \& Lanshi Micang (Li Dongyuan), Danxi Xinfa \& Gezhi Yulun (Zhu Zhenheng) \\
-General Clinical \& Beiji Qianjin Yaofang, Neiwaishang Bianhuo Lun \\
+Foundational Theory & Huangdi Neijing (Suwen, Lingshu), Nanjing \\
+Acupuncture & Zhenjiu Jiayijing \\
+Shanghan/Wenbing & Shanghan Lun, Jingui Yaolue, Wenbing Tiaobian, Wenre Lun \\
+Herbology/Formulary & Shennong Bencao Jing, Bencao Gangmu \\
+Jin-Yuan Four Masters & Suwen Xuanji Yuanbing Shi, Rumen Shiqin, Piwei Lun, Lanshi Micang, Danxi Xinfa, Gezhi Yulun \\
+General Clinical & Beiji Qianjin Yaofang, Neiwaishang Bianhuo Lun \\
 \bottomrule
 \end{tabularx}
 \label{tab:texts}
