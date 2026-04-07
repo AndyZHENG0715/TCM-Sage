@@ -1,64 +1,90 @@
 graph TB
-    subgraph Input["User Query"]
+    subgraph Input["User Interface"]
         Q[User Question]
+        UI[Next.js 16 Frontend<br/>i18n: Traditional/Simplified/EN]
+        SET[Settings Panel<br/>Provider / Model / Temperature]
+    end
+
+    subgraph Classification["Query Classification"]
+        Q --> CLF{Classifier LLM<br/>temp=0.0}
+        CLF -->|Informational| INFO[General Knowledge<br/>temp=0.1]
+        CLF -->|Prescriptive| PRESC[Clinical/Formula<br/>temp=0.0]
     end
 
     subgraph Retrieval["Hybrid Retrieval Pipeline"]
         direction TB
-        Q --> CR{Query Analysis}
-        CR -->|Formula Detected| FM[Formula-Aware<br/>Canonical Retrieval]
-        CR -->|Clause Reference| CL[Multi-Clause<br/>Extraction]
-        CR -->|General Query| VS[Vector Search<br/>DashScope text-embedding-v4<br/>1024d]
-        
-        FM --> ChromaDB[(ChromaDB<br/>12,204 chunks)]
+        Q --> QA{Query Analysis}
+        QA -->|Formula Detected| FM[Formula-Aware<br/>Canonical Retrieval<br/>Metadata Filter]
+        QA -->|Clause Reference| CL[Multi-Clause<br/>Extraction<br/>re.finditer]
+        QA -->|General| VS[Vector Search<br/>k x 3 Broader Retrieval]
+
+        FM --> ChromaDB[(ChromaDB<br/>12,204 chunks<br/>1024d vectors)]
         CL --> ChromaDB
         VS --> ChromaDB
-        
-        ChromaDB --> RR[Reranker<br/>qwen3-rerank]
-        RR --> SAB[Source Authority<br/>Boost 0.90-0.97x]
-        SAB --> DD[Deduplication]
-        
-        CR -->|Entity Match| KG[Knowledge Graph<br/>SymMap v2.0<br/>18,450 entities]
-        KG --> CW[Crosswalk Bridge<br/>Modern ↔ Classical]
-        CW --> KGR[Graph Traversal<br/>BFS depth=2]
+
+        ChromaDB --> RR[Reranker<br/>qwen3-rerank<br/>Cross-Encoder]
+        RR --> SAB[Source Authority<br/>Boost 0.90-0.97x<br/>Topic-Dependent]
+        SAB --> DD[Deduplication<br/>1 chunk per book+chapter]
+
+        QA -->|Entity Match| JB[jieba Segmentation<br/>+ Alias Map]
+        JB --> KG[SymMap v2.0 KG<br/>18,450 entities<br/>21,476 relationships]
+        KG --> CW[Crosswalk Bridge<br/>Modern to Classical]
+        CW --> BFS[Graph Traversal<br/>BFS depth=2]
     end
 
-    subgraph KnowledgeBase["Knowledge Base"]
-        direction LR
-        T17[17 Classical Texts<br/>3.72M characters] --> Chunk[Chunking Engine]
-        Chunk -->|Chapter-based| C1[Standard Chunks]
-        Chunk -->|Clause-level| C2[388 + 489 Clauses<br/>Shanghan Lun + Jingui Yaolue]
-        C1 --> EMB[DashScope Embedding<br/>text-embedding-v4]
-        C2 --> EMB
-        EMB --> ChromaDB
+    subgraph KnowledgeBase["Knowledge Base Construction"]
+        T17[17 Classical Texts<br/>3.72M characters<br/>UTF-8] --> CS{Chunking Strategy}
+        CS -->|Most texts| CH[Chapter-Based<br/>~500 chars/chunk]
+        CS -->|Shanghan Lun| CLC[Clause-Level<br/>388 clauses]
+        CS -->|Jingui Yaolue| CLJ[Clause-Level<br/>489 clauses]
+        CH --> HDR[Contextual Header<br/>Prepend]
+        CLC --> HDR
+        CLJ --> HDR
+        HDR --> EMB[DashScope<br/>text-embedding-v4<br/>1024 dimensions]
+        EMB -->|Batch 10, checkpoint/resume| ChromaDB
         SM[SymMap v2.0<br/>JSON + XLSX] --> KG
     end
 
     subgraph Generation["Generation Pipeline"]
-        DD --> CTX[Retrieved Context<br/>Markdown Formatted]
-        KGR --> CTX
-        CTX --> SP[System Prompt<br/>辨证论治 Framework<br/>源流 Methodology<br/>Measurement Table]
-        SP --> LLM[LLM<br/>Qwen Series<br/>DashScope API]
-        LLM --> VER[Self-RAG Verifier]
+        DD --> CTX[Retrieved Context<br/>Markdown Formatted<br/>Pattern Priming]
+        BFS --> CTX
+        CTX --> SP[System Prompt<br/>Bian Zheng Lun Zhi Framework<br/>Yuanliu Methodology<br/>Jun Chen Zuo Shi Analysis<br/>Measurement Table<br/>Hedging Principles]
+        SP --> POST[Post-Context Anchoring<br/>Format Instructions AFTER Context]
+        POST --> UPRI[User Intent Priority Override]
+        INFO --> LLM
+        PRESC --> LLM
+        UPRI --> LLM[LLM Generation<br/>Configurable Provider]
+        LLM --> VER[Self-RAG Verifier<br/>Citation Grounding Check]
     end
 
-    subgraph Output["User Interface"]
-        VER --> RESP[Streamed Response<br/>SSE with Citations]
-        RESP --> CP[Citation Panel<br/>Source Text + KG Mini-View]
-        RESP --> KGE[KG Explorer<br/>Cytoscape.js]
+    subgraph Providers["Supported LLM Providers"]
+        LLM -.-> P1[DashScope / Alibaba]
+        LLM -.-> P2[Ollama - Local]
+        LLM -.-> P3[LMStudio - Local]
+        LLM -.-> P4[OpenAI / Anthropic /<br/>Google / OpenRouter /<br/>Together]
     end
 
-    subgraph Arena["Arena Evaluation"]
-        Q --> AR{Random A/B<br/>Assignment}
-        AR -->|Position A| RAG[TCM-Sage<br/>Full Pipeline]
-        AR -->|Position B| PLN[Plain LLM<br/>+ DuckDuckGo]
-        RAG --> VOTE[Blind Vote<br/>t=3.30 p=0.0018]
-        PLN --> VOTE
+    subgraph Output["User Interface Output"]
+        VER --> SSE[SSE Streaming<br/>with Citation Markers]
+        SSE --> CP[Citation Panel<br/>Source Text +<br/>KG Mini-View]
+        SSE --> KGE[KG Explorer<br/>Cytoscape.js<br/>Click-to-Expand]
+    end
+
+    subgraph Arena["Arena Blind A/B Evaluation"]
+        Q --> AR{Random Position<br/>Assignment}
+        AR -->|A or B| RAG[TCM-Sage<br/>Full Pipeline + TCM Prompt]
+        AR -->|B or A| PLN[Plain LLM<br/>Helpful Assistant +<br/>DuckDuckGo Search]
+        RAG --> DUAL[Dual SSE Streaming<br/>60s Timeout Protection]
+        PLN --> DUAL
+        DUAL --> VOTE[Blind Vote to JSONL]
+        VOTE --> STAT[Statistical Analysis<br/>t=3.30 p=0.0018<br/>Cohens d=0.47]
     end
 
     style Input fill:#1a1a2e,stroke:#19e6d4,color:#F3EFE0
+    style Classification fill:#1a1a2e,stroke:#ff6b6b,color:#F3EFE0
     style Retrieval fill:#112120,stroke:#19e6d4,color:#F3EFE0
     style KnowledgeBase fill:#112120,stroke:#fbbf24,color:#F3EFE0
     style Generation fill:#112120,stroke:#19e6d4,color:#F3EFE0
+    style Providers fill:#0d1b1a,stroke:#6b7280,color:#9ca3af
     style Output fill:#1a1a2e,stroke:#19e6d4,color:#F3EFE0
     style Arena fill:#1a1a2e,stroke:#fbbf24,color:#F3EFE0

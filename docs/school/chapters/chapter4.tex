@@ -83,7 +83,17 @@ Mapping modern user queries to classical graph entities is achieved through:
 
 \section{Generation and Prompt Engineering}
 
-The generation layer is optimized to ensure the LLM adheres to professional TCM methodologies while maintaining strict formatting.
+The generation layer is optimized to ensure the LLM adheres to professional TCM methodologies while maintaining strict formatting. The system supports eight LLM providers through a unified \texttt{create\_llm()} factory function, enabling seamless switching between cloud APIs (DashScope, OpenAI, Anthropic, Google, OpenRouter, Together) and local inference (Ollama, LMStudio).
+
+\subsection{Query Classification}
+Each incoming query is first classified by a dedicated classifier LLM (temperature 0.0) into \texttt{informational} or \texttt{prescriptive} categories using \texttt{get\_query\_severity()}. The classification determines which pre-initialized LLM instance handles the query:
+
+\begin{itemize}
+    \item \texttt{llm\_informational}: temperature 0.1 for general knowledge queries
+    \item \texttt{llm\_prescriptive}: temperature 0.0 for clinical/formula queries
+\end{itemize}
+
+The classifier, main LLMs, and verifier can each be configured with independent providers and models via environment variables, allowing fine-grained control over cost and quality trade-offs.
 
 \subsection{System Prompt Architecture}
 We use \texttt{ChatPromptTemplate.from_messages} to maintain a clean separation between the \texttt{SystemMessage} and the \texttt{UserMessage}. Empirical testing showed that merging these into a single string caused the model to ignore complex formatting constraints.

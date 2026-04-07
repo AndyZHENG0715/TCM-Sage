@@ -71,7 +71,18 @@ The SymMap 2.0 knowledge graph is traversed using the NetworkX library. Entity m
 
 \section{Generation Pipeline}
 
-The generation pipeline synthesizes the retrieved context into a coherent, evidence-backed response. It utilizes the DashScope Qwen series of LLMs, which are highly capable in processing classical Chinese.
+The generation pipeline synthesizes the retrieved context into a coherent, evidence-backed response. The system supports eight LLM providers (DashScope/Alibaba, OpenAI, Anthropic, Google, OpenRouter, Together, Ollama, and LMStudio), allowing deployment across cloud and local configurations. Each provider is accessed through a unified \texttt{create\_llm()} factory function.
+
+\subsection{Query Classification and Temperature Control}
+
+Before generation, a dedicated classifier LLM (running at temperature 0.0 for deterministic output) categorizes each query as either \textit{informational} (general knowledge, definitions, explanations) or \textit{prescriptive} (diagnoses, treatments, formula recommendations). This classification determines the generation temperature:
+
+\begin{itemize}
+    \item \textbf{Informational:} Temperature 0.1 --- allows moderate creativity for educational explanations.
+    \item \textbf{Prescriptive:} Temperature 0.0 --- maximizes precision and reproducibility for clinical queries where accuracy is critical.
+\end{itemize}
+
+This dual-temperature design reflects a safety-conscious approach: clinical queries demand the highest possible fidelity to source material, while general knowledge queries benefit from slightly more natural language generation.
 
 \subsection{System Prompt and Framework}
 
