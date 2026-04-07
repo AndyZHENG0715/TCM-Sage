@@ -77,7 +77,7 @@ The graph contains 18,450 entities and 21,476 relationships. Key entity types in
 Mapping modern user queries to classical graph entities is achieved through:
 \begin{itemize}
     \item \textbf{Jieba Segmentation:} Tokenizing the query into candidate medical terms.
-    \item \textbf{Alias Mapping:} A crosswalk bridge that translates colloquial terms (e.g., "stomach ache") to formal TCM syndromes (e.g., \textit{Wei Wan Tong}).
+    \item \textbf{Alias Mapping:} A crosswalk bridge that translates colloquial modern Chinese terms to formal TCM terminology (e.g., ``du zi teng'' [belly ache] $\rightarrow$ ``fu tong'' [abdominal pain], ``shui bu zhao'' [can't sleep] $\rightarrow$ ``shi mian'' [insomnia]).
     \item \textbf{BFS Traversal:} Upon matching an entity, the system performs a Breadth-First Search (BFS) with configurable depth (default 2) to retrieve related symptoms or herbs, providing the LLM with structured diagnostic relationships.
 \end{itemize}
 
@@ -89,7 +89,7 @@ The generation layer is optimized to ensure the LLM adheres to professional TCM 
 Each incoming query is first classified by a dedicated classifier LLM (temperature 0.0) into \texttt{informational} or \texttt{prescriptive} categories using \texttt{get\_query\_severity()}. The classification determines which pre-initialized LLM instance handles the query:
 
 \begin{itemize}
-    \item \texttt{llm\_informational}: temperature 0.1 for general knowledge queries
+    \item \texttt{llm\_informational}: temperature 0.7 for general knowledge queries
     \item \texttt{llm\_prescriptive}: temperature 0.0 for clinical/formula queries
 \end{itemize}
 
