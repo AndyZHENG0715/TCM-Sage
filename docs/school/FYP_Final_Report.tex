@@ -10,7 +10,7 @@
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage[margin=1.27cm]{geometry}
-\usepackage[numbers,sort&compress]{natbib}
+\usepackage[authoryear,round]{natbib}
 \usepackage{url}
 \usepackage{xcolor}
 \usepackage{float}
@@ -29,13 +29,34 @@
 
 % Title Page Info
 \title{TCM-Sage: A Glass-Box Evidence-Synthesis System for Classical Traditional Chinese Medicine via Hybrid RAG and Knowledge Graph Integration}
-\author{Andy Zheng (Student ID: 22231153) \\ 
+\author{ZHENG Zian, Andy (Student ID: 22231153) \\ 
         Department of Computer Science \\ 
         Hong Kong Baptist University \\
-        AI Concentration}
+        Computing and Software Technologies (CST) Concentration}
 \date{April 8, 2026}
 
 \begin{document}
+
+\maketitle
+
+% Declaration Page
+\newpage
+\thispagestyle{empty}
+\begin{center}
+\vspace*{5cm}
+{\Large\bfseries Declaration}
+\end{center}
+\vspace{2cm}
+I hereby declare that all the work done in this Final Year Project is of my independent effort. I also certify that I have never submitted the idea and product of this Final Year Project for academic or employment credits.
+
+\vspace{3cm}
+\noindent
+\begin{tabular}{ll}
+Signature: & \underline{\hspace{6cm}} \\[1cm]
+Name: & ZHENG Zian (Andy) \\[1cm]
+Date: & April 8, 2026 \\
+\end{tabular}
+\newpage
 
 \maketitle
 
@@ -156,13 +177,13 @@ The remainder of this report is organized as follows:
 \chapter*{Acknowledgments}
 \addcontentsline{toc}{chapter}{Acknowledgments}
 
-I would like to express my sincere gratitude to my supervisor, Dr.\ Zhang Ce, for his guidance throughout this project. His suggestions on evaluation methodology---specifically the use of paired T-Tests and Cohen's $d$ for statistical validation---and his discussions on blind A/B experimental design were instrumental in shaping the Arena evaluation framework.
+I would like to express my sincere gratitude to my supervisor, Dr.\ Zhang Ce, for his guidance throughout this project. His suggestions on evaluation methodology---specifically the use of paired t-tests and Cohen's $d$ for statistical validation---and his discussions on blind A/B experimental design were instrumental in shaping the Arena evaluation framework.
 
 I am deeply grateful to Kenny Woo Shi Nam, a Year 5 student at the HKBU School of Chinese Medicine (cGPA 3.97/4.0), currently interning at Guangdong Provincial Hospital of TCM. Kenny's contributions were extensive: he advised on the selection of the 17 classical texts, conducted rigorous testing across formula retrieval, clause comparison, and clinical case analysis, and provided detailed feedback on diagnostic accuracy and system usability that directly shaped multiple system improvements.
 
 I also thank the doctoral students at Guangdong Provincial Hospital of TCM who participated in the Arena evaluation and provided clinical feedback, including specific recommendations for corpus expansion and insights on bridging classical theory with modern clinical practice.
 
-Finally, I acknowledge the use of AI-powered development environments (OpenCode, Cursor) for code development assistance and report language polishing. All technical decisions, system design, and written content originated from the author.
+AI-powered development environments (OpenCode, Cursor) were used for code implementation assistance throughout the project, with all code reviewed and tested by the author. AI writing tools were used for grammar and style refinement during report preparation. All architectural decisions, system design, and written content are the author's own work.
 
 \appendix
 \chapter{Classical Text Corpus}
@@ -199,6 +220,65 @@ Wenre Lun & Qing & Ye Tianshi & 23 & Chapter \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\chapter{System Setup and Reproduction Guide}
+
+This appendix describes how to set up and run TCM-Sage from the source repository.
+
+\section*{Prerequisites}
+\begin{itemize}
+    \item Python 3.11+ with \texttt{pip}
+    \item Node.js 18+ with \texttt{npm}
+    \item A DashScope API key (or alternative LLM provider credentials)
+    \item Git
+\end{itemize}
+
+\section*{Step 1: Clone and Install}
+\begin{verbatim}
+git clone https://github.com/AndyZHENG0715/TCM-Sage.git
+cd TCM-Sage
+
+# Python backend
+python -m venv venv
+venv\Scripts\activate          # Windows
+pip install -r requirements.txt
+
+# Frontend
+cd web && npm install && cd ..
+\end{verbatim}
+
+\section*{Step 2: Configure Environment}
+Copy \texttt{.env.example} to \texttt{.env} and fill in the required API keys:
+\begin{verbatim}
+DASHSCOPE_API_KEY=your_key_here
+LLM_PROVIDER=alibaba
+\end{verbatim}
+See \texttt{docs/CONFIG.md} for the full list of configurable environment variables.
+
+\section*{Step 3: Build the Vector Index}
+\begin{verbatim}
+venv\Scripts\python src/ingest.py
+\end{verbatim}
+This processes the 17 classical texts in \texttt{data/source/}, generates embeddings via DashScope, and stores them in ChromaDB at \texttt{vectorstore/chroma/}. The process supports checkpoint and resume. Initial ingestion takes approximately 30--60 minutes due to API batch limits.
+
+\section*{Step 4: Start the Application}
+\begin{verbatim}
+# Terminal 1: Backend (port 8000)
+venv\Scripts\python src/api.py
+
+# Terminal 2: Frontend (port 3000)
+cd web && npm run dev
+\end{verbatim}
+Access the application at \texttt{http://localhost:3000}.
+
+\section*{Step 5: Local Deployment (Optional)}
+For fully local operation without cloud API calls, install Ollama and configure:
+\begin{verbatim}
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434/v1
+\end{verbatim}
+Note: the current deployment uses DashScope cloud embeddings. For fully offline operation, a local embedding model must be substituted in \texttt{src/embeddings.py}.
+
 
 \bibliographystyle{abbrvnat}
 \bibliography{references}

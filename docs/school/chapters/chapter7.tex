@@ -51,6 +51,31 @@ The current architecture uses general-purpose Qwen models as the generation back
 
 Future evaluation should address the current study's limitations: larger sample sizes, inclusion of senior practitioners as evaluators, and dimension-specific scoring rubrics that separately measure citation accuracy, diagnostic reasoning quality, completeness, and readability. Longitudinal studies tracking system improvement across development iterations would strengthen the evidence base.
 
+\section{Goal Completion}
+
+The original project proposal set out to build ``an explainable, evidence-backed tool'' based on RAG architecture that would function as ``an intelligent clinical reference assistant'' with traceable citations, hybrid retrieval (vector search and knowledge graph), and user acceptance testing with TCM practitioners. The following table summarizes the completion status of each proposed aim:
+
+\begin{table}[H]
+\centering
+\caption{Proposed aims and completion status.}
+\begin{tabularx}{\textwidth}{Xll}
+\toprule
+\textbf{Proposed Aim} & \textbf{Status} & \textbf{Notes} \\
+\midrule
+Evidence-synthesis tool, not AI Doctor & Achieved & Core design principle maintained \\
+Glass Box citations linked to source text & Achieved & Citation Panel with click-through \\
+RAG architecture with hybrid retrieval & Achieved & Vector + KG + reranker \\
+Specialized TCM knowledge base & Exceeded & 17 texts (proposal suggested 1) \\
+Knowledge graph for terminology bridging & Achieved & SymMap v2.0 (18,450 entities) \\
+User acceptance testing with practitioners & Achieved & Arena blind A/B (56 votes, $p=0.0018$) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The evaluation methodology evolved from the initially proposed TCMEval-SDT benchmark and Likert-scale surveys to a blind A/B Arena system with statistical validation, following discussions with the project supervisor. This approach better captures overall system quality as perceived by end users, rather than isolated retrieval metrics.
+
+All core proposed aims have been achieved or exceeded. The system is functional, tested with real practitioners, and statistically validated.
+
 \section{Closing Remarks}
 
 TCM-Sage demonstrates that retrieval-augmented generation is a viable approach for making classical medical literature accessible through modern AI interfaces. The system does not replace human expertise; it provides the evidence base that human experts need to make informed decisions. In a field where the source texts span two thousand years of accumulated clinical wisdom, the ability to search, retrieve, and cite that wisdom accurately and transparently has practical value.
