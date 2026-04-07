@@ -58,10 +58,8 @@ Date: & April 8, 2026 \\
 \end{tabular}
 \newpage
 
-\maketitle
-
 \begin{abstract}
-Traditional Chinese Medicine (TCM) practitioners face significant challenges in retrieving and synthesizing evidence from a vast corpus of classical literature. Existing Large Language Models (LLMs) often function as ``black boxes,'' providing unverifiable claims that lack the precision required for clinical or academic reference. This project introduces TCM-Sage, an evidence-synthesis tool designed to provide transparent, citation-backed insights from 17 foundational TCM texts comprising 3.72 million characters and 12,204 indexed chunks. By implementing a Retrieval-Augmented Generation (RAG) pipeline with hybrid retrieval---combining DashScope text-embedding-v4 vector search with the SymMap v2.0 knowledge graph (18,450 entities)---TCM-Sage ensures every claim is traceable to its original source. Evaluation via a blind A/B Arena system with 56 votes from TCM students and practitioners yielded a paired t-test result of $t = 3.30$, $p = 0.0018$ ($p < 0.01$), and Cohen's $d = 0.47$ (medium effect), demonstrating statistically significant preference for the RAG system over a general-purpose LLM with web search.
+Traditional Chinese Medicine (TCM) practitioners face significant challenges in retrieving and synthesizing evidence from a vast corpus of classical literature. Existing Large Language Models (LLMs) often function as ``black boxes,'' providing claims that lack traceable links to authoritative source material. This project introduces TCM-Sage, an evidence-synthesis tool designed to provide transparent, citation-backed insights from 17 foundational TCM texts comprising 3.72 million characters and 12,204 indexed chunks. By implementing a Retrieval-Augmented Generation (RAG) pipeline with hybrid retrieval---combining DashScope text-embedding-v4 vector search with the SymMap v2.0 knowledge graph (18,450 entities)---TCM-Sage ensures every claim is traceable to its original source. Evaluation via a blind A/B Arena system with 59 votes from TCM students and practitioners yielded a paired t-test result of $t = 3.44$, $p = 0.0011$ ($p < 0.01$), and Cohen's $d = 0.45$ (medium effect), demonstrating statistically significant preference for the RAG system over a general-purpose LLM with web search.
 \end{abstract}
 
 \tableofcontents
@@ -71,7 +69,7 @@ Traditional Chinese Medicine (TCM) practitioners face significant challenges in 
 \section{Background and Motivation}
 Traditional Chinese Medicine (TCM) practitioners rely on a massive body of classical literature to guide clinical reasoning and theoretical understanding. This corpus, spanning over two millennia, includes 17 foundational texts comprising millions of characters written in classical Chinese. The complexity of this language, combined with the sheer volume of data, makes manual evidence retrieval and cross-text synthesis an arduous task for even experienced practitioners. Modern TCM education and practice require tools that can efficiently navigate these texts to provide evidence-based support.
 
-The motivation for this project stems from both personal and professional observations. My father first suggested exploring the intersection of AI and medicine, noting the potential for technology to assist in specialized fields. This direction was further reinforced through discussions with Kenny Woo Shi Nam, a Year 5 student at the HKBU School of Chinese Medicine with a 3.97 cGPA, currently interning at the Guangdong Provincial Hospital of TCM. Kenny highlighted the critical need for a tool that could provide reliable citations from classical texts, as current digital resources are often fragmented or lack the depth required for serious study.
+The motivation for this project stems from both personal and professional observations. My father first suggested exploring the intersection of AI and medicine, noting the potential for technology to assist in specialized fields. Having friends studying TCM who could provide domain expertise and testing feedback made this direction particularly feasible. This was further reinforced through discussions with Kenny Woo Shi Nam, a Year 5 student at the HKBU School of Chinese Medicine (cGPA 3.97/4.0), currently interning at the Guangdong Provincial Hospital of TCM. Kenny highlighted the critical need for a tool that could provide reliable citations from classical texts, as current digital resources are often fragmented or lack the depth required for serious study.
 
 Originally, my Final Year Project (FYP) topic was an AI-based course selection system. However, recognizing the greater impact and technical challenge of the TCM domain, I proposed a shift to building a TCM AI tool. This change was approved by my supervisor, Dr. Zhang Ce, who recognized the value of applying AI to preserve and utilize cultural heritage through modern engineering.
 
@@ -84,23 +82,23 @@ The core technical premise of TCM-Sage is that AI can serve as an external memor
 \toprule
 \textbf{Category} & \textbf{Included Texts} \\
 \midrule
-Foundational Theory & Huangdi Neijing (Suwen, Lingshu), Nanjing \\
-Acupuncture & Zhenjiu Jiayijing \\
+Foundational Theory & Huangdi Neijing Suwen, Nanjing \\
 Shanghan/Wenbing & Shanghan Lun, Jingui Yaolue, Wenbing Tiaobian, Wenre Lun \\
+Internal Medicine & Beiji Qianjin Yaofang, Neiwaishang Bianhuo Lun \\
+Acupuncture & Huangdi Neijing Lingshu, Zhenjiu Jiayijing \\
 Herbology/Formulary & Shennong Bencao Jing, Bencao Gangmu \\
 Jin-Yuan Four Masters & Suwen Xuanji Yuanbing Shi, Rumen Shiqin, Piwei Lun, Lanshi Micang, Danxi Xinfa, Gezhi Yulun \\
-General Clinical & Beiji Qianjin Yaofang, Neiwaishang Bianhuo Lun \\
 \bottomrule
 \end{tabularx}
 \label{tab:texts}
 \end{table}
 
 \section{Problem Statement}
-The primary obstacle to using AI in TCM is the "Black Box" nature of existing general-purpose Large Language Models (LLMs) like ChatGPT or Qwen. When a user queries these models for TCM knowledge, the system provides a response without any verifiable link to the source material. This lack of transparency makes it impossible for practitioners to confirm whether a claim is based on a classical text or is a fabrication of the model's internal weights.
+The primary obstacle to using AI in TCM is the difficulty of verifying AI-generated claims against authoritative sources. While many modern AI systems now offer citation features through web search, these citations draw from uncontrolled internet sources whose quality and accuracy cannot be guaranteed. In TCM, where incorrect dosage or formula selection carries clinical risk, practitioners require citations traceable to vetted, authoritative classical texts---not web search results of uncertain provenance.
 
-The core issue is not merely hallucination, but unverifiability. While all AI systems, including TCM-Sage, may initially produce errors, the critical difference is that general LLMs offer no mechanism for verification. For example, a TCM student testing ChatGPT found that the model confused Clause 82 of the \textit{Shanghan Lun} with Clause 2. The model confidently presented the wrong content as if it were an exact quote, which could lead to incorrect clinical reasoning if taken at face value.
+Furthermore, within the scope of its knowledge base, a RAG system can achieve near-zero hallucination by grounding every response in retrieved source material. During Arena blind testing, both the general-purpose LLM baseline and an early version of TCM-Sage exhibited clause-level confusion (presenting \textit{Shanghan Lun} Clause 2 content when asked about Clause 82). The general-purpose LLM hallucinated---fabricating content and presenting it confidently. TCM-Sage's error was a retrieval granularity issue: the system had not yet implemented clause-level chunking. Once clause-level retrieval was added, TCM-Sage correctly returned the requested clause, while the general-purpose LLM continued to hallucinate without any self-correction mechanism.
 
-Existing TCM AI products, such as HuatuoGPT, Qihuang, and Xunfei, have largely pursued an "AI Doctor" approach. These tools focus on providing direct diagnoses and prescriptions. However, this approach has seen low clinical practicality, with usage rates for tools like Qihuang reported at less than 15\%. Several factors contribute to this failure:
+Existing TCM AI products, such as HuatuoGPT and iFlytek's medical AI, have pursued an ``AI Doctor'' approach, focusing on direct diagnosis and prescription. TCM-Sage takes a fundamentally different direction---evidence synthesis with traceable citations from classical texts. Several structural challenges affect the ``AI Doctor'' approach:
 \begin{enumerate}
     \item \textbf{Data Sovereignty:} Hospitals and practitioners are often unwilling to upload sensitive patient data to third-party cloud-based AI systems.
     \item \textbf{Clinical Risk:} Direct diagnostic suggestions carry high liability and often lack the nuanced reasoning required for TCM's "Bian Zheng Lun Zhi" (Pattern Differentiation and Treatment).
@@ -133,22 +131,17 @@ The project aims to achieve the following technical and functional objectives:
     \item \textbf{Modular RAG Pipeline:} Build a specialized pipeline for classical Chinese medical texts, optimized for the unique linguistic structures of the 17 target texts.
     \item \textbf{Knowledge Graph Integration:} Integrate the SymMap v2.0 knowledge graph, which contains 18,450 entities and 21,476 relationships. This includes developing a "crosswalk bridge" to map modern symptoms to classical entities.
     \item \textbf{Clause-Level Chunking:} Implement a structured chunking strategy for key texts. For instance, the \textit{Shanghan Lun} is divided into its 388 original clauses, and the \textit{Jingui Yaolue} into 489 clauses, ensuring that citations point to specific, meaningful units of text.
-    \item \textbf{Arena Evaluation System:} Develop a blind A/B evaluation system inspired by the LMSYS Chatbot Arena. This system will allow for statistical validation of the RAG output using T-Tests and Cohen's d effect size calculations.
-    \item \textbf{Local Deployment Support:} Design the system architecture to support local LLM inference via Ollama or LMStudio, addressing data privacy concerns. The current deployment uses cloud-based DashScope embeddings, but the modular design allows substitution with local embedding models for fully offline operation.
+    \item \textbf{Arena Evaluation System:} Develop a blind A/B evaluation system inspired by the LMSYS Chatbot Arena. This system will allow for statistical validation of the RAG output using paired t-tests and Cohen's $d$ effect size calculations.
+    \item \textbf{Local Deployment Support:} Design the system to support fully local deployment, including both local LLM inference (via Ollama or LMStudio) and local embedding models. The current default deployment uses DashScope cloud APIs, but every component is substitutable for offline operation---addressing data privacy concerns in clinical settings.
     \item \textbf{Transparent Citation UI:} Provide a dedicated citation panel in the frontend that allows users to click through from a claim to the exact source text, including metadata about the text's origin and context.
 \end{enumerate}
 
 \section{Scope and Limitations}
-The scope of TCM-Sage is strictly defined to ensure depth and accuracy within the project's timeframe. The system covers 17 classical TCM texts that represent the core of TCM theory and practice, including foundational theory, acupuncture, Shanghan/Wenbing, herbology, and the works of the Jin-Yuan Four Masters.
+The core knowledge base comprises 17 classical TCM texts covering foundational theory, acupuncture, Shanghan/Wenbing, herbology, and the Jin-Yuan Four Masters. These texts are the primary focus of the retrieval pipeline. However, the system does not rigidly restrict the LLM to only these sources: when queries fall outside the corpus, the LLM may draw on its own knowledge, and the built-in verifier flags such responses as ``not supported by retrieved sources'' to alert the user.
 
-However, several areas are explicitly out of scope:
-\begin{itemize}
-    \item \textbf{Specialized Fields:} Surgery, orthopedics, ophthalmology, and specialized gynecology or pediatrics texts are not included.
-    \item \textbf{Pulse Diagnosis:} Monographs dedicated solely to pulse diagnosis are excluded due to the difficulty of representing tactile data in a text-based RAG system.
-    \item \textbf{Clinical Decision Making:} The system is not intended for direct clinical decision-making. It is an evidence reference tool.
-\end{itemize}
+Areas not covered by the current corpus include surgery, orthopedics, ophthalmology, specialized gynecology or pediatrics monographs, and dedicated pulse diagnosis texts. These represent opportunities for future corpus expansion rather than fundamental limitations of the architecture. The system is not intended for direct clinical decision-making; it is an evidence reference tool.
 
-The quality of the system's output is inherently bounded by the capabilities of the underlying LLM. While the RAG pipeline provides the correct context, the final synthesis depends on the model's ability to process classical Chinese and generate coherent English or modern Chinese responses.
+The quality of the system's output is inherently bounded by the capabilities of the underlying LLM. While the RAG pipeline provides the correct context, the final synthesis depends on the model's ability to process classical Chinese and generate coherent modern Chinese or English responses. Testing with models as compact as Qwen 2.5 Turbo demonstrated that even smaller models can produce clinically sound answers when supported by the RAG pipeline.
 
 \section{Report Structure}
 The remainder of this report is organized as follows:
@@ -177,11 +170,11 @@ The remainder of this report is organized as follows:
 \chapter*{Acknowledgments}
 \addcontentsline{toc}{chapter}{Acknowledgments}
 
-I would like to express my sincere gratitude to my supervisor, Dr.\ Zhang Ce, for his guidance throughout this project. His suggestions on evaluation methodology---specifically the use of paired t-tests and Cohen's $d$ for statistical validation---and his discussions on blind A/B experimental design were instrumental in shaping the Arena evaluation framework.
+I would like to express my sincere gratitude to my supervisor, Dr.\ Zhang Ce, for his guidance, encouragement, and direction throughout this project. His suggestions on evaluation methodology---specifically the use of paired t-tests and Cohen's $d$ for statistical validation---and his discussions on blind A/B experimental design were instrumental in shaping the Arena evaluation framework. I also thank Prof.\ Wang Juncheng, the co-marker, whose feedback during the mid-point presentation challenged me to articulate the key differences between TCM-Sage and existing general-purpose LLMs, sharpening the project's focus.
 
 I am deeply grateful to Kenny Woo Shi Nam, a Year 5 student at the HKBU School of Chinese Medicine (cGPA 3.97/4.0), currently interning at Guangdong Provincial Hospital of TCM. Kenny's contributions were extensive: he advised on the selection of the 17 classical texts, conducted rigorous testing across formula retrieval, clause comparison, and clinical case analysis, and provided detailed feedback on diagnostic accuracy and system usability that directly shaped multiple system improvements.
 
-I also thank the doctoral students at Guangdong Provincial Hospital of TCM who participated in the Arena evaluation and provided clinical feedback, including specific recommendations for corpus expansion and insights on bridging classical theory with modern clinical practice.
+I also thank the doctoral students at Guangzhou University of Chinese Medicine, several of whom also practice as physicians at Guangdong Provincial Hospital of TCM, who participated in the Arena evaluation and provided clinical feedback, including specific recommendations for corpus expansion and insights on bridging classical theory with modern clinical practice.
 
 AI-powered development environments (OpenCode, Cursor) were used for code implementation assistance throughout the project, with all code reviewed and tested by the author. AI writing tools were used for grammar and style refinement during report preparation. All architectural decisions, system design, and written content are the author's own work.
 
@@ -277,7 +270,7 @@ For fully local operation without cloud API calls, install Ollama and configure:
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434/v1
 \end{verbatim}
-Note: the current deployment uses DashScope cloud embeddings. For fully offline operation, a local embedding model must be substituted in \texttt{src/embeddings.py}.
+The system supports fully local deployment. Both LLM inference and embedding can run on local hardware. The current default uses DashScope cloud APIs for convenience, but substituting a local embedding model in \texttt{src/embeddings.py} and configuring a local LLM provider enables fully offline operation.
 
 
 \bibliographystyle{abbrvnat}
