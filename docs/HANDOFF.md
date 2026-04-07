@@ -225,10 +225,11 @@ See the full audit report pasted by the user in conversation. Key highlights:
 - Proposed aims from Project Statement: evidence-synthesis tool, glass box, hybrid retrieval, citation traceability, user testing
 - Evaluation: proposal said TCMEval-SDT + Likert scale surveys — actually did Arena T-Test + qualitative feedback
   - Had a Google Form (1-7 rating) but only 2 responses during early bad version, decided not to use
-- Testers: Kenny (core contributor), 广东省中医院 doctoral students/practitioners (张新昂 included), 1 HKU TCM student
-  - Note: 张新昂 is a doctoral student too, not a separate practitioner. Most doctoral students at the hospital ARE practicing TCM physicians.
-- Kenny's contributions: 17 book selection, extensive testing, feedback, recruited other testers from HKBU SCM + 广东省中医院大德道分院
-- 张新昂: provided future direction (中西结合, modern clinical masters, recommended specific texts)
+- Testers: Kenny Woo Shi Nam (core, consented to full name), 广东省中医院 doctoral students/practitioners, 1 HKU TCM student
+  - 张新昂 is also a doctoral student. Most doctoral students are practicing TCM physicians.
+  - **Privacy: Only Kenny consented to full name. All others use pseudonyms or role descriptions only (e.g., 'Dr. Zhang', 'a doctoral student at...')**
+- Kenny's contributions: 17 book selection, extensive testing, feedback, recruited HKBU SCM + 广东省中医院大德道分院 testers
+- Dr. Zhang (pseudonym for 张新昂): future direction (中西结合, modern clinical masters, specific text recommendations)
 - Hybrid RAG was planned from start; reranker was NOT planned, emerged from scaling needs
 - 'query the entire corpus in seconds' = concept description, not about specific book count
 
