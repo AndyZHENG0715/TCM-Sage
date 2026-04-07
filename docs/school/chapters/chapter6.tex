@@ -57,9 +57,20 @@ Data privacy is addressed architecturally. Full local deployment eliminates the 
 
 The use of AI tools in developing this project is disclosed in the Acknowledgments section, in compliance with university policy.
 
-\begin{figure}[H]
+\begin{table}[H]
 \centering
-\fbox{\parbox{0.8\textwidth}{\centering [PLACEHOLDER: Comparison table --- TCM-Sage vs existing TCM AI systems across key dimensions (citation traceability, deployment model, knowledge base type, clinical approach)]}}
 \caption{Feature comparison between TCM-Sage and existing TCM AI systems.}
-\label{fig:comparison}
-\end{figure}
+\label{tab:comparison}
+\begin{tabularx}{\textwidth}{lXXXX}
+\toprule
+\textbf{Feature} & \textbf{TCM-Sage} & \textbf{HuatuoGPT} & \textbf{Qihuang 2.0} & \textbf{iFlytek TCM} \\
+\midrule
+Primary Approach & Evidence synthesis & AI Doctor (diagnosis) & AI Doctor (multimodal) & AI Doctor (primary care) \\
+Citation Traceability & Clause-level, click-through & None reported & None reported & None reported \\
+Knowledge Base & 17 classical texts + SymMap KG & Fine-tuned on medical corpus & TCM KG + tongue/pulse images & Expert KG + clinical data \\
+Local Deployment & Full local (LLM + embedding) & Cloud only & Cloud only & Cloud only \\
+Knowledge Update & Add text files, re-ingest & Retrain model & Retrain model & Retrain model \\
+Evaluation & Arena blind A/B ($p=0.0011$) & TCM licensing exam (88.1\%) & Not reported & 9,800+ assisted diagnoses \\
+\bottomrule
+\end{tabularx}
+\end{table}

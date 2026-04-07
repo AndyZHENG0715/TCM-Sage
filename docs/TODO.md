@@ -42,11 +42,10 @@ Last updated: April 8, 2026 (post-audit session)
 - [ ] Show draft to Dr. Zhang Ce for feedback
 - [ ] Compile LaTeX → PDF, verify formatting
 - [ ] Submit by 5pm April 8
+- [ ] **TCMEval-SDT benchmark** — run 50 training cases if time permits (see HANDOFF.md for details)
 
 ### Report Improvements (Important but not blocking)
-- [ ] **Uncited claims** — add citations or soften:
-  - Qihuang <15% usage, 320B params
-  - iFlytek 107 clinics, 9800 diagnoses
+- [x] ~~Uncited claims~~ — DONE: Qihuang 32B with ECNU citation, iFlytek with CNR citation, <15% deleted
 - [ ] **Bibliography** — complete entries for chatbotarena2024, luo2024medrag
 
 ### System
