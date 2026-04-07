@@ -204,7 +204,16 @@ See the full audit report pasted by the user in conversation. Key highlights:
   - Quick interim fix possible: prefix search with '中医'
 - RAG step display in UI: Show retrieval progress (classifying → retrieving → reranking → generating)
   - SSE status events + frontend display, ArenaPanel already has similar loading messages
-- TCMEval-SDT benchmark: Investigate if runnable against our system
+- TCMEval-SDT benchmark: User approved running it. Details:
+  - GitHub: https://github.com/zhuyan166/TCMEval/tree/main/evaluation/TCMEval-SDT
+  - 50 test cases (answers hidden), 200 train cases (with answers, use for self-eval)
+  - 4 tasks: clinical info extraction (20%), pathogenesis MCQ (30%), syndrome MCQ (40%), summary (10%)
+  - Need wrapper script to format RAG output as MCQ answers
+  - Token cost: ~415K tokens total, ~¥4-8 RMB
+  - Time: 2-3 hours (script + run + analysis)
+  - Strategy: run on 50 training cases. High score → include in report. Low score → discuss as limitation.
+  - Proposal mentioned this benchmark, so better to have tried than not
+  - DO THIS AFTER REPORT FIXES ARE DONE
 - Adaptive Retrieval merged with classifier: 'general' category skips retrieval entirely
 
 ## 8. Report Fixes Still Needed
