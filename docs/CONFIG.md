@@ -114,7 +114,7 @@ TCM-Sage now includes an intelligent query classification system that automatica
 `ARENA_MODELS` overrides the arena tier-to-model mapping as a JSON string.
 
 ```bash
-ARENA_MODELS='{"flash":"qwen-flash","plus":"qwen-plus","max":"qwen-max"}'
+ARENA_MODELS='{"flash":"qwen-turbo","plus":"qwen-plus","max":"qwen-max"}'
 ARENA_STREAM_TIMEOUT_SECONDS=60  # Optional timeout for arena SSE responses
 ```
 

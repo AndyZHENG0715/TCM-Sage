@@ -1,3 +1,5 @@
+**Generated:** 2026-04-08 | **See also:** root AGENTS.md, web/components/AGENTS.md
+
 # web/ — Next.js Frontend
 
 ## Overview
@@ -12,26 +14,22 @@ web/
 │   ├── page.tsx            # Main chat page
 │   ├── arena/page.tsx      # Arena blind A/B evaluation page
 │   ├── source/[chunkId]/   # Citation drill-down page
-│   ├── source/[chunkId]/   # Citation drill-down page
 │   └── api/backend/[...path]/ # Proxy to FastAPI
-├── components/             # React components (PascalCase.tsx)
+├── components/             # React components (see web/components/AGENTS.md)
 │   ├── MessageBubble.tsx   # Chat message + citation markers
 │   ├── ArenaPanel.tsx      # Arena response panel (reuses shared markdown)
 │   ├── ArenaVoteBar.tsx    # Arena voting UI (A/B/Tie)
 │   ├── ArenaReveal.tsx     # Arena reveal overlay with citations
 │   ├── ArenaModelSelector.tsx # Model preset chip selector
 │   ├── CitationPanel.tsx   # Source context panel
-│   ├── CitationPanel.tsx   # Source context panel
 │   └── KGViewer.tsx        # Knowledge graph visualization
 ├── hooks/                  # React hooks (useX.ts)
 │   ├── useChat.ts          # SSE streaming + message state
 │   ├── useArena.ts         # Arena dual-stream SSE + voting state
 │   └── useSettings.ts      # Runtime settings
-│   └── useSettings.ts      # Runtime settings
 └── lib/                    # Utilities
     ├── api.ts              # Backend API client (+arena functions)
     ├── markdown.ts         # Shared markdown rendering (citations, formatting)
-    ├── types.ts            # TypeScript types (mirror src/citation_types.py)
     ├── types.ts            # TypeScript types (mirror src/citation_types.py)
     └── citations.ts        # Display helpers
 ```

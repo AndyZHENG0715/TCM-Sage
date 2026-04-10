@@ -227,7 +227,7 @@
     "arenaModels": "競技場模型",
     "arenaModelsDesc": "競技場盲評使用的模型 ID，對應 Flash/Plus/Max 三個檔位。",
     "flashLabel": "Flash（快速）",
-    "flashPlaceholder": "例如 qwen-flash",
+    "flashPlaceholder": "例如 qwen-turbo",
     "plusLabel": "Plus（均衡）",
     "plusPlaceholder": "例如 qwen-plus",
     "maxLabel": "Max（旗艦）",

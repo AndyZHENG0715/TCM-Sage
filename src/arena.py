@@ -32,7 +32,7 @@ load_dotenv()
 # Arena model tiers — override with ARENA_MODELS env var (JSON string)
 # ---------------------------------------------------------------------------
 _DEFAULT_ARENA_MODELS: Dict[str, str] = {
-    "flash": "qwen-flash",
+    "flash": "qwen-turbo",
     "plus": "qwen-plus",
     "max": "qwen-max",
 }

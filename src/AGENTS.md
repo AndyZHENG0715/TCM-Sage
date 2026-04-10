@@ -1,3 +1,5 @@
+**Generated:** 2026-04-08 | **See also:** root AGENTS.md for GSD workflow
+
 # src/ — Python RAG Core
 
 ## Overview
@@ -47,6 +49,7 @@ RAG pipeline, FastAPI server, knowledge graph, and shared helpers. All productio
 | Graph schema/import | `graph_builder.py` loader; scripts in `scripts/` |
 | Tests | `test_<feature>.py` colocated here |
 | Arena endpoints | `api.py` (arena routes appended at bottom) + `arena.py` |
+|| Test patterns | `test_*.py` colocated in src/ — no pytest, run directly with venv python |
 
 ## Tests
 
