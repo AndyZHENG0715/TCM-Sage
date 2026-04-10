@@ -1,0 +1,18 @@
+{
+  "name": "tcm-sage-presentation",
+  "private": true,
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@iconify-json/carbon": "^1.2.20",
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/ph": "^1.2.2",
+    "@iconify-json/tabler": "^1.2.33",
+    "@slidev/cli": "^52.14.0",
+    "@slidev/theme-default": "latest",
+    "@slidev/theme-seriph": "^0.25.0"
+  }
+}
