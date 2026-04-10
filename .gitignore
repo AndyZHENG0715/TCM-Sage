@@ -252,3 +252,17 @@ vectorstore_backup_*/
 
 # Misc
 nul
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex
+*.synctex.gz
+*.toc
+*.xdv
+*.log
+docs/report/FYP_Final_Report_Turnitin.*
