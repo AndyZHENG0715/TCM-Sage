@@ -21,6 +21,26 @@ import { cn } from "@/lib/utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
+// Print mode: ?print=true switches chart colors for white-background export
+const isPrintMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('print') === 'true';
+
+// White background plugin for print mode chart downloads
+if (isPrintMode) {
+  ChartJS.register({
+    id: 'printBg',
+    beforeDraw: (chart) => {
+      const ctx = chart.canvas.getContext('2d');
+      if (ctx) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
+      }
+    },
+  });
+}
+
 type QueryResult = {
   query: string;
   winner: string;
@@ -110,7 +130,11 @@ export default function ArenaStatsPage() {
     );
   }
 
-  const chartColors = { rag: "#19e6d4", plain: "#fbbf24", tie: "#6b7280" };
+  const textColor = isPrintMode ? '#1a1a1a' : '#F3EFE0';
+  const axisColor = isPrintMode ? '#444444' : '#9ca3af';
+  const gridColor = isPrintMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+  const borderCol = isPrintMode ? '#ffffff' : '#112120';
+  const chartColors = { rag: '#19e6d4', plain: '#fbbf24', tie: '#6b7280' };
 
   const barData = {
     labels: [t.arenaStats.ragWins, t.arenaStats.llmWins, t.arenaStats.ties],
@@ -120,7 +144,7 @@ export default function ArenaStatsPage() {
         data: [stats.rag_win_rate, stats.plain_win_rate, stats.tie_rate],
         backgroundColor: [chartColors.rag, chartColors.plain, chartColors.tie],
         borderWidth: 1,
-        borderColor: "#112120",
+        borderColor: borderCol,
       },
     ],
   };
@@ -133,13 +157,13 @@ export default function ArenaStatsPage() {
       title: {
         display: true,
         text: t.arenaStats.winRate,
-        color: "#F3EFE0",
+        color: textColor,
         font: { size: 16, family: "serif" },
       },
       datalabels: {
         anchor: "end",
         align: "top",
-        color: "#F3EFE0",
+        color: textColor,
         font: { weight: "bold", size: 14 },
         formatter: (value: number) => value.toFixed(1) + "%",
       },
@@ -148,12 +172,12 @@ export default function ArenaStatsPage() {
       y: {
         beginAtZero: true,
         max: 100,
-        title: { display: true, text: "Percentage (%)", color: "#9ca3af" },
-        ticks: { color: "#9ca3af" },
-        grid: { color: "rgba(255, 255, 255, 0.1)" },
+        title: { display: true, text: "Percentage (%)", color: axisColor },
+        ticks: { color: axisColor },
+        grid: { color: gridColor },
       },
       x: {
-        ticks: { color: "#F3EFE0" },
+        ticks: { color: textColor },
         grid: { display: false },
       },
     },
@@ -165,7 +189,7 @@ export default function ArenaStatsPage() {
       {
         data: [stats.rag_wins, stats.plain_wins, stats.ties],
         backgroundColor: [chartColors.rag, chartColors.plain, chartColors.tie],
-        borderColor: "#112120",
+        borderColor: borderCol,
         borderWidth: 2,
       },
     ],
@@ -175,15 +199,15 @@ export default function ArenaStatsPage() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: "bottom" as const, labels: { color: "#F3EFE0" } },
+      legend: { position: 'bottom' as const, labels: { color: textColor } },
       title: {
         display: true,
         text: t.arenaStats.voteDistribution,
-        color: "#F3EFE0",
+        color: textColor,
         font: { size: 16, family: "serif" },
       },
       datalabels: {
-        color: "#F3EFE0",
+        color: textColor,
         font: { weight: "bold", size: 13 },
         formatter: (value: number, ctx: ChartDataLabelsContext) => {
           const data = ctx.dataset.data as number[];

@@ -96,7 +96,7 @@ Each incoming query is first classified by a dedicated classifier LLM (temperatu
 The classifier, main LLMs, and verifier can each be configured with independent providers and models via environment variables, allowing fine-grained control over cost and quality trade-offs.
 
 \subsection{System Prompt Architecture}
-We use \texttt{ChatPromptTemplate.from_messages} to maintain a clean separation between the \texttt{SystemMessage} and the \texttt{UserMessage}. Empirical testing showed that merging these into a single string caused the model to ignore complex formatting constraints.
+We use \texttt{ChatPromptTemplate.from\_messages()} to maintain a clean separation between the \texttt{SystemMessage} and the \texttt{UserMessage}. Empirical testing showed that merging these into a single string caused the model to ignore complex formatting constraints.
 
 The \texttt{DEFAULT\_SYSTEM\_PROMPT} incorporates several professional frameworks:
 \begin{itemize}
@@ -135,6 +135,52 @@ The system supports Traditional Chinese (default), Simplified Chinese, and Engli
     \item \textbf{Citation Panel:} Clicking a citation number opens a side panel displaying the full source text and a mini knowledge graph view (built with xyflow/React Flow) showing the entity and its immediate relationships.
     \item \textbf{KG Explorer:} A dedicated \texttt{/kg/[entityId]} route provides a full-page \textbf{Cytoscape.js} graph explorer, allowing users to browse the knowledge graph, expand nodes on click, and search for specific entities.
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/ui-main-chat.png}
+    \caption{Citation Panel showing the original source text with click-through to full passage.}
+    \label{fig:ui_main}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/ui-kg-main-chat.png}
+    \caption{Citation Panel showing the mini knowledge graph view for an entity.}
+    \label{fig:ui_kg_cite}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/ui-arena.png}
+\caption{The Arena blind A/B evaluation interface with two simultaneous response streams.}
+\label{fig:ui_arena}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/ui-kg-explorer.png}
+    \caption{Full-page Knowledge Graph explorer with entity search and click-to-expand.}
+    \label{fig:ui_kg}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/ui-full-text.png}
+    \caption{Full source text viewer showing the original classical passage with metadata.}
+    \label{fig:ui_text}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{figures/ui-settings.png}
+\caption{The Settings panel allowing configuration of LLM provider, model, and temperature.}
+\label{fig:ui_settings}
+\end{figure}
 
 \section{Implementation Challenges and Solutions}
 
