@@ -36,7 +36,7 @@ The system is built on a Modular RAG paradigm to handle the complexities of clas
 The project is in active development approaching FYP presentation:
 
 - ✅ Next.js 16 web interface and FastAPI backend are production-usable.
-- ✅ 17 classical TCM texts ingested (3.72M characters, 11,522+ chunks) with DashScope text-embedding-v4.
+- ✅ 17 classical TCM texts ingested (3.72M characters, 12,204 chunks) with DashScope text-embedding-v4.
 - ✅ Clause-level chunking for 伤寒论 (398条) and 金匮要略 (489条) with contextual headers.
 - ✅ Hybrid retrieval (vector + SymMap 2.0 KG) with jieba-enhanced entity matching.
 - ✅ Reranker (qwen3-rerank) for improved retrieval relevance ordering.
@@ -45,14 +45,14 @@ The project is in active development approaching FYP presentation:
 - ✅ Markdown-formatted RAG context (Pattern Priming) producing 3.7x longer, well-structured answers.
 - ✅ Multi-provider LLM support (Alibaba/Qwen, Gemini, OpenAI, Anthropic).
 - ✅ Welcome modal, notice banner, Google Form feedback integration.
-- 🔄 KG subgraph explorer page planned.
+- ✅ KG subgraph explorer page (`/kg/[entityId]`) with interactive graph visualization.
 
 ## Setup and Installation
 
 1. **Clone the repository:**
     ```bash
-    git clone [Your GitHub Repository URL]
-    cd tcm-sage
+    git clone https://github.com/AndyZHENG0715/TCM-Sage.git
+    cd TCM-Sage
     ```
 
 2. **Create a Python virtual environment (required):**
@@ -145,10 +145,53 @@ A blind A/B comparison system where TCM practitioners evaluate RAG-enhanced resp
 
 ### 📊 **Arena Statistics & T-Test**
 Live statistical analysis of arena votes with downloadable bar charts and pie charts. Computes t-statistic, p-value, Cohen's d effect size, and significance interpretation for FYP presentation.
-A blind A/B comparison system where TCM practitioners evaluate RAG-enhanced responses against plain LLM responses without knowing which is which. Results are analyzed with paired T-Test for statistical proof of RAG effectiveness.
 
 ### 🌐 **Multi-Provider Support**
 Seamlessly switch between Alibaba Cloud, Google, OpenAI, and Anthropic for maximum flexibility and availability.
 
 ## Configuration
-See `docs/CONFIG.md` for detailed configuration options including retrieval parameters, model selection, and graph depth settings.
+See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for detailed configuration options including provider setup, retrieval parameters, model selection, and graph depth settings.
+
+## Project Structure
+
+```
+TCM-Sage/
+├── src/                    # Python RAG core (FastAPI, LangChain, retriever, arena)
+│   ├── api.py              # FastAPI server (SSE streaming, CORS, health)
+│   ├── main.py             # CLI entry point + LLM factory, prompts, classification
+│   ├── retriever.py        # HybridRetriever — vector + graph ensemble
+│   ├── graph_builder.py    # TCMKnowledgeGraph — NetworkX loader, traversal
+│   ├── ingest.py           # Build vector index + chunks.json
+│   ├── arena.py            # Arena blind A/B evaluation + vote storage
+│   ├── embeddings.py       # DashScope text-embedding-v4 + qwen3-rerank
+│   └── config.py           # Central paths and defaults
+├── web/                    # Next.js 16 frontend
+│   ├── app/                # Routes: chat, arena/, arena/stats, kg/, source/
+│   ├── components/         # UI components (CitationPanel, KGViewer, etc.)
+│   ├── hooks/              # React hooks (useChat, useArena, useSettings)
+│   ├── i18n/               # Chinese/English UI translations
+│   └── lib/                # API client, markdown renderer, shared types
+├── data/
+│   ├── source/             # 17 classical TCM .txt corpus (UTF-8)
+│   ├── processed/          # chunks.json + ingest_checkpoint.json
+│   ├── graph/symmap/       # SymMap v2.0 KG JSON + raw xlsx
+│   ├── graph/crosswalk/    # RAG↔SymMap entity bridge (approved/pending CSV)
+│   └── feedback/           # Arena votes (arena_votes.jsonl)
+├── scripts/                # Utility and test scripts
+├── vectorstore/            # ChromaDB persistence (generated)
+├── presentation/           # Slidev FYP presentation
+├── docs/                   # Project documentation
+│   ├── ARCHITECTURE.md     # System architecture
+│   ├── CONFIGURATION.md    # Configuration reference
+│   ├── GETTING-STARTED.md  # First-time setup guide
+│   ├── DEVELOPMENT.md      # Developer guide
+│   ├── TESTING.md          # Testing guide
+│   ├── API.md              # API reference
+│   ├── HANDOFF.md          # Context handoff document
+│   └── report/             # FYP Final Report (LaTeX + PDF)
+└── requirements.txt        # Python dependencies
+```
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
