@@ -22,7 +22,7 @@ Last updated: April 8, 2026, after Final Report submission.
 
 ---
 
-## 2. File Structure (reorganized Apr 8)
+## 2. File Structure (reorganized Apr 10)
 
 ```
 docs/
@@ -35,10 +35,14 @@ docs/
 ├── submissions/               # Past deliverables (progress reports, project statement)
 ├── school/                    # School-provided handbooks only
 ├── research/                  # Literature review notes
-├── project/                   # Project planning docs
+├── project/                   # Project planning docs (Evaluation Plan, Timeline)
 ├── HANDOFF.md                 # This file
-├── TODO.md
-└── CONFIG.md
+├── ARCHITECTURE.md            # System architecture (generated Apr 10)
+├── CONFIGURATION.md           # Configuration reference (generated Apr 10, replaces CONFIG.md)
+├── GETTING-STARTED.md         # First-time setup guide (generated Apr 10)
+├── DEVELOPMENT.md             # Developer guide (generated Apr 10)
+├── TESTING.md                 # Testing guide (generated Apr 10)
+└── API.md                     # API reference (generated Apr 10)
 ```
 
 ---
@@ -155,11 +159,12 @@ docs/
 
 ## 8. Branch Status
 
-- **Branch**: feature/premium-ui (ahead of main by ~30 commits)
-- **Report changes**: NOT committed/pushed (intentional — avoid AI trail in git history)
-- **Code changes**: Most committed and pushed
+- **Branch**: main (feature/premium-ui merged and deleted Apr 10)
+- **All changes**: Committed and pushed to origin/main
 - **Vectorstore**: 12,628 docs in ChromaDB (re-ingested this session)
 - **Arena**: 59 votes live (38 RAG / 15 Plain / 6 Tie)
+- **Presentation**: Built with Slidev (presentation/slides.md), 22 main + 8 backup slides
+- **Documentation**: 8 canonical docs generated, pending verification (/gsd-docs-update --verify-only)
 
 ---
 
@@ -192,10 +197,13 @@ docs/
   - Texts we don't have: “医宗金鉴怎么讲路极法的” (医宗金鉴 is not in corpus)
   - Modern concepts: “中药注射液的临床应用” (modern, no classical basis)
   - Cross-domain: “中医骨伤科的设置标准” (orthopedics, explicitly out of scope)
-### Agent-Updated Docs (unverified quality)
-- docs/CONFIG.md — agent updated but quality not checked
-- .planning/codebase/ARCHITECTURE.md — agent updated but quality not checked
-- web/README.md — agent replaced boilerplate but quality not checked
+### Agent-Generated Docs (pending verification)
+- docs/ARCHITECTURE.md — generated Apr 10, absorbs MVP_and_Architecture.md + architecture_diagrams.md
+- docs/CONFIGURATION.md — generated Apr 10, absorbs CONFIG.md
+- docs/GETTING-STARTED.md, DEVELOPMENT.md, TESTING.md, API.md — generated Apr 10
+- CONTRIBUTING.md — generated Apr 10
+- README.md — supplemented Apr 10 (fixed clone URL, chunk count, KG explorer status, added Project Structure + License sections)
+- Run /gsd-docs-update --verify-only to fact-check all generated docs
 
 ### 国家医学大纲 Quality Check
 - User asked to evaluate if it's useful or just political — never researched
