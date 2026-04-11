@@ -187,7 +187,6 @@ TCM-Sage/
 │   ├── DEVELOPMENT.md      # Developer guide
 │   ├── TESTING.md          # Testing guide
 │   ├── API.md              # API reference
-│   ├── HANDOFF.md          # Context handoff document
 │   └── report/             # FYP Final Report (LaTeX + PDF)
 └── requirements.txt        # Python dependencies
 ```

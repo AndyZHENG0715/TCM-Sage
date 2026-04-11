@@ -316,7 +316,6 @@ There is no automated CI pipeline. All verification is manual.
 |----------|---------|
 | [`docs/CONFIGURATION.md`](CONFIGURATION.md) | Full environment variable reference |
 | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) | System design and component overview |
-| [`docs/HANDOFF.md`](HANDOFF.md) | Primary cross-session context document |
 | `src/AGENTS.md` | Python backend conventions and data flow |
 | `web/AGENTS.md` | Next.js frontend conventions |
 | `scripts/AGENTS.md` | Utility script catalogue |

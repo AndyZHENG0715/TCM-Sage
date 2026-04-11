@@ -216,6 +216,8 @@ openspec/
 # Agent
 .agent/
 AGENTS.md
+docs/HANDOFF.md
+docs/reviews/ai-evaluations.md
 
 # KG extraction audit logs (local failure output)
 audit_report.txt
