@@ -48,7 +48,7 @@ LLM_PROVIDER=alibaba
 DASHSCOPE_API_KEY=your-api-key-here
 ```
 
-See [`docs/CONFIG.md`](CONFIG.md) for the full variable reference.
+See [`docs/CONFIGURATION.md`](CONFIGURATION.md) for the full variable reference.
 
 ### 4. Install frontend dependencies
 
@@ -314,7 +314,7 @@ There is no automated CI pipeline. All verification is manual.
 
 | Document | Purpose |
 |----------|---------|
-| [`docs/CONFIG.md`](CONFIG.md) | Full environment variable reference |
+| [`docs/CONFIGURATION.md`](CONFIGURATION.md) | Full environment variable reference |
 | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) | System design and component overview |
 | [`docs/HANDOFF.md`](HANDOFF.md) | Primary cross-session context document |
 | `src/AGENTS.md` | Python backend conventions and data flow |
