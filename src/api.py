@@ -99,7 +99,7 @@ class ArenaQueryRequest(BaseModel):
     question: str
     chat_history_a: list[dict] = Field(default_factory=list)
     chat_history_b: list[dict] = Field(default_factory=list)
-    model_name: str = "qwen-plus"
+    model_name: str = "qwen-flash"
     session_id: str = ""
     round_number: int = 1
 

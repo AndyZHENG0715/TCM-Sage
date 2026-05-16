@@ -236,6 +236,7 @@ export default function ArenaPage() {
                 <p className="text-xs text-gray-400">{t.arena.guide.footer}</p>
               </div>
               <button
+                type="button"
                 onClick={dismissGuide}
                 className="w-full rounded-lg bg-primary py-2.5 font-semibold text-background-dark transition-colors hover:bg-primary/90"
               >

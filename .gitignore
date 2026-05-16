@@ -240,6 +240,8 @@ gha-creds-*.json
 .playwright-mcp/
 .streamlit/
 .cursor/
+.codex/
+tmp/
 
 # Environment files
 .env.local
@@ -268,3 +270,12 @@ nul
 *.xdv
 *.log
 docs/report/FYP_Final_Report_Turnitin.*
+
+# Generated FYP handoff/submission artifacts
+docs/*.zip
+docs/report/humanized/
+docs/report/FYP_Final_Report_Humanized*.pdf
+docs/report/FYP Trunitin.pdf
+docs/submissions/poster_session/*.zip.*
+presentation/test_generalist.md
+data/feedback/*Expert Feedback*.csv

@@ -38,7 +38,7 @@ export interface ArenaState {
     showReveal: boolean;
 }
 
-export function useArena(initialSessionId: string, initialModel = "qwen-turbo") {
+export function useArena(initialSessionId: string, initialModel = "qwen-flash") {
     const [state, setState] = useState<ArenaState>({
         responseA: "",
         responseB: "",
@@ -162,7 +162,7 @@ export function useArena(initialSessionId: string, initialModel = "qwen-turbo") 
                     isStreamingA: false,
                     isStreamingB: false,
                     canVote: (collectedA.length > 0 || prev.responseA.length > 0) &&
-                             (collectedB.length > 0 || prev.responseB.length > 0),
+                        (collectedB.length > 0 || prev.responseB.length > 0),
                 }));
             } catch (err) {
                 if ((err as Error).name !== "AbortError") {

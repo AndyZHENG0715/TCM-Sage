@@ -362,7 +362,7 @@ Execute a blind A/B arena comparison. One side receives the full RAG pipeline re
   "question": "What are the indications for 桂枝汤?",
   "chat_history_a": [],
   "chat_history_b": [],
-  "model_name": "qwen-plus",
+  "model_name": "qwen-flash",
   "session_id": "arena-session-abc123",
   "round_number": 1
 }
@@ -373,7 +373,7 @@ Execute a blind A/B arena comparison. One side receives the full RAG pipeline re
 | `question` | `string` | — | **Required.** Must not be empty. |
 | `chat_history_a` | `array` | `[]` | Chat history for panel A |
 | `chat_history_b` | `array` | `[]` | Chat history for panel B |
-| `model_name` | `string` | `"qwen-plus"` | LLM model name for both sides |
+| `model_name` | `string` | `"qwen-flash"` | LLM model name for both sides |
 | `session_id` | `string` | `""` | Client-assigned session identifier |
 | `round_number` | `integer` | `1` | Round counter within a session |
 
@@ -406,7 +406,7 @@ curl -N -X POST http://127.0.0.1:8000/arena/query \
   -H "Content-Type: application/json" \
   -d '{
     "question": "Explain Yin-Yang theory",
-    "model_name": "qwen-plus",
+    "model_name": "qwen-flash",
     "session_id": "my-session-001",
     "round_number": 1
   }'
@@ -426,7 +426,7 @@ Submit a user vote for a completed arena round.
   "query": "What are the indications for 桂枝汤?",
   "response_a": "Panel A full response text...",
   "response_b": "Panel B full response text...",
-  "model_name": "qwen-plus",
+  "model_name": "qwen-flash",
   "position_mapping": { "a": "rag", "b": "plain" },
   "vote": "a",
   "comment": "Panel A gave more specific classical citations.",
@@ -464,7 +464,7 @@ curl -X POST http://127.0.0.1:8000/arena/vote \
     "query": "Explain Yin-Yang",
     "response_a": "...",
     "response_b": "...",
-    "model_name": "qwen-plus",
+    "model_name": "qwen-flash",
     "position_mapping": {"a": "rag", "b": "plain"},
     "vote": "a"
   }'
