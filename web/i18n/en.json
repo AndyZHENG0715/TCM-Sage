@@ -227,7 +227,7 @@
     "arenaModels": "Arena Models",
     "arenaModelsDesc": "Model IDs used for Arena blind evaluation. These map to the flash/plus/max tiers.",
     "flashLabel": "Flash (Fast)",
-    "flashPlaceholder": "e.g. qwen-turbo",
+    "flashPlaceholder": "e.g. qwen-flash",
     "plusLabel": "Plus (Balanced)",
     "plusPlaceholder": "e.g. qwen-plus",
     "maxLabel": "Max (Quality)",

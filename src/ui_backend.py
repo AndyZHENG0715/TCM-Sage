@@ -38,6 +38,7 @@ from main import (  # type: ignore  # pylint: disable=import-error
     get_query_severity,
     vector_search_with_scores,
     verify_answer,
+    verify_citation_bounds,
 )
 
 load_dotenv()
@@ -639,6 +640,27 @@ def _prepend_chat_history(context: str, chat_history: list[dict]) -> str:
     return f"Chat History:\n{history_text}\n\n{context}"
 
 
+def _finalize_verification(
+    answer: str,
+    citations: list[dict],
+    verification_result: str,
+) -> tuple[str, dict, dict]:
+    citation_bounds = verify_citation_bounds(answer, len(citations))
+    final_result = verification_result
+    verification_payload = build_verification_payload(final_result)
+
+    if not citation_bounds["is_valid"]:
+        final_result = "UNSUPPORTED"
+        out_of_range = ", ".join(str(n) for n in citation_bounds["out_of_range"])
+        verification_payload = build_verification_payload(final_result)
+        verification_payload["explanation"] = (
+            f"{verification_payload['explanation']} The answer cites unavailable source number(s): "
+            f"{out_of_range}."
+        )
+
+    return final_result, verification_payload, citation_bounds
+
+
 def run_query(user_query: str, runtime_settings: Dict[str, Any] | None = None) -> Dict[str, Any]:
     if not user_query.strip():
         raise ValueError("Query must not be empty.")
@@ -685,6 +707,12 @@ def run_query(user_query: str, runtime_settings: Dict[str, Any] | None = None) -
     except Exception as verify_error:  # pragma: no cover - best effort verification
         print(f"[Debug] UI Backend Verification Error: {verify_error}")
 
+    verification_result, verification_payload, citation_bounds = _finalize_verification(
+        answer,
+        citations,
+        verification_result,
+    )
+
     return {
         "question": user_query,
         "answer": answer,
@@ -694,8 +722,9 @@ def run_query(user_query: str, runtime_settings: Dict[str, Any] | None = None) -
         "provider": config.provider,
         "model": config.model,
         "retrieval_k": config.retrieval_k,
-        "verification": build_verification_payload(verification_result),
+        "verification": verification_payload,
         "verification_result": verification_result,
+        "citation_bounds": citation_bounds,
         "citations": citations,
     }
 
@@ -768,6 +797,12 @@ def run_query_stream(
     except Exception as verify_error:  # pragma: no cover - best effort verification
         print(f"[Debug] UI Backend Verification Error: {verify_error}")
 
+    verification_result, verification_payload, citation_bounds = _finalize_verification(
+        collected_answer,
+        citations,
+        verification_result,
+    )
+
     yield {
         "type": "metadata",
         "question": user_query,
@@ -778,8 +813,9 @@ def run_query_stream(
         "provider": config.provider,
         "model": config.model,
         "retrieval_k": config.retrieval_k,
-        "verification": build_verification_payload(verification_result),
+        "verification": verification_payload,
         "verification_result": verification_result,
+        "citation_bounds": citation_bounds,
         "citations": citations,
         "debug_context": generation_context,
     }

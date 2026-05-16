@@ -14,7 +14,7 @@ export const ARENA_SAMPLE_PROMPTS = [
 ] as const satisfies readonly { label: string; query: string }[];
 
 export const ARENA_MODEL_PRESETS = [
-    { label: "Flash", value: "qwen-turbo", description: "轻量快速" },
+    { label: "Flash", value: "qwen-flash", description: "轻量快速" },
     { label: "Plus", value: "qwen-plus", description: "均衡性价比" },
     { label: "Max", value: "qwen-max", description: "旗舰性能" },
 ] as const satisfies readonly {

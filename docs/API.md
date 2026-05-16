@@ -158,7 +158,7 @@ Emitted once after the full answer is generated. Contains citations, verificatio
 
 ```
 event: metadata
-data: {"type":"metadata","question":"...","answer":"...","severity":"informational","temperature":0.1,"timestamp":"2026-04-11T10:00:00","provider":"alibaba","model":"qwen-plus","retrieval_k":5,"verification":{"result":"SUPPORTED","label":"✓ Verified"},"verification_result":"SUPPORTED","citations":[...],"debug_context":"..."}
+data: {"type":"metadata","question":"...","answer":"...","severity":"informational","temperature":0.1,"timestamp":"2026-04-11T10:00:00","provider":"alibaba","model":"qwen-plus","retrieval_k":5,"verification":{"status":"SUPPORTED","explanation":"The answer appears supported by the retrieved citations."},"verification_result":"SUPPORTED","citation_bounds":{"is_valid":true,"out_of_range":[],"found_citations":[1,2]},"citations":[...],"debug_context":"..."}
 ```
 
 **`metadata` payload fields:**
@@ -174,8 +174,9 @@ data: {"type":"metadata","question":"...","answer":"...","severity":"information
 | `provider` | `string` | LLM provider used |
 | `model` | `string` \| `null` | Model name used |
 | `retrieval_k` | `number` | Number of chunks retrieved |
-| `verification` | `object` | `{ "result": "SUPPORTED"|"UNSUPPORTED"|..., "label": "..." }` |
+| `verification` | `object` | `{ "status": "SUPPORTED"|"UNSUPPORTED"|..., "explanation": "..." }` |
 | `verification_result` | `string` | Raw verifier output |
+| `citation_bounds` | `object` | Inline citation range check with `is_valid`, `out_of_range`, and `found_citations` |
 | `citations` | `array` | List of `TextCitation` and `GraphCitation` objects |
 | `debug_context` | `string` | Full formatted context sent to the LLM (for debugging) |
 
@@ -478,7 +479,7 @@ Returns the available model presets for the arena.
 **Response `200 OK`:**
 ```json
 {
-  "flash": "qwen-turbo",
+  "flash": "qwen-flash",
   "plus": "qwen-plus",
   "max": "qwen-max"
 }
@@ -486,7 +487,7 @@ Returns the available model presets for the arena.
 
 Default presets can be extended by setting `ARENA_MODELS` as a JSON string in `.env`:
 ```bash
-ARENA_MODELS='{"flash":"qwen-turbo","plus":"qwen-plus","max":"qwen-max"}'
+ARENA_MODELS='{"flash":"qwen-flash","plus":"qwen-plus","max":"qwen-max"}'
 ```
 
 **Example:**

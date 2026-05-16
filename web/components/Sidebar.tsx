@@ -266,10 +266,12 @@ export function Sidebar({
                                 e.stopPropagation();
                                 onOpenSettings();
                             }}
-                            className="min-h-11 min-w-11 p-2 text-gray-400 transition-all hover:rotate-90 hover:text-parchment"
+                            className="group flex min-h-11 min-w-11 items-center justify-center p-2 text-gray-400 transition-colors hover:text-parchment"
                             aria-label={t.settings.title}
                         >
-                            <Settings size={18} />
+                            <span className="inline-flex origin-center transition-transform duration-200 ease-out group-hover:rotate-90">
+                                <Settings size={18} />
+                            </span>
                         </button>
                     )}
                 </div>

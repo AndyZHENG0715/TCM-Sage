@@ -195,7 +195,7 @@ Do **not** use the strings `"KG"` or `"Knowledge Graph"` in any context passed t
 
 ### DashScope batch limits
 
-The DashScope embedding API (`text-embedding-v4`) and reranker (`qwen3-rerank`) both have a **batch limit of 10 documents**. The `DashScopeEmbeddings` class in `src/embeddings.py` handles batching automatically during ingestion. Do not pass more than 10 items in a single API call.
+The DashScope embedding API (`text-embedding-v4`) has a **batch limit of 10 texts**. The `DashScopeEmbeddings` class in `src/embeddings.py` handles embedding batching automatically during ingestion. The `qwen3-rerank` endpoint supports up to 500 documents per request, but keep request sizes bounded to the configured retrieval window.
 
 ### Frontend API calls
 
@@ -210,9 +210,10 @@ All backend calls from the frontend must go through the `/api/backend/` Next.js 
 | Feature type | Location |
 |---|---|
 | New retrieval / ranking logic | Extend `src/retriever.py` (`HybridRetriever`) |
-| New FastAPI endpoint | `src/api.py`; mirror client call in `web/lib/api.ts` |
+| New FastAPI endpoint | Add the route wrapper in `src/api.py`; keep reusable logic in a focused helper module; mirror client call in `web/lib/api.ts` |
+| Source/book route behavior | `src/source_context.py` |
 | New graph schema or import | `src/graph_builder.py` + utility script in `scripts/` |
-| New arena endpoint | `src/api.py` (arena section) + `src/arena.py` |
+| New arena endpoint | `src/api.py` route wrapper + `src/arena.py` generation + `src/arena_stream.py` streaming + `src/arena_stats.py` statistics |
 | New standalone test | `src/test_<feature>.py` (co-located) |
 
 ### Adding a new frontend feature

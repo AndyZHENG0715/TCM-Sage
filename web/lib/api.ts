@@ -1,5 +1,6 @@
 import {
     Citation,
+    CitationBounds,
     DEFAULT_SETTINGS,
     DEFAULT_SETTINGS_CAPABILITIES,
     Settings,
@@ -81,6 +82,7 @@ export type StreamEvent =
         citations: Citation[];
         severity: "informational" | "prescriptive";
         verification?: Verification;
+        citationBounds?: CitationBounds;
     }
     | { type: "error"; message: string };
 
@@ -242,6 +244,7 @@ export async function* streamQuery(
                         citations: (parsed.citations as Citation[]) ?? [],
                         severity: parsed.severity as "informational" | "prescriptive",
                         verification: normalizeVerification(parsed),
+                        citationBounds: parsed.citation_bounds as CitationBounds | undefined,
                     };
                 } catch (error) {
                     console.error("Failed to parse metadata", error);

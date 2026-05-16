@@ -129,7 +129,10 @@ A typical query passes through the system in six stages:
 | `create_llm()` | `src/main.py` | LLM factory supporting 8 providers (alibaba, openai, google, anthropic, openrouter, together, ollama, lmstudio) with configurable temperature and streaming. |
 | `get_query_severity()` | `src/main.py` | Query classifier using a lightweight LLM to emit `informational` or `prescriptive`. Defaults to `prescriptive` on ambiguous output. |
 | `PipelineConfig` | `src/ui_backend.py` | Frozen dataclass consolidating all runtime config (provider, models, temperatures, retrieval settings, graph config) resolved from environment variables and per-request overrides. |
-| `run_query_stream()` | `src/ui_backend.py` | Core streaming pipeline: classify → retrieve → generate → verify → yield SSE chunks + metadata event. Used by both the API server and arena. |
+| `run_query_stream()` | `src/ui_backend.py` | Core streaming pipeline: classify → retrieve → generate → verify citation bounds and answer support → yield SSE chunks + metadata event. Used by both the API server and arena. |
+| `get_chunk_context()` / `get_book_text()` | `src/source_context.py` | Source drill-down helpers for reconstructing full chapter context and loading raw book text. |
+| `generate_arena_sse_stream()` | `src/arena_stream.py` | Dual-panel Arena SSE scheduler with random A/B assignment and timeout handling. |
+| `compute_arena_stats()` | `src/arena_stats.py` | Arena JSONL vote aggregation, paired t-test, Cohen's d, and per-query result breakdown. |
 | `SentenceAwareChineseTextSplitter` | `src/ingest.py` | Text splitter respecting Chinese sentence boundaries (。；！？). Produces ~500 char chunks with configurable overlap. |
 | `TextCitation` / `GraphCitation` | `src/citation_types.py` | TypedDict schemas for structured citation metadata passed to the frontend in the SSE metadata event. |
 
@@ -139,8 +142,11 @@ A typical query passes through the system in six stages:
 TCM-Sage/
 ├── src/                    # All production Python — RAG core, API, KG, arena
 │   ├── main.py             # CLI entry, LLM factory, prompts, classification, verification
-│   ├── api.py              # FastAPI server (SSE streaming, CORS, health, source context, arena endpoints)
+│   ├── api.py              # Thin FastAPI route layer (SSE, CORS, health, source, arena)
 │   ├── ui_backend.py       # Cached resources, PipelineConfig, run_query_stream
+│   ├── source_context.py   # Source drill-down and raw book text lookup
+│   ├── arena_stream.py     # Arena dual-panel SSE scheduler
+│   ├── arena_stats.py      # Arena vote statistics and significance testing
 │   ├── retriever.py        # HybridRetriever — vector + graph ensemble with reranking
 │   ├── graph_builder.py    # TCMKnowledgeGraph — NetworkX loader, jieba entity matching, BFS traversal
 │   ├── crosswalk_bridge.py # RAG↔SymMap entity resolution via approved CSV crosswalk
@@ -233,7 +239,7 @@ SymMap v2.0 uses modern biomedical vocabulary while the classical texts use hist
 
 ### Arena Evaluation
 
-The arena system (`src/arena.py`, `web/app/arena/`) implements blind A/B comparison: the same query is sent to both the full RAG pipeline (with TCM system prompt) and a plain LLM (with a generic "helpful assistant" prompt + DuckDuckGo search). Responses are randomly assigned to positions A/B. Users vote without knowing which is which. Results are stored in `arena_votes.jsonl` and analyzed with paired t-test, Cohen's d effect size, and win-rate charts on the statistics page (`web/app/arena/stats/`).
+The arena system (`src/arena.py`, `src/arena_stream.py`, `src/arena_stats.py`, `web/app/arena/`) implements blind A/B comparison: the same query is sent to both the full RAG pipeline (with TCM system prompt) and a plain LLM (with a generic "helpful assistant" prompt + DuckDuckGo search through the `ddgs` package). Responses are randomly assigned to positions A/B. Users vote without knowing which is which. Results are stored in `arena_votes.jsonl` and analyzed with paired t-test, Cohen's d effect size, and win-rate charts on the statistics page (`web/app/arena/stats/`).
 
 ## Supported LLM Providers
 

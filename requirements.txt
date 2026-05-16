@@ -1,10 +1,3 @@
-﻿pip.exe : WARNING: Ignoring invalid distribution ~asedpyright (D:\Dev\TCM-Sage\venv\Lib\site-packages)
-At line:1 char:1
-+ & "D:\Dev\TCM-Sage\venv\Scripts\pip.exe" freeze 2>&1 | Out-File -File ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (WARNING: Ignori...\site-packages):String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.0
 aiosignal==1.4.0
@@ -29,6 +22,7 @@ coloredlogs==15.0.1
 cryptography==46.0.3
 dashscope==1.24.0
 dataclasses-json==0.6.7
+ddgs>=9.0.0
 distro==1.9.0
 docstring_parser==0.17.0
 durationpy==0.10

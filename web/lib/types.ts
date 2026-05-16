@@ -3,6 +3,12 @@ export type Verification = {
     explanation: string;
 };
 
+export type CitationBounds = {
+    is_valid: boolean;
+    out_of_range: number[];
+    found_citations: number[];
+};
+
 export type TextCitation = {
     number: number;
     type: "text";
@@ -29,6 +35,7 @@ export type Message = {
     citations?: Citation[];
     severity?: "informational" | "prescriptive";
     verification?: Verification;
+    citationBounds?: CitationBounds;
     timestamp: number;
 };
 
@@ -81,7 +88,7 @@ export const DEFAULT_SETTINGS: Settings = {
     verifierProvider: "",
     verifierModel: "",
     arenaModels: {
-        flash: "qwen-turbo",
+        flash: "qwen-flash",
         plus: "qwen-plus",
         max: "qwen-max",
     },

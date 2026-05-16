@@ -101,7 +101,7 @@ Only set the key for the provider you are using.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ARENA_MODELS` | No | `{"flash":"qwen-turbo","plus":"qwen-plus","max":"qwen-max"}` | JSON string overriding the arena tier-to-model mapping |
+| `ARENA_MODELS` | No | `{"flash":"qwen-flash","plus":"qwen-plus","max":"qwen-max"}` | JSON string overriding the arena tier-to-model mapping |
 | `ARENA_STREAM_TIMEOUT_SECONDS` | No | `60` | Timeout in seconds for each arena SSE panel stream |
 
 ### Web Frontend / API Integration
@@ -299,7 +299,7 @@ TCM-Sage uses **DashScope text-embedding-v4** with domain-specific prefixes for 
 - **Query prefix**: `为这个中医临床问题生成语义表示以检索相关古籍段落：` (prepended to each search query)
 - **Dimensions**: 1024
 - **Batch limit**: 10 texts per API call (DashScope limit)
-- **Reranker**: `qwen3-rerank` with batch limit of 10
+- **Reranker**: `qwen3-rerank` supports up to 500 docs per request
 
 The embedding model and reranker both require `DASHSCOPE_API_KEY`, even when using a different LLM provider.
 
@@ -312,21 +312,21 @@ The Arena is a blind A/B evaluation system where TCM practitioners compare RAG-e
 The `ARENA_MODELS` environment variable maps tier names to model identifiers:
 
 ```bash
-ARENA_MODELS='{"flash":"qwen-turbo","plus":"qwen-plus","max":"qwen-max"}'
+ARENA_MODELS='{"flash":"qwen-flash","plus":"qwen-plus","max":"qwen-max"}'
 ```
 
 Default tiers:
 
 | Tier | Default Model | Use Case |
 |------|---------------|----------|
-| `flash` | `qwen-turbo` | Fast, lightweight comparisons |
+| `flash` | `qwen-flash` | Fast, lightweight comparisons |
 | `plus` | `qwen-plus` | Balanced quality/speed |
 | `max` | `qwen-max` | Maximum quality evaluation |
 
 ### Arena Behavior
 
 - **RAG side**: Uses the full TCM-Sage pipeline (retrieval + reranking + system prompt + verification)
-- **Plain side**: Uses a generic assistant prompt with DuckDuckGo web search results for grounding
+- **Plain side**: Uses a generic assistant prompt with DuckDuckGo web search results for grounding via the `ddgs` Python package
 - **Position randomization**: Which side is A vs B is randomized per query
 - **Vote storage**: Votes are stored as JSONL at `data/feedback/arena_votes.jsonl`
 - **Statistics**: T-Test analysis available at `/arena/stats` with downloadable charts
@@ -509,7 +509,7 @@ For cost-effective development and testing:
 1. **Use Ollama or LM Studio** for free local inference (GPU recommended for acceptable speed)
 2. **Start with Alibaba Cloud Model Studio** — competitive pricing for Qwen models
 3. **Use smaller/faster models** for classifier and verifier (e.g., `qwen-flash` instead of `qwen-plus`)
-4. **Use `qwen-turbo`** for arena testing instead of `qwen-max`
+4. **Use `qwen-flash`** for arena testing instead of `qwen-max`
 5. **Lower `RETRIEVAL_K`** to reduce context size and token consumption
 6. **Monitor usage** through provider dashboards — all cloud providers offer usage tracking
 

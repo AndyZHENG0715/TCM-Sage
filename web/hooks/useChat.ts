@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Citation, Message, Settings, Verification } from "@/lib/types";
+import { Citation, CitationBounds, Message, Settings, Verification } from "@/lib/types";
 import { streamQuery } from "@/lib/api";
 
 function updateLastAssistantMessage(
@@ -59,6 +59,7 @@ export function useChat(settings: Settings) {
                 const stream = streamQuery(content, chatHistory, settings);
                 let fullContent = "";
                 let citations: Citation[] = [];
+                let citationBounds: CitationBounds | undefined;
                 let severity: "informational" | "prescriptive" | undefined;
                 let verification: Verification | undefined;
 
@@ -76,6 +77,7 @@ export function useChat(settings: Settings) {
 
                     if (event.type === "metadata") {
                         citations = event.citations;
+                        citationBounds = event.citationBounds;
                         severity = event.severity;
                         verification = event.verification;
 
@@ -83,6 +85,7 @@ export function useChat(settings: Settings) {
                             updateLastAssistantMessage(prev, (message) => ({
                                 ...message,
                                 citations,
+                                citationBounds,
                                 severity,
                                 verification,
                             }))

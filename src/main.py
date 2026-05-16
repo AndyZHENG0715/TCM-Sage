@@ -727,17 +727,7 @@ def main():
         graph_depth = int(os.getenv('GRAPH_DEPTH', '1'))
 
         # Get system prompt configuration
-        system_prompt = os.getenv('SYSTEM_PROMPT')
-        if not system_prompt:
-            system_prompt = """You are an expert assistant specializing in Classical Chinese Medicine, specifically the Huangdi Neijing (黄帝内经).
-Your task is to answer questions accurately based ONLY on the provided source text.
-Your answer must be in the same language as the question.
-Avoid excessive or nested markdown formatting to reduce rendering artifacts.
-Use markdown formatting (bold, lists) conservatively to ensure clean rendering.
-DO NOT add a 'Sources:' or 'References:' list at the end of your response."""
-
-        if not system_prompt:
-            system_prompt = DEFAULT_SYSTEM_PROMPT
+        system_prompt = os.getenv('SYSTEM_PROMPT') or DEFAULT_SYSTEM_PROMPT
         system_prompt = strip_sources_directive(system_prompt)
 
         print(f"Using LLM provider: {provider}")

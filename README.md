@@ -157,7 +157,10 @@ See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for detailed configuration 
 ```
 TCM-Sage/
 ├── src/                    # Python RAG core (FastAPI, LangChain, retriever, arena)
-│   ├── api.py              # FastAPI server (SSE streaming, CORS, health)
+│   ├── api.py              # Thin FastAPI route layer (SSE, CORS, health)
+│   ├── source_context.py   # Citation source context and raw book lookup
+│   ├── arena_stream.py     # Arena dual-panel SSE scheduler
+│   ├── arena_stats.py      # Arena vote statistics and t-test analysis
 │   ├── main.py             # CLI entry point + LLM factory, prompts, classification
 │   ├── retriever.py        # HybridRetriever — vector + graph ensemble
 │   ├── graph_builder.py    # TCMKnowledgeGraph — NetworkX loader, traversal
