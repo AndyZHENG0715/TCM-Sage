@@ -118,7 +118,7 @@ This document outlines the official timeline, key stages, and deliverables for t
 
     - `Apr 8`: FYP Report for grading submitted.
 
-    - `Apr 10-16`: Oral presentation and final demonstration.
+    - `Apr 13 17:10-17:55`: Oral presentation and final demonstration.
 
     - `Apr 23`: Submit complete project archive.
 

@@ -50,7 +50,7 @@ Supervisor: **Dr. ZHANG Ce**
 
 Observer: **Prof. WANG Juncheng**
 
-April 13, 2026
+April 13, 2026 (17:10-17:55)
 
 </div>
 </div>
@@ -180,6 +180,8 @@ The limitations of web search for domain knowledge
 
 </v-clicks>
 
+<div class="mt-3 text-xs text-gray-400 text-center italic">These are not hypothetical risks — each has documented real-world evidence (see Appendix: AI投毒 Evidence).</div>
+
 <!--
 Let me explain why general AI with web search is insufficient. AI poisoning is real, citation mismatches are common, LLMs sometimes fake their search actions, and when they can't find something, they fabricate plausible excuses.
 -->
@@ -218,6 +220,8 @@ Let me explain why general AI with web search is insufficient. AI poisoning is r
 </div>
 
 </v-click>
+
+<div class="mt-2 text-xs text-gray-400 text-center italic">This architectural choice directly addresses the trust problem from the previous slide.</div>
 
 <!--
 General LLMs search the internet — unreliable, poisonable, unverifiable. TCM-Sage retrieves from curated classical texts. When RAG provides context, the LLM doesn't hallucinate.
@@ -282,6 +286,8 @@ I originally chose AI-powered course selection. My dad suggested TCM, I had frie
 **Query → Classification → Hybrid Retrieval (Vector + KG) → Reranking → Generation → Verification**
 
 </div>
+
+<div class="text-center mt-2 text-xs text-gray-400 italic">Key design principle: every retrieval step is transparent and verifiable — not a black box.</div>
 
 <!--
 Here's the system architecture. Query classification determines the LLM temperature. Hybrid retrieval runs vector search and knowledge graph search. Results are reranked, then the LLM generates with citations and verifies.
@@ -390,6 +396,8 @@ Three domain-specific optimizations: clause-level chunking, embedding upgrade wi
 
 # <carbon-trophy class="inline text-yellow-500" /> Technical Contributions
 
+<div class="text-sm text-gray-400 mt-2">These five points summarize the project's core technical contributions.</div>
+
 <v-clicks>
 
 <div class="space-y-3 mt-4">
@@ -488,6 +496,8 @@ From real TCM practitioners and students:
 | **Conclusion** | Significant preference for RAG |
 
 </div>
+
+<div class="mt-2 text-xs text-gray-400 italic">Significance (p-value) + practical impact (Cohen's d) + domain-valid testers together validate the result.</div>
 
 </div>
 <div>
@@ -606,6 +616,10 @@ layout: center
 
 </div>
 
+<div class="mt-4 text-xs text-gray-400 text-center italic">
+  <carbon-warning-alt class="inline" /> If live connectivity is unstable, I will continue with prepared screenshots and video of the same workflow.
+</div>
+
 <!--
 I'll demonstrate five features. Let me switch to the browser.
 [SWITCH TO BROWSER]
@@ -621,6 +635,8 @@ transition: fade
 ---
 
 # <carbon-warning class="inline text-orange-500" /> Limitations
+
+<div class="text-sm text-gray-400 mt-1 mb-2">All three limitations are acknowledged with current status and a clear next-step plan.</div>
 
 <v-clicks>
 
@@ -727,6 +743,8 @@ Future directions: corpus expansion, platform development, patient-friendly mode
   <div><strong>Glass box, not black box</strong> — every answer is verifiable</div>
 </div>
 
+<div class="mt-3 text-sm text-blue-600 text-center font-medium">Glass-box verifiability — where every answer traces back to a classical source — is what sets TCM-Sage apart.</div>
+
 </div>
 
 </v-clicks>
@@ -765,7 +783,7 @@ Thank you for listening. I'm happy to take any questions.
 layout: section
 ---
 
-# <carbon-notebook class="inline" /> Backup Slides
+# <carbon-notebook class="inline" /> Appendix
 
 ---
 
@@ -782,6 +800,10 @@ layout: section
 <div class="mt-4 p-3 rounded-lg bg-green-50 border border-green-200 text-sm">
   <carbon-information class="inline text-green-500" /> RAG provides the transparency that TCM practitioners need to <strong>verify</strong> AI-generated advice against original texts.
 </div>
+
+<!--
+Backup cue: use when asked why not fine-tune a TCM model instead — walk through each table row.
+-->
 
 ---
 
@@ -810,6 +832,10 @@ layout: section
 </div>
 
 </div>
+
+<!--
+Backup cue: use when asked to defend sample size — lead with p-value, then effect size, then tester quality.
+-->
 
 ---
 
@@ -904,6 +930,10 @@ Classification runs <strong>first</strong> (separate smaller model) → determin
 
 </div>
 
+<!--
+Backup cue: use when asked about hallucination — walk steps 1–7; step 7: issue open but non-reproducible since clause-level chunking resolved the original trigger.
+-->
+
 ---
 
 # AI投毒 Evidence
@@ -934,6 +964,10 @@ Classification runs <strong>first</strong> (separate smaller model) → determin
   <carbon-security class="inline text-green-500" /> TCM-Sage's curated classical corpus is <strong>immune</strong> to this attack vector.
 </div>
 
+<!--
+Backup cue: use when asked for evidence of AI poisoning risks — three independent sources, all 2025–2026.
+-->
+
 ---
 
 # Crosswalk Bridge
@@ -958,3 +992,7 @@ Classification runs <strong>first</strong> (separate smaller model) → determin
 
 </div>
 </div>
+
+<!--
+Backup cue: use when asked about terminology mismatch between classical and modern Chinese medical terms.
+-->
