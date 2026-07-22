@@ -1,0 +1,83 @@
+\chapter{Conclusion and Future Work}
+
+\section{Summary of Contributions}
+
+This project developed TCM-Sage, a working evidence-synthesis system for classical Traditional Chinese Medicine texts. The system addresses a gap that neither general-purpose LLMs nor existing TCM AI products fill: transparent, citation-backed retrieval from classical medical literature with source traceability.
+
+The principal technical contributions are:
+
+\begin{enumerate}
+    \item \textbf{Hybrid RAG Pipeline for Classical Chinese}: A retrieval pipeline combining DashScope text-embedding-v4 (1024 dimensions) vector search with SymMap v2.0 knowledge graph traversal. The crosswalk bridge maps modern medical terminology to classical Chinese entities, addressing the semantic drift that spans two millennia of medical writing.
+
+    \item \textbf{Domain-Specific Retrieval Optimizations}: Formula-aware canonical retrieval ensures that queries about classical formulas (e.g., \textit{Mahuang Tang}) return results from their canonical source texts first. Source authority boosting applies topic-dependent chronological weighting. Clause-level chunking preserves the natural semantic units of structured texts such as \textit{Shanghan Lun} (388 clauses) and \textit{Jingui Yaolue} (489 clauses).
+
+    \item \textbf{RAG Context Engineering}: The discovery of Pattern Priming --- that formatting retrieved context as markdown causes the LLM to mirror markdown in its output --- and post-context instruction anchoring, where formatting directives placed after retrieved passages maintain effectiveness despite the ``lost-in-the-middle'' attention pattern.
+
+    \item \textbf{Arena Blind A/B Evaluation}: A dual-streaming evaluation system inspired by the LMSYS Chatbot Arena, with paired t-test and Cohen's $d$ validation. Results from 59 votes yielded $p = 0.0011$ and $d = 0.45$, establishing statistically significant preference for the RAG system over a general LLM with web search.
+
+    \item \textbf{Practitioner Validation}: Testing by TCM students and doctoral candidates at Guangzhou University of Chinese Medicine (several of whom also practice at Guangdong Provincial Hospital of TCM) confirmed the system's clinical utility for evidence retrieval. The Citation Panel was identified as the primary value differentiator, and the system demonstrated the ability to surface classical formulas that practitioners had not considered.
+\end{enumerate}
+
+\section{Future Work}
+
+Practitioner feedback during testing defined a clear development roadmap. The following directions are ordered by priority and feasibility.
+
+\subsection{Corpus Expansion}
+
+The most consistent feedback was that the current 17-text corpus, while strong in classical theory, lacks modern clinical practice material. Specific texts recommended by practitioners include:
+
+\begin{itemize}
+    \item \textbf{Modern clinical masters}: Zhang Xichun's \textit{Yi Xue Zhong Zhong Can Xi Lu} (a foundational text for Chinese-Western integrated medicine), works by Liu Duzhou and Feng Shilun (classical formula specialists), and Zhang Jingyue's \textit{Jingyue Quanshu}.
+    \item \textbf{Modern acupuncture}: Shi Xuemin's \textit{Shi Yong Zhen Jiu Xue} (evidence-based stroke treatment protocols), Dong's Extraordinary Points system, Cheng Dan'an's \textit{Zhongguo Zhen Jiu Xue} (integrating Western neuroanatomy), and Takeda Ken's \textit{Zhen Jiu Zhen Sui} (Japanese acupuncture).
+    \item \textbf{Pharmacology}: \textit{Ben Cao Yao Zheng} for clinical drug evidence.
+    \item \textbf{Chinese-Western integration}: Modern clinical pharmacology references to support practitioners who combine both approaches.
+\end{itemize}
+
+The modular RAG architecture makes corpus expansion straightforward: new texts require only UTF-8 source files and a single ingestion run. No model retraining is necessary.
+
+\subsection{Platform Development}
+
+A TCM student tester expressed interest in recommending the system to his university's School of Chinese Medicine and exploring case competition entry. This suggests potential for development beyond an individual project into a platform serving TCM education programs. Each institution could maintain its own knowledge base supplemented with course materials, clinical SOPs, and local reference documents.
+
+\subsection{Patient-Friendly Mode}
+
+Practitioners noted that pure TCM terminology is difficult for general audiences to understand. A future mode could provide simplified explanations alongside classical citations, expanding the user base to include patients and health-conscious individuals seeking reliable TCM information.
+
+\subsection{Fine-Tuned Base Model Integration}
+
+The current architecture uses general-purpose Qwen models as the generation backbone. Stacking a TCM-specialized fine-tuned model (such as HuatuoGPT or a custom fine-tune) as the base, with the RAG pipeline providing retrieved context, could yield compounding quality improvements. The RAG architecture explicitly supports this: the base LLM is a configurable component.
+
+\subsection{Expanded Evaluation}
+
+Future evaluation should address the current study's limitations: larger sample sizes, inclusion of senior practitioners as evaluators, and dimension-specific scoring rubrics that separately measure citation accuracy, diagnostic reasoning quality, completeness, and readability. Longitudinal studies tracking system improvement across development iterations would strengthen the evidence base.
+
+\section{Goal Completion}
+
+The original project proposal set out to build ``an explainable, evidence-backed tool'' based on RAG architecture that would function as ``an intelligent clinical reference assistant'' with traceable citations, hybrid retrieval (vector search and knowledge graph), and user acceptance testing with TCM practitioners. The following table summarizes the completion status of each proposed aim:
+
+\begin{table}[H]
+\centering
+\caption{Proposed aims and completion status.}
+\begin{tabularx}{\textwidth}{Xll}
+\toprule
+\textbf{Proposed Aim} & \textbf{Status} & \textbf{Notes} \\
+\midrule
+Evidence-synthesis tool, not AI Doctor & Achieved & Core design principle maintained \\
+Glass Box citations linked to source text & Achieved & Citation Panel with click-through \\
+RAG architecture with hybrid retrieval & Achieved & Vector + KG + reranker \\
+Specialized TCM knowledge base & Exceeded & 17 texts (proposal suggested 1) \\
+Knowledge graph for terminology bridging & Achieved & SymMap v2.0 (18,450 entities) \\
+User acceptance testing with practitioners & Achieved & Arena blind A/B (59 votes, $p=0.0011$) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The evaluation methodology evolved from the initially proposed TCMEval-SDT benchmark and Likert-scale surveys to a blind A/B Arena system with statistical validation, following discussions with the project supervisor. This approach better captures overall system quality as perceived by end users, rather than isolated retrieval metrics.
+
+All core proposed aims have been achieved or exceeded. The system is functional, tested with real practitioners, and statistically validated.
+
+\section{Closing Remarks}
+
+TCM-Sage demonstrates that retrieval-augmented generation is a viable approach for making classical medical literature accessible through modern AI interfaces. The system does not replace human expertise; it provides the evidence base that human experts need to make informed decisions. In a field where the source texts span two thousand years of accumulated clinical wisdom, the ability to search, retrieve, and cite that wisdom accurately and transparently has practical value.
+
+The project began with a straightforward observation: practitioners need better tools for navigating classical texts. It concludes with a working system, statistical evidence of its effectiveness, and a clear roadmap shaped by the practitioners it was built to serve.

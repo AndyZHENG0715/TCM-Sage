@@ -1,0 +1,90 @@
+graph TB
+    subgraph Input["User Interface"]
+        Q[User Question]
+        UI[Next.js 16 Frontend<br/>i18n: Traditional/Simplified/EN]
+        SET[Settings Panel<br/>Provider / Model / Temperature]
+    end
+
+    subgraph Classification["Query Classification"]
+        Q --> CLF{Classifier LLM<br/>temp=0.0}
+        CLF -->|Informational| INFO[General Knowledge<br/>temp=0.1]
+        CLF -->|Prescriptive| PRESC[Clinical/Formula<br/>temp=0.0]
+    end
+
+    subgraph Retrieval["Hybrid Retrieval Pipeline"]
+        direction TB
+        Q --> QA{Query Analysis}
+        QA -->|Formula Detected| FM[Formula-Aware<br/>Canonical Retrieval<br/>Metadata Filter]
+        QA -->|Clause Reference| CL[Multi-Clause<br/>Extraction<br/>re.finditer]
+        QA -->|General| VS[Vector Search<br/>k x 3 Broader Retrieval]
+
+        FM --> ChromaDB[(ChromaDB<br/>12,204 chunks<br/>1024d vectors)]
+        CL --> ChromaDB
+        VS --> ChromaDB
+
+        ChromaDB --> RR[Reranker<br/>qwen3-rerank<br/>Cross-Encoder]
+        RR --> SAB[Source Authority<br/>Boost 0.90-0.97x<br/>Topic-Dependent]
+        SAB --> DD[Deduplication<br/>1 chunk per book+chapter]
+
+        QA -->|Entity Match| JB[jieba Segmentation<br/>+ Alias Map]
+        JB --> KG[SymMap v2.0 KG<br/>18,450 entities<br/>21,476 relationships]
+        KG --> CW[Crosswalk Bridge<br/>Modern to Classical]
+        CW --> BFS[Graph Traversal<br/>BFS depth=2]
+    end
+
+    subgraph KnowledgeBase["Knowledge Base Construction"]
+        T17[17 Classical Texts<br/>3.72M characters<br/>UTF-8] --> CS{Chunking Strategy}
+        CS -->|Most texts| CH[Chapter-Based<br/>~500 chars/chunk]
+        CS -->|Shanghan Lun| CLC[Clause-Level<br/>388 clauses]
+        CS -->|Jingui Yaolue| CLJ[Clause-Level<br/>489 clauses]
+        CH --> HDR[Contextual Header<br/>Prepend]
+        CLC --> HDR
+        CLJ --> HDR
+        HDR --> EMB[DashScope<br/>text-embedding-v4<br/>1024 dimensions]
+        EMB -->|Batch 10, checkpoint/resume| ChromaDB
+        SM[SymMap v2.0<br/>JSON + XLSX] --> KG
+    end
+
+    subgraph Generation["Generation Pipeline"]
+        DD --> CTX[Retrieved Context<br/>Markdown Formatted<br/>Pattern Priming]
+        BFS --> CTX
+        CTX --> SP[System Prompt<br/>Bian Zheng Lun Zhi Framework<br/>Yuanliu Methodology<br/>Jun Chen Zuo Shi Analysis<br/>Measurement Table<br/>Hedging Principles]
+        SP --> POST[Post-Context Anchoring<br/>Format Instructions AFTER Context]
+        POST --> UPRI[User Intent Priority Override]
+        INFO --> LLM
+        PRESC --> LLM
+        UPRI --> LLM[LLM Generation<br/>Configurable Provider]
+        LLM --> VER[Self-RAG Verifier<br/>Citation Grounding Check]
+    end
+
+    subgraph Providers["Supported LLM Providers"]
+        LLM -.-> P1[DashScope / Alibaba]
+        LLM -.-> P2[Ollama - Local]
+        LLM -.-> P3[LMStudio - Local]
+        LLM -.-> P4[OpenAI / Anthropic /<br/>Google / OpenRouter /<br/>Together]
+    end
+
+    subgraph Output["User Interface Output"]
+        VER --> SSE[SSE Streaming<br/>with Citation Markers]
+        SSE --> CP[Citation Panel<br/>Source Text +<br/>KG Mini-View]
+        SSE --> KGE[KG Explorer<br/>Cytoscape.js<br/>Click-to-Expand]
+    end
+
+    subgraph Arena["Arena Blind A/B Evaluation"]
+        Q --> AR{Random Position<br/>Assignment}
+        AR -->|A or B| RAG[TCM-Sage<br/>Full Pipeline + TCM Prompt]
+        AR -->|B or A| PLN[Plain LLM<br/>Helpful Assistant +<br/>DuckDuckGo Search]
+        RAG --> DUAL[Dual SSE Streaming<br/>60s Timeout Protection]
+        PLN --> DUAL
+        DUAL --> VOTE[Blind Vote to JSONL]
+        VOTE --> STAT[Statistical Analysis<br/>t=3.44 p=0.0011<br/>Cohens d=0.45]
+    end
+
+    style Input fill:#e8f4f8,stroke:#2980b9,color:#2c3e50
+    style Classification fill:#fef9e7,stroke:#e67e22,color:#2c3e50
+    style Retrieval fill:#eafaf1,stroke:#27ae60,color:#2c3e50
+    style KnowledgeBase fill:#fdf2e9,stroke:#d35400,color:#2c3e50
+    style Generation fill:#ebf5fb,stroke:#2980b9,color:#2c3e50
+    style Providers fill:#f4f6f7,stroke:#7f8c8d,color:#566573
+    style Output fill:#e8f8f5,stroke:#1abc9c,color:#2c3e50
+    style Arena fill:#fdedec,stroke:#e74c3c,color:#2c3e50

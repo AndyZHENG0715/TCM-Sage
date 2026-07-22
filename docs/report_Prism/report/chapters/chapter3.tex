@@ -1,0 +1,258 @@
+\chapter{System Architecture and Design}
+
+This chapter describes the technical architecture and design principles of TCM-Sage. It details the evolution of the system through three planned phases, the construction of the specialized knowledge base, the hybrid retrieval mechanism, and the generation pipeline optimized for classical Chinese medical texts.
+
+\section{System Overview}
+
+TCM-Sage is a modular Retrieval-Augmented Generation (RAG) system designed for evidence synthesis from classical Traditional Chinese Medicine (TCM) literature. The high-level architecture follows a pipeline where classical texts are processed into a structured knowledge base, retrieved through a hybrid vector-graph mechanism, and synthesized by a Large Language Model (LLM) with a dedicated citation panel for verification.
+
+\subsection{Three-Phase Evolution}
+
+The development of TCM-Sage followed a structured, three-phase evolution planned from the project's inception. This narrative reflects a deliberate design progression rather than a reactive fix for technical failures.
+
+\begin{itemize}
+    \item \textbf{Phase 1: Naive RAG.} The initial prototype focused on a single foundational text, the \textit{Huangdi Neijing}. It utilized a lightweight all-MiniLM-L6-v2 embedding model (384 dimensions) and a basic vector search mechanism. This phase established the feasibility of retrieving classical Chinese text chunks for LLM synthesis.
+    \item \textbf{Phase 2: Hybrid RAG.} Planned as the core architectural shift, Phase 2 introduced the integration of the SymMap 2.0 knowledge graph and a Self-RAG verifier. This phase moved beyond simple semantic similarity to include structured medical relationships, allowing the system to bridge modern symptoms with classical entities.
+    \item \textbf{Phase 3: Production Hybrid RAG.} The final phase scaled the system to 17 classical texts and upgraded the technical stack. It implemented DashScope text-embedding-v4 (1024 dimensions) and the qwen3-rerank model for high-precision retrieval. This phase also introduced the crosswalk bridge for entity resolution and the full Arena evaluation system.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/architecture.png}
+    \caption{High-level architecture of the TCM-Sage production system.}
+    \label{fig:system_arch}
+\end{figure}
+
+\section{Knowledge Base Design}
+
+The knowledge base is the foundation of TCM-Sage, comprising 17 classical texts with a total of 3.72 million characters. These texts are divided into 12,204 chunks using a specialized chunking strategy.
+
+\subsection{Chunking Strategies}
+
+TCM-Sage employs two distinct chunking strategies based on the structural characteristics of the source material. Most texts use a chapter-based approach, where chunks are created at natural paragraph or section boundaries. However, for the canonical clinical texts \textit{Shanghan Lun} and \textit{Jingui Yaolue}, a clause-level strategy is used.
+
+\subsection{Clause-Level Chunking}
+
+The \textit{Shanghan Lun} is divided into its 388 original clauses, and the \textit{Jingui Yaolue} into 489 clauses. Each clause represents a natural semantic unit in TCM, typically containing a diagnostic statement followed by a corresponding formula. This granularity ensures that citations point to the exact clinical rule being referenced.
+
+To improve embedding quality, formula-aware contextual headers are prepended to each clause. For example, Clause 35 of the \textit{Shanghan Lun} is stored with the header "Shanghan Lun Di 35 Tiao Mahuang Tang:". This technique ensures that the embedding model captures both the clause number and the primary formula, significantly improving retrieval accuracy for specific clinical queries.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm and 2cm,
+    doc/.style={rectangle, rounded corners, draw=black!60, text width=5cm, align=center, minimum height=1.6cm, font=\sffamily\bfseries},
+    process/.style={rectangle, rounded corners, draw=black!60, text width=5.5cm, align=center, minimum height=1.4cm, font=\sffamily},
+    chunk/.style={rectangle, draw=black!40, text width=5cm, align=left, minimum height=1.1cm, font=\sffamily\small, inner sep=6pt},
+    headerchunk/.style={rectangle, draw=black!40, text width=5.5cm, align=left, minimum height=1.1cm, font=\sffamily\small, inner sep=6pt},
+    arrow/.style={-{Stealth[scale=1.2]}, thick, draw=black!70},
+    groupbox/.style={rectangle, rounded corners, dashed, inner sep=15pt}
+]
+
+\node[doc, fill=blue!10] (doc1) {General TCM Texts\\{\mdseries\normalsize (e.g., Bencao Gangmu)}};
+
+\node[process, fill=blue!10, below=of doc1] (proc1) {Paragraph-Boundary Split\\{\small (\char`\~500 characters per chunk)}};
+
+\node[chunk, fill=blue!5, below=1cm of proc1] (chunk1) {\textbf{Chunk 1}\\ \textit{Paragraph 1 text begins here...}};
+\node[chunk, fill=blue!5, below=0.3cm of chunk1] (chunk2) {\textbf{Chunk 2}\\ \textit{Paragraph 2 text continues...}};
+\node[chunk, fill=blue!5, below=0.3cm of chunk2] (chunk3) {\textbf{Chunk 3}\\ \textit{Paragraph 3 text continues...}};
+
+\draw[arrow] (doc1) -- (proc1);
+\draw[arrow] (proc1) -- (chunk1);
+\draw[arrow, dashed, draw=black!40] (chunk1) -- (chunk2);
+\draw[arrow, dashed, draw=black!40] (chunk2) -- (chunk3);
+
+\node[doc, fill=green!10, right=2.5cm of doc1] (doc2) {Clinical Classics\\{\mdseries\normalsize (Shanghan Lun, Jingui Yaolue)}};
+
+\node[process, fill=green!10, below=of doc2] (proc2) {Clause-Level Extraction\\{\small (388 \& 489 specific clauses)}};
+
+\node[headerchunk, fill=green!5, below=1cm of proc2] (chunkA) {\textbf{Contextual Header + Clause}\\ \textcolor{black!60}{[Shanghan Lun Di 35 Tiao Mahuang Tang:]}\\ \textit{Clause text begins here...}};
+\node[headerchunk, fill=green!5, below=0.3cm of chunkA] (chunkB) {\textbf{Contextual Header + Clause}\\ \textcolor{black!60}{[Shanghan Lun Di 36 Tiao:]}\\ \textit{Clause text continues...}};
+
+\draw[arrow] (doc2) -- (proc2);
+\draw[arrow] (proc2) -- (chunkA);
+\draw[arrow, dashed, draw=black!40] (chunkA) -- (chunkB);
+
+\begin{scope}[on background layer]
+    \node[groupbox, draw=blue!40, fill=blue!2, fit=(doc1) (chunk3)] (bg1) {};
+    \node[anchor=south, font=\sffamily\large\bfseries, text=blue!80!black, yshift=5pt] at (bg1.north) {Chapter-Based Chunking};
+    \node[groupbox, draw=green!40, fill=green!2, fit=(doc2) (chunkB)] (bg2) {};
+    \node[anchor=south, font=\sffamily\large\bfseries, text=green!80!black, yshift=5pt] at (bg2.north) {Clause-Level Chunking};
+\end{scope}
+
+\end{tikzpicture}
+\caption{Comparison of chunking strategies for different text types.}
+\label{fig:chunking_strategy}
+\end{figure}
+
+\section{Hybrid Retrieval Architecture}
+
+The retrieval mechanism combines dense vector search with symbolic knowledge graph traversal to achieve high recall and precision.
+
+\subsection{Vector Search and Chronological Boost}
+
+The system uses DashScope text-embedding-v4 (1024 dimensions) for semantic vector search. To handle the large corpus, the retriever initially fetches a broader set of candidates (k $\times$ 3), followed by reranking with the qwen3-rerank cross-encoder model to re-order results by semantic relevance before applying further filtering.
+
+A unique feature of TCM-Sage is the source authority chronological boost. Distance scores are adjusted by a factor of 0.90 to 0.97 based on the historical authority of the text. This boost is topic-dependent rather than a simple linear ranking, ensuring that foundational texts like the \textit{Huangdi Neijing} are prioritized for theoretical queries, while later \textit{Wenbing} texts are favored for febrile disease queries.
+
+\subsection{Formula-Aware Canonical Retrieval}
+
+When the system detects a specific formula name in the user's query, it triggers a metadata-filtered search in canonical texts. This ensures that the primary source for a formula is always included in the context, even if other semantically similar but less authoritative texts are also retrieved.
+
+\subsection{Knowledge Graph and Crosswalk Bridge}
+
+The SymMap 2.0 knowledge graph is traversed using the NetworkX library. Entity matching is performed using the jieba segmentation tool combined with a custom alias map that bridges colloquial modern Chinese terms to their classical equivalents. For example, a user query mentioning a modern symptom name is resolved to its classical counterpart in SymMap, enabling retrieval of related herbs, formulas, and syndromes that would otherwise be missed by vector search alone.
+
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[
+        >={Stealth[scale=1]},
+        base/.style={align=center, draw, thick, font=\small, minimum height=1.2cm},
+        process/.style={base, rectangle, rounded corners, inner sep=0.2cm},
+        decision/.style={base, diamond, aspect=2, inner sep=0.1cm},
+        database/.style={base, cylinder, shape border rotate=90, aspect=0.25, minimum width=2.5cm, minimum height=1.8cm},
+        vectorpath/.style={fill=blue!10},
+        kgpath/.style={fill=green!10},
+        arrow/.style={->, thick, draw=black!80}
+    ]
+
+        \node[process, fill=gray!15, minimum width=4cm] (query) at (0, 0) {\textbf{User Query}};
+
+        \node[decision, vectorpath] (qa) at (-4, -2.5) {Query\\Analysis};
+        
+        \node[process, vectorpath, text width=3cm] (form) at (-8, -5.5) {Formula-Aware\\Canonical\\Retrieval};
+        \node[process, vectorpath, text width=3cm] (clause) at (-4, -5.5) {Multi-Clause\\Extraction\\(re.finditer)};
+        \node[process, vectorpath, text width=3cm] (gen) at (0, -5.5) {Vector Search\\($k \times 3$ broader)};
+        
+        \node[database, vectorpath] (chroma) at (-4, -9) {ChromaDB};
+        
+        \node[process, vectorpath, text width=4cm] (rerank) at (-4, -11.5) {qwen3-rerank\\(Cross-Encoder)};
+        \node[process, vectorpath, text width=4cm] (boost) at (-4, -13.5) {Source Authority Boost\\(0.90--0.97x)};
+        \node[process, vectorpath, text width=4cm] (dedup) at (-4, -15.5) {Deduplication\\(1 chunk per book+chapter)};
+
+        \node[process, kgpath, text width=3cm] (em) at (5, -2.5) {Entity Match};
+        \node[process, kgpath, text width=4cm] (jieba) at (5, -5) {jieba Segmentation\\+ Alias Map};
+        \node[database, kgpath] (symmap) at (5, -7.5) {SymMap v2.0 KG};
+        \node[process, kgpath, text width=4cm] (crosswalk) at (5, -10) {Crosswalk Bridge};
+        \node[process, kgpath, text width=4cm] (bfs) at (5, -12.5) {BFS Traversal\\(depth=2)};
+
+        \node[process, fill=orange!15, minimum width=6cm, minimum height=1.5cm] (final) at (0, -18) {\textbf{Final Retrieved Context}};
+
+        \draw[arrow] (query) -| (qa);
+        \draw[arrow] (query) -| (em);
+
+        \draw[arrow] (qa) -| node[above, near start, font=\scriptsize] {Formula} (form);
+        \draw[arrow] (qa) -- node[right, font=\scriptsize] {Clause} (clause);
+        \draw[arrow] (qa) -| node[above, near start, font=\scriptsize] {General} (gen);
+
+        \draw[arrow] (form) |- (chroma);
+        \draw[arrow] (clause) -- (chroma);
+        \draw[arrow] (gen) |- (chroma);
+
+        \draw[arrow] (chroma) -- (rerank);
+        \draw[arrow] (rerank) -- (boost);
+        \draw[arrow] (boost) -- (dedup);
+
+        \draw[arrow] (em) -- (jieba);
+        \draw[arrow] (jieba) -- (symmap);
+        \draw[arrow] (symmap) -- (crosswalk);
+        \draw[arrow] (crosswalk) -- (bfs);
+
+        \draw[arrow] (dedup) |- (final);
+        \draw[arrow] (bfs) |- (final);
+
+    \end{tikzpicture}}
+    \caption{The hybrid retrieval pipeline combining vector and graph-based methods.}
+    \label{fig:retrieval_flow}
+\end{figure}
+
+\section{Generation Pipeline}
+
+The generation pipeline synthesizes the retrieved context into a coherent, evidence-backed response. The system supports eight LLM providers (DashScope/Alibaba, OpenAI, Anthropic, Google, OpenRouter, Together, Ollama, and LMStudio), allowing deployment across cloud and local configurations. Each provider is accessed through a unified \texttt{create\_llm()} factory function.
+
+\subsection{Query Classification and Temperature Control}
+
+Before generation, a dedicated classifier LLM (running at temperature 0.0 for deterministic output) categorizes each query as either \textit{informational} (general knowledge, definitions, explanations) or \textit{prescriptive} (diagnoses, treatments, formula recommendations). This classification determines the generation temperature:
+
+\begin{itemize}
+    \item \textbf{Informational:} Temperature 0.7 --- allows natural language generation for educational explanations.
+    \item \textbf{Prescriptive:} Temperature 0.0 --- maximizes precision and reproducibility for clinical queries where accuracy is critical.
+\end{itemize}
+
+This dual-temperature design reflects a safety-conscious approach: clinical queries demand the highest possible fidelity to source material, while general knowledge queries benefit from slightly more natural language generation.
+
+\subsection{System Prompt and Framework}
+
+The system prompt is structured around the "Bian Zheng Lun Zhi" (Pattern Differentiation and Treatment) framework and the "Yuan Liu" (Source and Development) methodology. It includes specific instructions for "Jun Chen Zuo Shi" (Sovereign, Minister, Assistant, and Courier) drug analysis for formulas.
+
+\subsection{Post-Context Instruction Anchoring}
+
+To prevent the model from ignoring formatting rules, TCM-Sage uses post-context instruction anchoring. Formatting instructions are placed after the retrieved context rather than before it. This ensures that the model's final attention is focused on the required output structure.
+
+\subsection{Pattern Priming and User Intent}
+
+The system employs "Pattern Priming" by providing the retrieved context in a structured markdown format (using headers and blockquotes). This encourages the LLM to produce similarly structured outputs. An ancient measurement conversion table is embedded in the prompt to ensure accurate dosage translations. Finally, a "User Intent Priority" block ensures that specific user preferences always override default formatting rules.
+
+\section{Arena Evaluation Design}
+
+The evaluation system is inspired by the LMSYS Chatbot Arena, providing a blind A/B testing framework for TCM practitioners.
+
+\subsection{Blind A/B Testing}
+
+The system compares the full TCM-Sage pipeline (RAG system) against a plain LLM baseline. The baseline model is given a generic "helpful assistant" prompt and access to a standard web search tool (DuckDuckGo). Both systems stream their responses simultaneously using Server-Sent Events (SSE), with their positions (Left vs. Right) randomly assigned to eliminate position bias.
+
+\subsection{Statistical Validation}
+
+The results of the arena votes are analyzed using a paired t-test and Cohen's $d$ effect size. These metrics provide statistical proof of the RAG system's effectiveness. The t-test determines if the improvement is due to the system's design rather than random chance, while Cohen's $d$ quantifies the magnitude of the improvement.
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.85\textwidth}{!}{%
+    \begin{tikzpicture}[
+        base/.style={draw, align=center, minimum height=1.2cm, thick, font=\small},
+        start/.style={base, rectangle, rounded corners=12pt, fill=gray!15, text width=6cm},
+        process/.style={base, rectangle, rounded corners=3pt, fill=white, text width=6cm},
+        tcm/.style={process, fill=cyan!10, text width=4.5cm},
+        llm/.style={process, fill=orange!15, text width=4.5cm},
+        decision/.style={base, diamond, aspect=2.5, fill=yellow!15, text width=3.5cm, inner sep=0pt},
+        arrow/.style={->, >={Stealth[scale=1]}, thick, draw=gray!80!black}
+    ]
+    
+    \node (query) at (0, 0) [start] {\textbf{User Submits Query}};
+    
+    \node (tcm) at (-3.2, -2.2) [tcm] {\textbf{TCM-Sage}\\Full RAG Pipeline\\\& TCM System Prompt};
+    \node (plain) at (3.2, -2.2) [llm] {\textbf{Plain LLM}\\Generic Assistant\\\& Web Search};
+    
+    \node (random) at (0, -4.6) [decision] {\textbf{Random Position}\\Assignment (A/B)};
+    
+    \node (streamA) at (-3.2, -7.2) [process] {\textbf{Response A}\\Dual SSE Streaming\\(60s timeout)};
+    \node (streamB) at (3.2, -7.2) [process] {\textbf{Response B}\\Dual SSE Streaming\\(60s timeout)};
+    
+    \node (ui) at (0, -9.4) [process, text width=8cm] {\textbf{Blinded UI Comparison}\\User sees Response A and B side-by-side};
+    
+    \node (vote) at (0, -11) [process, text width=8cm] {\textbf{User Votes}\\``Left is better'' \quad|\quad ``Tie'' \quad|\quad ``Right is better''};
+    
+    \node (json) at (0, -12.6) [process, text width=8cm] {Vote recorded to \texttt{arena\_votes.jsonl}};
+    
+    \node (stats) at (0, -14.4) [process, text width=8cm] {\textbf{Statistical Analysis}\\Paired t-test ($t=3.44, p=0.0011$), Cohen's $d=0.45$};
+    
+    \node (result) at (0, -16.2) [start, fill=green!15, text width=8cm] {\textbf{Result:} Statistically significant preference for RAG};
+    
+    \draw [arrow] (query) -- (tcm);
+    \draw [arrow] (query) -- (plain);
+    \draw [arrow] (tcm) -- (random);
+    \draw [arrow] (plain) -- (random);
+    \draw [arrow] (random) -- (streamA);
+    \draw [arrow] (random) -- (streamB);
+    \draw [arrow] (streamA) -- (ui);
+    \draw [arrow] (streamB) -- (ui);
+    \draw [arrow] (ui) -- (vote);
+    \draw [arrow] (vote) -- (json);
+    \draw [arrow] (json) -- (stats);
+    \draw [arrow] (stats) -- (result);
+    
+    \end{tikzpicture}}
+    \caption{The blind A/B Arena evaluation and statistical validation flow.}
+    \label{fig:arena_flow}
+\end{figure}

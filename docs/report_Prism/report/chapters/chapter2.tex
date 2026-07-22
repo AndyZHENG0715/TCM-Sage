@@ -1,0 +1,64 @@
+\chapter{Literature Review}
+
+This chapter examines the theoretical foundations and existing research relevant to the development of TCM-Sage. It covers the evolution of Retrieval-Augmented Generation (RAG), the current landscape of Traditional Chinese Medicine (TCM) AI systems, the integration of Knowledge Graphs (KGs) in medical informatics, and the methodologies for evaluating large language model outputs in specialized domains.
+
+\section{Retrieval-Augmented Generation (RAG)}
+
+Retrieval-Augmented Generation (RAG) has emerged as a widely adopted architecture for addressing the inherent limitations of static Large Language Models (LLMs). Standard LLMs suffer from ``knowledge cutoff'' and hallucinations, where the model generates factually incorrect but plausible-sounding information. RAG mitigates these issues by combining a pre-trained generator with an external retrieval mechanism \cite{lewis2020rag}.
+
+\subsection{RAG Fundamentals and Architecture}
+
+The RAG process involves two primary stages: retrieval and generation. During retrieval, the system identifies relevant documents from a non-parametric knowledge base based on the user's query. These documents are then prepended to the user's prompt, providing the generator with a grounded context for synthesis. This architecture allows the model to access up-to-date or specialized information without the need for expensive retraining or fine-tuning.
+
+\subsection{RAG vs. Fine-Tuning Trade-offs}
+
+While fine-tuning adapts a model's internal weights to a specific domain, RAG offers several advantages for medical applications. Techniques like LoRA and QLoRA have significantly mitigated the problem of catastrophic forgetting in fine-tuning by freezing pre-trained weights and training only low-rank adapter matrices. However, when the adapter is active during inference, the model's generalized capabilities can still degrade, particularly when fine-tuned on narrow domain data. More fundamentally, fine-tuning is designed to adjust model \textit{behavior} (e.g., output format, response style), not to reliably inject new \textit{knowledge}---attempts to do so often introduce hallucination or overwrite existing capabilities.
+
+TCM-Sage adopts a RAG-first approach for four primary reasons. First, fine-tuning on classical Chinese texts is prohibitively expensive and may yield poor results due to the scarcity of high-quality instruction-tuning pairs. Second, the RAG knowledge base can be updated or expanded by simply adding new text chunks to the vector store, requiring no retraining. Third, the modular nature of RAG allows the base LLM to be swapped as newer, more capable models become available. Finally, this architecture provides a foundation for future hybrid approaches where a fine-tuned TCM model can be paired with a RAG pipeline for maximum precision.
+
+\subsection{Advanced RAG Techniques}
+
+Recent advancements have moved beyond "naive" RAG toward more sophisticated pipelines. Reranking has become a critical component for improving retrieval precision. A reranker model evaluates the initial set of retrieved documents and re-orders them based on semantic relevance, ensuring that the most pertinent information appears at the top of the context window \cite{gao2024rag}.
+
+Self-RAG and verification techniques further enhance reliability by allowing the model to critique its own retrieved context and generated output \cite{asai2024selfrag}. In domain-specific applications like medicine, these verification loops are essential for ensuring that the synthesized advice aligns with the source material. MedRAG research highlights the unique challenges of medical retrieval, including the need for high-precision terminology matching and the handling of complex clinical reasoning \cite{xiong2024medrag}.
+
+\section{TCM Knowledge Representation and Existing Systems}
+
+Traditional Chinese Medicine presents unique challenges for digital representation and AI processing. The core of TCM knowledge resides in classical texts written over two millennia, featuring linguistic structures that differ significantly from modern Chinese.
+
+\subsection{Classical Chinese Text Challenges}
+
+Classical Chinese is characterized by extreme brevity and high semantic density. A single character often carries multiple meanings depending on the context (one-character-multiple-meanings). Archaic grammar and semantic drift across different dynasties further complicate automated analysis. For example, a term used in the \textit{Huangdi Neijing} (approx. 300 BCE) may have a different clinical implication in the \textit{Wenbing} literature of the Qing Dynasty (1644-1911 CE).
+
+\subsection{Existing TCM AI Products}
+
+Several research institutions and corporations have developed TCM-specific AI systems \cite{wang2026tcmaidev}. HuatuoGPT, developed by CUHK Shenzhen, achieved an 88.1\% score on the TCM licensing exam \cite{huatuogpt2023}. Other systems include Qihuang 2.0 (Shuzhi Qihuang), a 32-billion-parameter multimodal model incorporating tongue and pulse image analysis, jointly developed by East China Normal University and Shanghai University of TCM \cite{qihuang2024ecnu}; and iFlytek's TCM diagnostic assistant, deployed across 107 primary care institutions in Bozhou, Anhui Province, serving over 350 TCM practitioners \cite{iflytek2024cnr}. These systems share a common design philosophy: direct diagnosis and prescription.
+
+\subsection{The "AI Doctor" Gap}
+
+Existing TCM AI systems have primarily pursued the ``AI Doctor'' paradigm, focusing on direct diagnosis and prescription \cite{wang2024tcmai}. TCM-Sage identifies a different gap: no existing tool focuses on evidence-synthesis from classical texts with traceable, clause-level citations. By prioritizing the ``Glass Box'' approach, TCM-Sage serves as a reference tool that supports, rather than replaces, the human expert.
+
+
+\section{Knowledge Graphs in Medical AI}
+
+Knowledge Graphs (KGs) provide a structured, symbolic representation of domain knowledge that complements the sub-symbolic nature of LLMs. In medical AI, KGs ground the model's output in established facts and relationships.
+
+\subsection{SymMap v2.0 Integration}
+
+SymMap v2.0 is a comprehensive TCM knowledge graph containing 18,450 entities and 21,476 relationships \cite{symmap2020}. It integrates modern pharmacology with traditional herbology, providing a bridge between different medical paradigms. TCM-Sage uses SymMap to enhance retrieval by identifying related symptoms, herbs, and formulas that may not be explicitly mentioned in the user's query but are semantically linked in the TCM theoretical framework.
+
+\subsection{Bridging Modern and Classical Terminology}
+
+A major challenge in TCM AI is the semantic drift between modern medical terminology and classical descriptions. A practitioner might use a modern term for a symptom that appears in the \textit{Shanghan Lun} under a different name. While entity alignment (synonym resolution within TCM terminology) and biomedical entity linking (mapping clinical text to ontologies like SNOMED) are established techniques, the specific task of bridging a modern structured knowledge graph to a classical text corpus remains largely unexplored \cite{xiang2025kgtcm}. TCM-Sage addresses this gap through a crosswalk bridge that maps SymMap's modern entities to classical text chunks, enabling bidirectional retrieval between modern queries and classical evidence.
+
+\section{Evaluation Methodologies}
+
+Evaluating the quality of LLM-generated medical advice is difficult due to the subjective and nuanced nature of clinical reasoning. Traditional metrics like ROUGE or BLEU are insufficient for assessing factual accuracy or clinical relevance.
+
+\subsection{LMSYS Chatbot Arena and Blind A/B Testing}
+
+The LMSYS Chatbot Arena has popularized blind A/B testing as a widely recognized benchmark for evaluating LLM performance \cite{chatbotarena2024}. In this framework, users compare two anonymized outputs and vote for the superior response. This method captures human preferences and nuances that automated rubrics miss.
+
+\subsection{Statistical Validation}
+
+To ensure that the results of blind A/B testing are scientifically valid, TCM-Sage employs standard statistical methods. The paired t-test determines whether the difference in scores between the RAG system and a baseline LLM is statistically significant. Cohen's $d$ quantifies the effect size, indicating the practical magnitude of any improvement. Together, these methods provide a statistical foundation for evaluating system performance beyond anecdotal evidence.
