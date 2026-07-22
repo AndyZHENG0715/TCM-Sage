@@ -279,3 +279,8 @@ docs/report/FYP Trunitin.pdf
 docs/submissions/poster_session/*.zip.*
 presentation/test_generalist.md
 data/feedback/*Expert Feedback*.csv
+
+# Large demo video archives
+docs/submissions/poster_session/*.zip.001
+docs/submissions/poster_session/*.zip.002
+docs/submissions/poster_session/*.zip.003
