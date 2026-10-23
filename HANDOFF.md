@@ -2,11 +2,11 @@
 
 Current state only. Overwrite stale content instead of appending; history lives in git and CHANGELOG.md.
 
-Checked at: `19e4f654855807b1df339e7fb75fcdc386d53b2a` on 2026-10-23 (Asia/Taipei), also origin/main after fetch. Existing presentation changes preserved: `.gitignore`, `README.md`, `src/embeddings.py`, `src/main.py`, `src/ui_backend.py`; untracked `.editorconfig`, `.gitattributes`, `src/demo_mode.py`. Phase 2a changes only `docs/DEPLOYMENT_PLAN.md`, HANDOFF.md and CHANGELOG.md on `codex/deployment-plan-2a`; prior local documentation context is retained. No presentation implementation is included in the planning commit.
+Checked at: `1265e66afe0bcfbeccf682da6087811383e9c960` on 2026-10-23 (Asia/Taipei); audited base remains `19e4f654855807b1df339e7fb75fcdc386d53b2a`, also origin/main after fetch. Existing presentation changes preserved: `.gitignore`, `README.md`, `src/embeddings.py`, `src/main.py`, `src/ui_backend.py`; untracked `.editorconfig`, `.gitattributes`, `src/demo_mode.py`. Phase 2a changes only `docs/DEPLOYMENT_PLAN.md`, HANDOFF.md and CHANGELOG.md on `codex/deployment-plan-2a`; prior local documentation context is retained. No presentation implementation is included in the planning delivery.
 
 ## Coordination gate
 
-- HKO phase 1 hold RELEASED on 2026-10-23 by an explicit coordinator instruction reporting Andy's completion and authorization. Phase 2a audit and plan are prepared in `docs/DEPLOYMENT_PLAN.md`; phase 2b remains HELD until Andy approves a named option.
+- HKO phase 1 hold RELEASED on 2026-10-23 by an explicit coordinator instruction reporting Andy's completion and authorization. Phase 2a COMPLETE: audit and plan delivered in `docs/DEPLOYMENT_PLAN.md` and [draft PR #1](https://github.com/AndyZHENG0715/TCM-Sage/pull/1), attached to the coordinator chat and assigned to AndyZHENG0715. Phase 2b remains HELD until Andy approves a named option. Author/account is AndyZHENG0715, so GitHub self-review cannot supply independent approval.
 - Coordinator chat: `01a167b5-4710-7191-8f97-2c3b7ed93048`. Canonical root remains `E:/Projects/tcm-sage`; stay on Windows. Preserve existing presentation work.
 - Current scope: planning and draft PR only; no phase 2b implementation, provisioning, deployment, billing/card setup or paid provider/embedding calls. Free reversible branch, documentation edits, checks and draft PR delivery were explicitly authorized; no renewed blanket commit approval is required for that scope.
 - Code audit confirms Next.js is the HTTP-serving frontend with server-side proxy routes on port 3000; FastAPI/Uvicorn is the HTTP-serving Python backend on port 8000. ChromaDB and NetworkX are in-process storage/retrieval components. Static replay needs an approved later export/adapter change.
@@ -42,6 +42,8 @@ Current goals, highest priority first. The long-term vision lives in README.md.
 ## Verification
 
 Phase 2a: read-only code, report and JSON audit; official hosting/model/region/lifecycle evidence checked 2026-10-23; cost formulas reconciled across three LLM calls plus optional embedding/rerank. Project venv used only for read-only data counts and preservation hashes. No retrieval mode executed, no app imports or paid requests. Static build, Linux dependency install, memory/latency, provider access and live controls remain unverified. Existing October runtime results below remain historical reports, not re-tested evidence.
+
+Delivery checks passed: arithmetic/link/three-option checks; staged diff whitespace check; review of new documents for secret assignments/personal data; independent read-only plan review. SHA-256 hashes for all eight pre-existing presentation/config files matched before and after planning. GitHub's PR file list confirms only CHANGELOG.md, HANDOFF.md and docs/DEPLOYMENT_PLAN.md. No unrelated files were committed.
 
 Recovery on 2026-10-23 (Asia/Taipei): read local AGENTS.md, README.md, HANDOFF.md and CHANGELOG.md; inspected git status, five latest commits and tracked working diffs. Fetched origin successfully; `HEAD..origin/main` has no later commits. No secrets opened. No application tests or retrieval modes run this turn. The checks below are inherited reports, not independently rerun; current configuration, vectorstore absence and runtime remain unverified.
 
