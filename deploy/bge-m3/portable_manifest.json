@@ -1,0 +1,14 @@
+{
+  "format": "numpy-npz-no-pickle",
+  "dtype": "float32",
+  "count": 12204,
+  "dimensions": 1024,
+  "model": "BAAI/bge-m3",
+  "preprocessing": "unaltered-content-v1",
+  "distance": "cosine",
+  "vectors_file": "portable_vectors.npz",
+  "vectors_sha256": "f3d530c877cf214ce8d5d2adcbac226a12459f20e1b34422ab571e7033986e85",
+  "sources_file": "portable_sources.json",
+  "sources_sha256": "dd87736d282a207f9940e045af6a850aebc5e567388efea26c80b155d2ac864f",
+  "linux_note": "Rebuild Chroma/HNSW offline using these exact vectors and source IDs."
+}
