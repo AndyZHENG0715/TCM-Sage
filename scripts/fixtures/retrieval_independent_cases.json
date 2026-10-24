@@ -1,0 +1,283 @@
+{
+  "version": 2,
+  "description": "Fresh frozen manual source-grounded development cases, authored before new semantic results; not expert-reviewed or clinical labels. Optional metadata_filter identifies separately evaluated exact-filter lane.",
+  "cases": [
+    {
+      "id": "fresh-exact-shanghan82",
+      "question": "请定位伤寒论第八十二条，核对发汗后仍然发热、眩晕和心悸的描述。",
+      "category": "explicit-metadata-clause",
+      "expected_chunk_ids": [
+        "伤寒论_clause_82_1497"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Use exact book+clause metadata, separately report unrestricted rank and filtered result. No modern diagnosis.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_82_1497",
+          "quote": "82．太阳病发汗，汗出不解，其人仍发热，心下悸、头眩"
+        }
+      ],
+      "metadata_filter": {
+        "$and": [
+          {
+            "book": "伤寒论"
+          },
+          {
+            "clause_number": 82
+          }
+        ]
+      }
+    },
+    {
+      "id": "fresh-zhenwu-shaoyin",
+      "question": "只查原文：少阴篇里腹痛、尿不畅、四肢沉重疼痛并下利，真武汤在哪段被提及？",
+      "category": "symptom-paraphrase",
+      "expected_chunk_ids": [
+        "伤寒论_clause_316_8091"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Passage 316 is the requested Shaoyin-context symptom cluster; formula-name matches in Taiyang are insufficient.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_316_8091",
+          "quote": "腹痛、小便不利，四肢沉重疼痛，自下利者，此为有水气"
+        }
+      ]
+    },
+    {
+      "id": "fresh-zhenwu-contexts",
+      "question": "比较伤寒论真武汤两处记述：发汗后头眩心悸，与少阴篇水气腹痛，分别给出原文。",
+      "category": "multiple-contexts",
+      "expected_chunk_ids": [
+        "伤寒论_clause_82_1497",
+        "伤寒论_clause_316_8091"
+      ],
+      "expected_match": "all",
+      "negative_control": false,
+      "rationale": "Both specified settings required, not merely two formula-name hits.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_82_1497",
+          "quote": "心下悸、头眩"
+        },
+        {
+          "chunk_id": "伤寒论_clause_316_8091",
+          "quote": "腹痛、小便不利，四肢沉重疼痛"
+        }
+      ]
+    },
+    {
+      "id": "fresh-banxia-pi",
+      "question": "查伤寒论：心下只是胀满却不疼，与满而硬痛的区别，哪段提出宜半夏泻心汤？",
+      "category": "formula-metadata-distractor",
+      "expected_chunk_ids": [
+        "伤寒论_clause_149_4666"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Content is relevant although metadata formula and generated header name 大陷胸汤; do not filter solely by formula.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_149_4666",
+          "quote": "但满而不痛者，此\n为痞，柴胡不中与之，宜半夏泻心汤。"
+        }
+      ]
+    },
+    {
+      "id": "fresh-fumai-alias",
+      "question": "复脉汤在伤寒论里还叫什么？请查含这个别名及胶烊化入汤步骤的原始方文。",
+      "category": "alias-preparation",
+      "expected_chunk_ids": [
+        "伤寒论_clause_177_4666"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Clause 177 contains alias and preparation; ordinary Gancao entries do not answer the historical alias question.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_177_4666",
+          "quote": "一名复\n脉汤。"
+        }
+      ]
+    },
+    {
+      "id": "fresh-zhuling-settings",
+      "question": "猪苓汤在阳明篇和少阴篇分别伴随哪些症状？请各取一段原文对照。",
+      "category": "multiple-contexts",
+      "expected_chunk_ids": [
+        "伤寒论_clause_223_5032",
+        "伤寒论_clause_319_8091"
+      ],
+      "expected_match": "all",
+      "negative_control": false,
+      "rationale": "Both named chapter settings required.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_223_5032",
+          "quote": "若脉浮、发热、渴欲饮水、小便不利者"
+        },
+        {
+          "chunk_id": "伤寒论_clause_319_8091",
+          "quote": "少阴病，下利六七日，咳而呕、渴，心烦、不得眠者"
+        }
+      ]
+    },
+    {
+      "id": "fresh-lizhong-books",
+      "question": "对照伤寒论的理中丸方与备急千金要方理中汤条，找两书中人参、干姜、甘草、白术组成的原文。",
+      "category": "cross-book",
+      "expected_chunk_ids": [
+        "伤寒论_clause_386_6836",
+        "备急千金要方_chunk_1990"
+      ],
+      "expected_match": "all",
+      "negative_control": false,
+      "rationale": "Both books required; different quantities are historical textual evidence, not equivalent prescriptions. Related same-name entries remain unjudged.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_386_6836",
+          "quote": "人参 干姜 甘草（炙） 白术（各三两）"
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1990",
+          "quote": "人参 白术 甘草（各三两） 干姜（二两）"
+        }
+      ]
+    },
+    {
+      "id": "fresh-huanglian-entry",
+      "question": "神农本草经黄连专条记载什么性味，又怎样称呼它的别名？不要只列含黄连的方剂。",
+      "category": "herb-entry",
+      "expected_chunk_ids": [
+        "神农本草经_chunk_73"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Dedicated entry also states 一名王连. Ingredient lists cannot establish the requested entry provenance.",
+      "evidence": [
+        {
+          "chunk_id": "神农本草经_chunk_73",
+          "quote": "味苦，寒。"
+        }
+      ]
+    },
+    {
+      "id": "fresh-shigao-entry",
+      "question": "请定位神农本草经石膏专条中口干和喘相关的文字，核对其性味，不给现代用药建议。",
+      "category": "herb-entry",
+      "expected_chunk_ids": [
+        "神农本草经_chunk_165"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Dedicated entry is source target; reported claims are historical, not validated efficacy.",
+      "evidence": [
+        {
+          "chunk_id": "神农本草经_chunk_165",
+          "quote": "味辛，微寒。主中风寒热，心下逆气惊喘，口干苦焦"
+        }
+      ]
+    },
+    {
+      "id": "fresh-exact-jingui10",
+      "question": "在金匮要略肺痿肺痈咳嗽上气第七篇第十条，麦门冬汤的咽喉不利描述和组成是什么？",
+      "category": "explicit-metadata-clause",
+      "expected_chunk_ids": [
+        "金匮要略方论_clause_10_2429"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Jingui repeats clause numbers across chapters: exact filter must include book, source chapter and clause number.",
+      "evidence": [
+        {
+          "chunk_id": "金匮要略方论_clause_10_2429",
+          "quote": "10．火逆上气，咽喉不利，止逆下气者，麦门冬汤主之。"
+        }
+      ],
+      "metadata_filter": {
+        "$and": [
+          {
+            "book": "金匮要略方论"
+          },
+          {
+            "source": "肺痿肺痈咳嗽上气病脉证治第七"
+          },
+          {
+            "clause_number": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "fresh-danggui-contexts",
+      "question": "金匮里当归生姜羊肉汤在寒疝篇和妇人产后篇各如何描述？请按篇章找出两处文字。",
+      "category": "multiple-contexts",
+      "expected_chunk_ids": [
+        "金匮要略方论_clause_18_5570",
+        "金匮要略方论_clause_4_2600"
+      ],
+      "expected_match": "all",
+      "negative_control": false,
+      "rationale": "Both chapter contexts required. Do not merge repeated clause numbers or imply modern treatment validity.",
+      "evidence": [
+        {
+          "chunk_id": "金匮要略方论_clause_18_5570",
+          "quote": "寒疝腹中痛，及胁痛里急者"
+        },
+        {
+          "chunk_id": "金匮要略方论_clause_4_2600",
+          "quote": "产后腹中 痛，当归生姜羊肉汤主之"
+        }
+      ]
+    },
+    {
+      "id": "fresh-gegen-sweating",
+      "question": "桂枝加葛根汤条文里颈项背部不舒而反有汗出、怕风的记载在哪？注意与无汗葛根汤段区别。",
+      "category": "formula-contrast",
+      "expected_chunk_ids": [
+        "伤寒论_clause_14_6485"
+      ],
+      "expected_match": "any",
+      "negative_control": false,
+      "rationale": "Targets sweating version in clause14; embedded clause31/no-sweat passage is a deliberate contrast, not a substitute.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_14_6485",
+          "quote": "反汗出恶风者，桂枝加葛根汤主之"
+        }
+      ]
+    },
+    {
+      "id": "fresh-negative-vaccine",
+      "question": "这些古籍里有2025年mRNA疫苗第三期试验注册号和有效率吗？",
+      "category": "unsupported-negative",
+      "expected_chunk_ids": [],
+      "expected_match": "none",
+      "negative_control": true,
+      "rationale": "Modern trial metadata cannot be established by these classical sources.",
+      "evidence": []
+    },
+    {
+      "id": "fresh-negative-semantic",
+      "question": "请用神农本草经给出石膏用于航天发动机隔热涂层的材料疲劳实验数据。",
+      "category": "unsupported-negative",
+      "expected_chunk_ids": [],
+      "expected_match": "none",
+      "negative_control": true,
+      "rationale": "Hard negative shares a labelled herb/mineral term but requests unrelated modern engineering evidence.",
+      "evidence": []
+    },
+    {
+      "id": "fresh-negative-zero",
+      "question": "QZVJXK",
+      "category": "unsupported-negative",
+      "expected_chunk_ids": [],
+      "expected_match": "none",
+      "negative_control": true,
+      "rationale": "Synthetic uppercase token; zero lexical overlap must be verified against corpus before use.",
+      "evidence": []
+    }
+  ]
+}

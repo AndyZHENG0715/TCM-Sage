@@ -8,6 +8,7 @@ import { BookOpen, ExternalLink, Loader2, Network, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { KGViewer } from "./KGViewer";
+import { recordedGraph } from "@/lib/showcase";
 
 interface CitationPanelProps {
     citation: Citation | null;
@@ -162,7 +163,7 @@ function TextCitationContent({
 
             <div className="flex gap-2">
                 <span className="inline-flex items-center px-2 py-1 rounded bg-[#dcd3b8]/50 text-[#5c5548] text-xs font-medium">
-                    {t.citation.relevance}: {citation.relevance_percent.toFixed(1)}%
+                    {citation.recorded ? "Recorded source · no live relevance score" : `Retrieval score: ${citation.score.toFixed(3)} · not a confidence probability`}
                 </span>
             </div>
         </div>
@@ -171,13 +172,14 @@ function TextCitationContent({
 
 function GraphCitationContent({ citation }: { citation: GraphCitation }) {
     const { t } = useI18n();
+    const seed = citation.fact.match(/^(.+?)\s*--/)?.[1]?.trim() ?? "";
     return (
         <div className="space-y-6">
             <div className="space-y-2">
                 <h3 className="font-sans text-sm font-semibold text-[#8c8578] uppercase">
                     {t.citation.factRelationship}
                 </h3>
-                <KGViewer citation={citation} />
+                <KGViewer citation={citation} subgraph={recordedGraph(seed)} />
             </div>
 
             <div className="space-y-3">

@@ -24,7 +24,7 @@ export function MessageBubble({
 }: MessageBubbleProps) {
     const isUser = message.role === "user";
     const [copied, setCopied] = useState(false);
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
 
     const handleCopy = () => {
         navigator.clipboard.writeText(message.content);
@@ -72,7 +72,7 @@ export function MessageBubble({
         >
             <div
                 className={cn(
-                    "max-w-[85%] sm:max-w-[75%]",
+                    message.recorded ? "w-full max-w-full" : "max-w-[95%] sm:max-w-[90%]",
                     isUser
                         ? "bg-primary/20 backdrop-blur-sm border border-primary/20 rounded-2xl rounded-tr-sm p-4 text-parchment"
                         : "flex flex-col gap-3"
@@ -111,7 +111,9 @@ export function MessageBubble({
                                 ) : (
                                     <AlertTriangle size={12} />
                                 )}
-                                {message.verification.status === "SUPPORTED"
+                                {message.verification.status === "UNAVAILABLE"
+                                    ? (locale === "en" ? "Verification unavailable" : "验证暂不可用")
+                                    : message.verification.status === "SUPPORTED"
                                     ? t.verification.supported
                                     : t.verification.unsupported}
                             </div>

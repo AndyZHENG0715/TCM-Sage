@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #19e6d4;
-  --color-primary-dark: #14b8aa;
+  --color-primary: #569c91;
+  --color-primary-dark: #326c62;
   --color-background-dark: #112120;
   --color-sidebar-dark: #0d1918;
   --color-parchment: #F3EFE0;
   --color-parchment-text: #2C2825;
   
+  --font-inter: Arial, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --font-noto-serif-sc: Georgia, "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", SimSun, "Microsoft YaHei", serif;
   --font-sans: var(--font-inter);
   --font-serif: var(--font-noto-serif-sc);
 }

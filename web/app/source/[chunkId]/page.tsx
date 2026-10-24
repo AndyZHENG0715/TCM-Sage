@@ -1,16 +1,12 @@
 "use client";
 
-import { ChunkContext, fetchChunkContext } from "@/lib/api";
+import { ChunkContext, fetchChunkContext, fetchBookContent } from "@/lib/api";
 import { getDisplaySourceLabel, getOcrArtifacts } from "@/lib/citations";
 import { useI18n } from "@/i18n/context";
 import { ArrowLeft, BookOpen, FileText, LayoutList, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-
-function getBackendUrl(): string {
-    return "/api/backend";
-}
 
 function HighlightedText({
     text,
@@ -46,7 +42,7 @@ function HighlightedText({
 function SourceDocument({ chunkId }: { chunkId: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
     const fromChat = searchParams.get("from") === "chat";
     const [context, setContext] = useState<ChunkContext | null>(null);
     const [fullText, setFullText] = useState<string | null>(null);
@@ -90,16 +86,12 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
 
                 setContext(data);
 
-                const res = await fetch(
-                    `${getBackendUrl()}/books/${encodeURIComponent(data.book)}`
-                );
-                if (!res.ok) {
-                    throw new Error(`Failed to fetch book: ${res.status}`);
-                }
-
-                const payload = (await res.json()) as { content?: string };
-                if (!isCancelled) {
-                    setFullText(typeof payload.content === "string" ? payload.content : null);
+                try {
+                    const payload = await fetchBookContent(data.book);
+                    if (!isCancelled) setFullText(typeof payload.content === "string" ? payload.content : null);
+                } catch {
+                    // Full-book availability must not hide an already loaded citation.
+                    if (!isCancelled) setFullText(null);
                 }
             } catch (fetchError) {
                 if (!isCancelled) {
@@ -247,7 +239,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                                     }`}
                                 >
                                     <LayoutList size={18} />
-                                    <span>{t.source.chapterView}</span>
+                                    <span>{context.recorded_excerpt || context.context_scope === "cited_chunk" ? (locale === "en" ? "Cited passage" : "引用段落") : t.source.chapterView}</span>
                                 </button>
                                 <button
                                     onClick={() => setViewMode("full")}
@@ -264,6 +256,7 @@ function SourceDocument({ chunkId }: { chunkId: string }) {
                         </div>
                     )}
 
+                    {(context.recorded_excerpt || context.context_scope === "cited_chunk") && viewMode === "chapter" && <p className="text-sm text-[#8c8578] mb-4">{locale === "en" ? "This view preserves the cited passage; it is not a reconstruction of the entire chapter." : "此视图保留引用段落，不代表完整章节的重建。"}</p>}
                     {ocrArtifacts.length > 0 && viewMode === "chapter" && (
                         <div className="rounded-lg border border-amber-300/60 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">
                             {t.source.ocrWarning} {ocrArtifacts.join(", ")}

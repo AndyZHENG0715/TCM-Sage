@@ -12,6 +12,8 @@ import { useHistory } from "@/hooks/useHistory";
 import { useKeepAlive } from "@/hooks/useKeepAlive";
 import { useSettings } from "@/hooks/useSettings";
 import { ChatSession, Citation, Message } from "@/lib/types";
+import { PublicShowcase } from "@/components/PublicShowcase";
+import { PRESENTATION_MODE } from "@/lib/showcase";
 
 function getCitationPanelKey(citation: Citation | null) {
     if (!citation) {
@@ -56,7 +58,7 @@ function areSessionsEquivalent(current: ChatSession | null, draft: ChatSession) 
     );
 }
 
-export default function Home() {
+function PresentationChat() {
     const { t } = useI18n();
     const {
         defaultSettings,
@@ -200,4 +202,8 @@ export default function Home() {
             )}
         </div>
     );
+}
+
+export default function Home() {
+    return PRESENTATION_MODE ? <PresentationChat /> : <PublicShowcase />;
 }

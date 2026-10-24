@@ -1,0 +1,654 @@
+{
+  "checked_on": "2026-10-24",
+  "timezone": "Asia/Taipei",
+  "scope": "Offline local DemoVectorStore on an enriched 256-chunk development sample; no semantic model, graph, generation, Chroma or clinical validation",
+  "report_path": "vectorstore/retrieval-validation/20261024T012638Z-2972d59a/report.json",
+  "fixture_version": 2,
+  "sample_size": 256,
+  "corpus_size": 12204,
+  "case_count": 15,
+  "fingerprints": {
+    "corpus_sha256": "225559d3603c5de3bb72277b124e480d269806b8611cbae160cf677751e717c3",
+    "cases_sha256": "398abeebd5db0383130158d5b21110f1e8348f78a713ea95f603a4b15e9fd344",
+    "scorer_sha256": "951cda0e082593da4ed4dca418aa620029969249815c24f404da05980992345f",
+    "runner_sha256": "cb647a2a3b3e694da41da6cb1136507ada5089940fbc718142bcc0f5a941ce8f",
+    "sample_sha256": "4f1cfd4e0b971a3a3e42c3d4f478d266bddd988f290ace86c78d53662b8f76a4"
+  },
+  "lexical_metrics": {
+    "positive_cases": 12,
+    "hit_at_5_count": 8,
+    "hit_at_1_count": 2,
+    "hit_at_5": 0.6666666666666666,
+    "mrr_at_20": 0.3967953342953343,
+    "macro_required_coverage_at_5": 0.625,
+    "source_coverage": [
+      {
+        "case_id": "formula-guizhi-composition",
+        "expected_match": "any",
+        "first_labelled_rank": 4,
+        "labelled_recall_at_5": 1.0,
+        "all_labels_at_5": true,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "symptom-mahuang",
+        "expected_match": "any",
+        "first_labelled_rank": 1,
+        "labelled_recall_at_5": 1.0,
+        "all_labels_at_5": true,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "symptom-shaoyang",
+        "expected_match": "any",
+        "first_labelled_rank": 2,
+        "labelled_recall_at_5": 0.5,
+        "all_labels_at_5": false,
+        "all_labels_at_20": false
+      },
+      {
+        "case_id": "explicit-clause-13",
+        "expected_match": "any",
+        "first_labelled_rank": 9,
+        "labelled_recall_at_5": 0.0,
+        "all_labels_at_5": false,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "guizhi-administration",
+        "expected_match": "any",
+        "first_labelled_rank": 11,
+        "labelled_recall_at_5": 0.0,
+        "all_labels_at_5": false,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "symptom-wuling",
+        "expected_match": "any",
+        "first_labelled_rank": 4,
+        "labelled_recall_at_5": 1.0,
+        "all_labels_at_5": true,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "symptom-xiaoqinglong",
+        "expected_match": "any",
+        "first_labelled_rank": 2,
+        "labelled_recall_at_5": 1.0,
+        "all_labels_at_5": true,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "symptom-baihu-renshen",
+        "expected_match": "all",
+        "first_labelled_rank": 2,
+        "labelled_recall_at_5": 1.0,
+        "all_labels_at_5": true,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "herb-gancao-entry",
+        "expected_match": "any",
+        "first_labelled_rank": 7,
+        "labelled_recall_at_5": 0.0,
+        "all_labels_at_5": false,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "herb-renshen-entry",
+        "expected_match": "any",
+        "first_labelled_rank": 6,
+        "labelled_recall_at_5": 0.0,
+        "all_labels_at_5": false,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "cross-book-xiaoqinglong",
+        "expected_match": "all",
+        "first_labelled_rank": 4,
+        "labelled_recall_at_5": 0.5,
+        "all_labels_at_5": false,
+        "all_labels_at_20": true
+      },
+      {
+        "case_id": "cross-book-xiongbi",
+        "expected_match": "all",
+        "first_labelled_rank": 1,
+        "labelled_recall_at_5": 1.0,
+        "all_labels_at_5": true,
+        "all_labels_at_20": true
+      }
+    ],
+    "negative_controls": 3,
+    "interpretation": "Incomplete manual labels on an enriched sample, not corpus accuracy. Controls are unscored; neighbours do not establish evidence or abstention."
+  },
+  "cases": [
+    {
+      "id": "formula-guizhi-composition",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_12_6485"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "温病条辨_chunk_121",
+          "distance": 0.7339
+        },
+        {
+          "chunk_id": "温病条辨_chunk_120",
+          "distance": 0.7339
+        },
+        {
+          "chunk_id": "温病条辨_chunk_75",
+          "distance": 0.7482
+        },
+        {
+          "chunk_id": "伤寒论_clause_12_6485",
+          "distance": 0.7884
+        },
+        {
+          "chunk_id": "伤寒论_clause_26_6485",
+          "distance": 0.7884
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_12_6485": 4
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "symptom-mahuang",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_35_1497"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "伤寒论_clause_35_1497",
+          "distance": 0.5339
+        },
+        {
+          "chunk_id": "伤寒论_clause_386_6836",
+          "distance": 0.5339
+        },
+        {
+          "chunk_id": "伤寒论_clause_38_1497",
+          "distance": 0.635
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_2307",
+          "distance": 0.7244
+        },
+        {
+          "chunk_id": "伤寒论_clause_13_6485",
+          "distance": 0.7264
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_35_1497": 1
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "symptom-shaoyang",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_96_1497",
+        "伤寒论_clause_97_1497"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "备急千金要方_chunk_2307",
+          "distance": 0.5834
+        },
+        {
+          "chunk_id": "伤寒论_clause_96_1497",
+          "distance": 0.6388
+        },
+        {
+          "chunk_id": "本草纲目_chunk_1468",
+          "distance": 0.6388
+        },
+        {
+          "chunk_id": "温病条辨_chunk_75",
+          "distance": 0.7061
+        },
+        {
+          "chunk_id": "温病条辨_chunk_45",
+          "distance": 0.7405
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_96_1497": 2,
+        "伤寒论_clause_97_1497": null
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "explicit-clause-13",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_13_6485"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "伤寒论_clause_41_1497",
+          "distance": 0.6226
+        },
+        {
+          "chunk_id": "伤寒论_clause_23_6485",
+          "distance": 0.6265
+        },
+        {
+          "chunk_id": "伤寒论_clause_82_1497",
+          "distance": 0.6265
+        },
+        {
+          "chunk_id": "伤寒论_clause_223_5032",
+          "distance": 0.6265
+        },
+        {
+          "chunk_id": "温病条辨_chunk_45",
+          "distance": 0.6536
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_13_6485": 9
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "guizhi-administration",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_12_6485"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "温病条辨_chunk_121",
+          "distance": 0.5475
+        },
+        {
+          "chunk_id": "温病条辨_chunk_23",
+          "distance": 0.5698
+        },
+        {
+          "chunk_id": "温病条辨_chunk_24",
+          "distance": 0.5698
+        },
+        {
+          "chunk_id": "伤寒论_clause_25_6485",
+          "distance": 0.6859
+        },
+        {
+          "chunk_id": "伤寒论_clause_26_6485",
+          "distance": 0.6859
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_12_6485": 11
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "symptom-wuling",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_71_1497"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "儒门事亲_chunk_85",
+          "distance": 0.6088
+        },
+        {
+          "chunk_id": "本草纲目_chunk_3945",
+          "distance": 0.6628
+        },
+        {
+          "chunk_id": "儒门事亲_chunk_486",
+          "distance": 0.669
+        },
+        {
+          "chunk_id": "伤寒论_clause_71_1497",
+          "distance": 0.7648
+        },
+        {
+          "chunk_id": "伤寒论_clause_72_1497",
+          "distance": 0.7648
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_71_1497": 4
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "symptom-xiaoqinglong",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "伤寒论_clause_40_1497",
+        "伤寒论_clause_41_1497"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "备急千金要方_chunk_850",
+          "distance": 0.3364
+        },
+        {
+          "chunk_id": "伤寒论_clause_40_1497",
+          "distance": 0.4118
+        },
+        {
+          "chunk_id": "宣明论方_chunk_100",
+          "distance": 0.4118
+        },
+        {
+          "chunk_id": "伤寒论_clause_41_1497",
+          "distance": 0.6349
+        },
+        {
+          "chunk_id": "伤寒论_clause_12_6485",
+          "distance": 0.7952
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_40_1497": 2,
+        "伤寒论_clause_41_1497": 4
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "symptom-baihu-renshen",
+      "expected_match": "all",
+      "expected_chunk_ids": [
+        "伤寒论_clause_26_6485",
+        "伤寒论_clause_168_4666"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "温病条辨_chunk_45",
+          "distance": 0.4388
+        },
+        {
+          "chunk_id": "伤寒论_clause_168_4666",
+          "distance": 0.4439
+        },
+        {
+          "chunk_id": "伤寒论_clause_26_6485",
+          "distance": 0.4478
+        },
+        {
+          "chunk_id": "伤寒论_clause_169_4666",
+          "distance": 0.5353
+        },
+        {
+          "chunk_id": "温病条辨_chunk_122",
+          "distance": 0.669
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_26_6485": 3,
+        "伤寒论_clause_168_4666": 2
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "herb-gancao-entry",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "神农本草经_chunk_37"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "本草纲目_chunk_2657",
+          "distance": 0.5406
+        },
+        {
+          "chunk_id": "本草纲目_chunk_11",
+          "distance": 0.5548
+        },
+        {
+          "chunk_id": "本草纲目_chunk_14",
+          "distance": 0.5548
+        },
+        {
+          "chunk_id": "本草纲目_chunk_1287",
+          "distance": 0.6608
+        },
+        {
+          "chunk_id": "神农本草经_chunk_8",
+          "distance": 0.6608
+        }
+      ],
+      "expected_ranks": {
+        "神农本草经_chunk_37": 7
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "herb-renshen-entry",
+      "expected_match": "any",
+      "expected_chunk_ids": [
+        "神农本草经_chunk_35"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "神农本草经_chunk_10",
+          "distance": 0.4932
+        },
+        {
+          "chunk_id": "本草纲目_chunk_1287",
+          "distance": 0.5694
+        },
+        {
+          "chunk_id": "神农本草经_chunk_8",
+          "distance": 0.5694
+        },
+        {
+          "chunk_id": "本草纲目_chunk_11",
+          "distance": 0.5956
+        },
+        {
+          "chunk_id": "本草纲目_chunk_2657",
+          "distance": 0.5956
+        }
+      ],
+      "expected_ranks": {
+        "神农本草经_chunk_35": 6
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "cross-book-xiaoqinglong",
+      "expected_match": "all",
+      "expected_chunk_ids": [
+        "伤寒论_clause_40_1497",
+        "备急千金要方_chunk_1548"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "备急千金要方_chunk_1",
+          "distance": 0.6047
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_2",
+          "distance": 0.6047
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_3",
+          "distance": 0.6047
+        },
+        {
+          "chunk_id": "伤寒论_clause_40_1497",
+          "distance": 0.6171
+        },
+        {
+          "chunk_id": "伤寒论_clause_41_1497",
+          "distance": 0.6803
+        }
+      ],
+      "expected_ranks": {
+        "伤寒论_clause_40_1497": 4,
+        "备急千金要方_chunk_1548": 11
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "cross-book-xiongbi",
+      "expected_match": "all",
+      "expected_chunk_ids": [
+        "金匮要略方论_clause_3_9814",
+        "备急千金要方_chunk_1116"
+      ],
+      "top_5": [
+        {
+          "chunk_id": "金匮要略方论_clause_3_9814",
+          "distance": 0.2604
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1117",
+          "distance": 0.3599
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1122",
+          "distance": 0.4943
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1116",
+          "distance": 0.6348
+        },
+        {
+          "chunk_id": "温病条辨_chunk_121",
+          "distance": 0.7412
+        }
+      ],
+      "expected_ranks": {
+        "金匮要略方论_clause_3_9814": 1,
+        "备急千金要方_chunk_1116": 4
+      },
+      "negative_control": false,
+      "retriever_abstained": false
+    },
+    {
+      "id": "negative-modern-trial",
+      "expected_match": "none",
+      "expected_chunk_ids": [],
+      "top_5": [
+        {
+          "chunk_id": "本草纲目_chunk_1449",
+          "distance": 0.6785
+        },
+        {
+          "chunk_id": "伤寒论_clause_202_5032",
+          "distance": 0.7343
+        },
+        {
+          "chunk_id": "八十一难经_chunk_1",
+          "distance": 0.7343
+        },
+        {
+          "chunk_id": "伤寒论_clause_26_6485",
+          "distance": 0.8066
+        },
+        {
+          "chunk_id": "儒门事亲_chunk_14",
+          "distance": 0.8624
+        }
+      ],
+      "expected_ranks": {},
+      "negative_control": true,
+      "retriever_abstained": false
+    },
+    {
+      "id": "negative-hosting",
+      "expected_match": "none",
+      "expected_chunk_ids": [],
+      "top_5": [
+        {
+          "chunk_id": "伤寒论_clause_202_5032",
+          "distance": 0.6706
+        },
+        {
+          "chunk_id": "八十一难经_chunk_1",
+          "distance": 0.6706
+        },
+        {
+          "chunk_id": "本草纲目_chunk_1449",
+          "distance": 0.6706
+        },
+        {
+          "chunk_id": "伤寒论_clause_26_6485",
+          "distance": 0.8294
+        },
+        {
+          "chunk_id": "儒门事亲_chunk_647",
+          "distance": 0.8412
+        }
+      ],
+      "expected_ranks": {},
+      "negative_control": true,
+      "retriever_abstained": false
+    },
+    {
+      "id": "negative-machine-token",
+      "expected_match": "none",
+      "expected_chunk_ids": [],
+      "top_5": [
+        {
+          "chunk_id": "丹溪心法_chunk_1",
+          "distance": 1.0
+        },
+        {
+          "chunk_id": "丹溪心法_chunk_2",
+          "distance": 1.0
+        },
+        {
+          "chunk_id": "丹溪心法_chunk_3",
+          "distance": 1.0
+        },
+        {
+          "chunk_id": "丹溪心法_chunk_20",
+          "distance": 1.0
+        },
+        {
+          "chunk_id": "丹溪心法_chunk_122",
+          "distance": 1.0
+        }
+      ],
+      "expected_ranks": {},
+      "negative_control": true,
+      "retriever_abstained": false
+    }
+  ],
+  "semantic": {
+    "status": "not_run",
+    "reason": "Offline preparation makes zero API calls"
+  },
+  "preservation": {
+    "files_checked": 49,
+    "unchanged": true,
+    "changed_files": []
+  },
+  "verification": {
+    "provider_mock_tests_passed": 10,
+    "runner_tests_passed": 8,
+    "independent_review": "passed for offline preparation"
+  },
+  "pending": [
+    "SILICONFLOW_API_KEY not configured; Andy explicitly chose offline preparation",
+    "Free BGE embedding/reranking live results, latency and provider access unverified",
+    "No complete corpus semantic index exists; production unchanged"
+  ]
+}

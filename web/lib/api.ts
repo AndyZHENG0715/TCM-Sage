@@ -7,6 +7,7 @@ import {
     SettingsCapabilities,
     Verification,
 } from "./types";
+import { getLiveAccessCode, recordedBook, recordedContext, recordedGraph, recordedGraphSearch, PRESENTATION_MODE } from "./showcase";
 
 const BACKEND_URL = "/api/backend";
 
@@ -63,6 +64,8 @@ export type ChunkContext = {
     paragraph_highlight_start: number;
     paragraph_highlight_end: number;
     total_chunks_in_chapter: number;
+    context_scope?: "cited_chunk";
+    recorded_excerpt?: boolean;
 };
 
 export type BookContent = {
@@ -170,7 +173,8 @@ function mapConfigToSettings(config: RuntimeConfigResponse): SettingsBootstrap {
 export async function* streamQuery(
     question: string,
     chatHistory: { role: string; content: string }[] = [],
-    settings?: Settings
+    settings?: Settings,
+    signal?: AbortSignal
 ): AsyncGenerator<StreamEvent, void, unknown> {
     const requestBody: {
         question: string;
@@ -193,8 +197,10 @@ export async function* streamQuery(
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                ...(getLiveAccessCode() ? { Authorization: `Bearer ${getLiveAccessCode()}` } : {}),
             },
             body: JSON.stringify(requestBody),
+            signal,
         });
     } catch (error) {
         throw error;
@@ -318,6 +324,8 @@ export async function fetchChunkContext(chunkId: string): Promise<ChunkContext> 
         normalizedChunkId = chunkId;
     }
 
+    const recorded = recordedContext(normalizedChunkId);
+    if (recorded && !PRESENTATION_MODE) return recorded;
     const requestUrl = `${BACKEND_URL}/source/${encodeURIComponent(normalizedChunkId)}/context`;
 
     const res = await fetch(requestUrl);
@@ -328,6 +336,8 @@ export async function fetchChunkContext(chunkId: string): Promise<ChunkContext> 
 }
 
 export async function fetchSubgraph(entity: string, hops: number = 2): Promise<SubgraphResponse> {
+    const recorded = recordedGraph(entity);
+    if (recorded && !PRESENTATION_MODE) return recorded;
     const params = new URLSearchParams({ entity, hops: String(hops) });
     const res = await fetch(`${BACKEND_URL}/graph/subgraph?${params.toString()}`);
     if (!res.ok) {
@@ -343,6 +353,7 @@ export interface GraphSearchResult {
 }
 
 export async function fetchGraphSearch(query: string, limit: number = 20): Promise<GraphSearchResult[]> {
+    if (!PRESENTATION_MODE && !getLiveAccessCode()) return recordedGraphSearch(query, limit);
     const params = new URLSearchParams({ q: query, limit: String(limit) });
     const res = await fetch(`${BACKEND_URL}/graph/search?${params.toString()}`);
     if (!res.ok) {
@@ -353,6 +364,8 @@ export async function fetchGraphSearch(query: string, limit: number = 20): Promi
 }
 
 export async function fetchBookContent(bookName: string): Promise<BookContent> {
+    const recorded = recordedBook(bookName);
+    if (recorded && !PRESENTATION_MODE) return recorded;
     const res = await fetch(`${BACKEND_URL}/books/${encodeURIComponent(bookName)}`);
     if (!res.ok) {
         throw new Error(`Failed to fetch book: ${res.status}`);
