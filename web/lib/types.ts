@@ -10,6 +10,7 @@ export type CitationBounds = {
 };
 
 export type TextCitation = {
+    recorded?: boolean;
     number: number;
     type: "text";
     source: string;
@@ -20,6 +21,7 @@ export type TextCitation = {
 };
 
 export type GraphCitation = {
+    recorded?: boolean;
     number: number;
     type: "graph";
     fact: string;
@@ -37,6 +39,7 @@ export type Message = {
     verification?: Verification;
     citationBounds?: CitationBounds;
     timestamp: number;
+    recorded?: boolean;
 };
 
 export type SettingsCapabilities = {

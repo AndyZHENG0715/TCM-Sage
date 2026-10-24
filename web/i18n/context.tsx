@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useSyncExternalStore, useCallback, type ReactNode } from "react";
 import zh from "./zh.json";
 import zhHant from "./zh-Hant.json";
 import en from "./en.json";
@@ -23,19 +23,31 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 const STORAGE_KEY = "tcm-sage-locale";
 
 function getInitialLocale(): Locale {
-  if (typeof window === "undefined") return "zh-Hant";
+  if (typeof window === "undefined") return "en";
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === "en" || stored === "zh" || stored === "zh-Hant") return stored;
-  return "zh-Hant";
+  return "en";
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+  const locale = useSyncExternalStore(
+    (notify) => {
+      window.addEventListener("tcm-sage-locale-change", notify);
+      window.addEventListener("storage", notify);
+      return () => {
+        window.removeEventListener("tcm-sage-locale-change", notify);
+        window.removeEventListener("storage", notify);
+      };
+    },
+    getInitialLocale,
+    () => "en" as Locale,
+  );
 
   const setLocale = useCallback((newLocale: Locale) => {
-    setLocaleState(newLocale);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, newLocale);
+      document.documentElement.lang = newLocale === "zh-Hant" ? "zh-Hant" : newLocale;
+      window.dispatchEvent(new Event("tcm-sage-locale-change"));
     }
   }, []);
 

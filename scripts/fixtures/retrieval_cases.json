@@ -1,0 +1,277 @@
+{
+  "version": 2,
+  "description": "Manual source-grounded retrieval labels; not expert reviewed, exhaustive relevance judgments, clinical validation or answer-generation tests. Twelve positives and three unsupported controls. Expected IDs and quotes are checked against the read-only local chunks artifact.",
+  "cases": [
+    {
+      "id": "formula-guizhi-composition",
+      "question": "查找桂枝汤原方的五味组成，以及古书中的煎服步骤。",
+      "category": "formula",
+      "expected_chunk_ids": [
+        "伤寒论_clause_12_6485"
+      ],
+      "negative_control": false,
+      "rationale": "The clause contains the named formula, its five ingredients and preparation; later same-name mentions are distractors.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_12_6485",
+          "quote": "桂枝（去皮，三两） 芍药（三两） 甘草（炙，二两） 生姜（切，三两） 大枣（擘，十二枚）"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "symptom-mahuang",
+      "question": "仅作古籍检索：头部和全身疼痛、发热怕风，没有出汗又有气喘，伤寒论哪一条集中描述这些表现？",
+      "category": "symptom-paraphrase",
+      "expected_chunk_ids": [
+        "伤寒论_clause_35_1497"
+      ],
+      "negative_control": false,
+      "rationale": "Clause 35 explicitly combines the requested historical symptom cluster; this is document matching, not a treatment recommendation.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_35_1497",
+          "quote": "头痛、发热、身疼、腰痛、骨节疼痛、恶风、无汗而喘者"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "symptom-shaoyang",
+      "question": "在伤寒论中，忽冷忽热、胸胁不舒、不想吃东西并想呕吐，这组描述应查哪段原文？",
+      "category": "symptom-paraphrase",
+      "expected_chunk_ids": [
+        "伤寒论_clause_96_1497",
+        "伤寒论_clause_97_1497"
+      ],
+      "negative_control": false,
+      "rationale": "Clauses 96 and 97 contain the requested cluster and are acceptable relevant alternatives; not a diagnosis.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_96_1497",
+          "quote": "往来寒热，胸胁苦满、嘿嘿不欲饮食、心烦喜呕"
+        },
+        {
+          "chunk_id": "伤寒论_clause_97_1497",
+          "quote": "往来寒热，休作有时，嘿嘿不"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "explicit-clause-13",
+      "question": "请定位《伤寒论》第十三条，核对其中发热、出汗、怕风的原文。",
+      "category": "explicit-clause",
+      "expected_chunk_ids": [
+        "伤寒论_clause_13_6485"
+      ],
+      "negative_control": false,
+      "rationale": "Exact book and clause-number target; neighbouring clauses share formula vocabulary and should not replace the explicit target.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_13_6485",
+          "quote": "13．太阳病，头痛、发热、汗出、恶风，桂枝汤主之。"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "guizhi-administration",
+      "question": "桂枝汤条文为何提到服后喝热粥，并要求只出轻微的汗而非大汗？请找原文。",
+      "category": "administration-paraphrase",
+      "expected_chunk_ids": [
+        "伤寒论_clause_12_6485"
+      ],
+      "negative_control": false,
+      "rationale": "Clause 12 describes hot thin porridge and limits sweating; lexical overlap with formula names alone is insufficient.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_12_6485",
+          "quote": "啜热稀粥一升余，以"
+        },
+        {
+          "chunk_id": "伤寒论_clause_12_6485",
+          "quote": "不可令如水流离"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "symptom-wuling",
+      "question": "查古文：发汗之后口渴想喝水，又见排尿不畅和轻微发热，五苓散在哪条被提及？",
+      "category": "formula-symptom",
+      "expected_chunk_ids": [
+        "伤寒论_clause_71_1497"
+      ],
+      "negative_control": false,
+      "rationale": "Clause 71 combines post-sweating thirst, urinary difficulty and mild heat with the named formula.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_71_1497",
+          "quote": "小便不利、微热、消渴者，五苓散主之。"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "symptom-xiaoqinglong",
+      "question": "只检索文献：外在病证还未解除，心下水气，干呕发热又咳，哪段说明小青龙汤？",
+      "category": "formula-symptom",
+      "expected_chunk_ids": [
+        "伤寒论_clause_40_1497",
+        "伤寒论_clause_41_1497"
+      ],
+      "negative_control": false,
+      "rationale": "Clause 40 is the direct cluster match; clause 41 is relevant adjacent discussion of water, cough and fever.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_40_1497",
+          "quote": "伤寒，表不解，心下有水气，干呕、发热而咳"
+        },
+        {
+          "chunk_id": "伤寒论_clause_41_1497",
+          "quote": "心下有水气，咳有微喘、发热不渴"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "symptom-baihu-renshen",
+      "question": "伤寒论对白虎加人参汤与强烈口渴的联系有哪些原文？想对照出大汗后和吐下后的两种叙述。",
+      "category": "multi-passage",
+      "expected_chunk_ids": [
+        "伤寒论_clause_26_6485",
+        "伤寒论_clause_168_4666"
+      ],
+      "negative_control": false,
+      "rationale": "The question requests two settings: clause 26 after heavy sweating and clause 168 after vomiting/purging. Any-hit alone does not verify coverage of both.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_26_6485",
+          "quote": "大汗出后，大烦渴不解，脉洪大者"
+        },
+        {
+          "chunk_id": "伤寒论_clause_168_4666",
+          "quote": "伤寒若吐若下后，七八日不解"
+        }
+      ],
+      "expected_match": "all"
+    },
+    {
+      "id": "herb-gancao-entry",
+      "question": "在神农本草经甘草专条里，性味和解毒、筋骨肌肉相关的记载是什么？不要只列含甘草的方剂。",
+      "category": "herb-entry-distractor",
+      "expected_chunk_ids": [
+        "神农本草经_chunk_37"
+      ],
+      "negative_control": false,
+      "rationale": "Dedicated materia-medica entry is the target; incidental ingredient lists are insufficient.",
+      "evidence": [
+        {
+          "chunk_id": "神农本草经_chunk_37",
+          "quote": "味甘，平。主五脏六腑寒热邪气，坚筋骨，长肌肉，倍力"
+        },
+        {
+          "chunk_id": "神农本草经_chunk_37",
+          "quote": "解毒。"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "herb-renshen-entry",
+      "question": "请找神农本草经人参专条中关于安定精神和惊悸的记述，而不是含人参的处方。",
+      "category": "herb-entry-distractor",
+      "expected_chunk_ids": [
+        "神农本草经_chunk_35"
+      ],
+      "negative_control": false,
+      "rationale": "Dedicated human-readable source heading and statement establish provenance; longevity claims in the passage are historical text, not validated facts.",
+      "evidence": [
+        {
+          "chunk_id": "神农本草经_chunk_35",
+          "quote": "主补五脏，安精神，定魂魄，止惊悸"
+        }
+      ],
+      "expected_match": "any"
+    },
+    {
+      "id": "cross-book-xiaoqinglong",
+      "question": "想比较《伤寒论》与《备急千金要方》对小青龙汤和水饮的叙述，各找一段。",
+      "category": "cross-book",
+      "expected_chunk_ids": [
+        "伤寒论_clause_40_1497",
+        "备急千金要方_chunk_1548"
+      ],
+      "negative_control": false,
+      "rationale": "Requires two books: Shanghan water/cough passage and Qianjin overflow-fluid passage. Report book coverage separately from any-hit.",
+      "evidence": [
+        {
+          "chunk_id": "伤寒论_clause_40_1497",
+          "quote": "心下有水气"
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1548",
+          "quote": "病溢饮者，当发其汗，小青龙汤主之"
+        }
+      ],
+      "expected_match": "all"
+    },
+    {
+      "id": "cross-book-xiongbi",
+      "question": "请对照金匮与千金中胸痹伴胸背痛、短气的叙述，找原始段落，不给现代诊断。",
+      "category": "cross-book",
+      "expected_chunk_ids": [
+        "金匮要略方论_clause_3_9814",
+        "备急千金要方_chunk_1116"
+      ],
+      "negative_control": false,
+      "rationale": "Both entries directly discuss chest obstruction, breathlessness and chest/back pain; dangerous historical claims must remain quotations, not advice.",
+      "evidence": [
+        {
+          "chunk_id": "金匮要略方论_clause_3_9814",
+          "quote": "胸背痛，短气"
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1116",
+          "quote": "短气咳唾引痛"
+        },
+        {
+          "chunk_id": "备急千金要方_chunk_1116",
+          "quote": "或彻引背痛"
+        }
+      ],
+      "expected_match": "all"
+    },
+    {
+      "id": "negative-modern-trial",
+      "question": "2026年甘草治疗心律失常随机双盲试验的样本量、风险比和DOI是多少？",
+      "category": "unsupported-negative",
+      "expected_chunk_ids": [],
+      "negative_control": true,
+      "rationale": "Hard negative shares herb vocabulary but asks for modern trial metadata outside the classical evidence. Generic herb retrieval cannot support the requested trial.",
+      "evidence": [],
+      "expected_match": "none"
+    },
+    {
+      "id": "negative-hosting",
+      "question": "Cloudflare Pages的2026年免费套餐每月构建次数是多少？",
+      "category": "unsupported-negative",
+      "expected_chunk_ids": [],
+      "negative_control": true,
+      "rationale": "Out-of-domain service-pricing question; classical passages are not evidence, even if lexical overlap retrieves something.",
+      "evidence": [],
+      "expected_match": "none"
+    },
+    {
+      "id": "negative-machine-token",
+      "question": "ZQXJKV",
+      "category": "unsupported-negative",
+      "expected_chunk_ids": [],
+      "negative_control": true,
+      "rationale": "Synthetic uppercase-letter token with zero character-bigram overlap in the current corpus probes arbitrary fallback retrieval. This is not a medical question or patient identifier.",
+      "evidence": [],
+      "expected_match": "none"
+    }
+  ]
+}

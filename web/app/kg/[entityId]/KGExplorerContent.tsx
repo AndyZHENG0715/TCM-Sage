@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n/context";
 import { useRouter } from "next/navigation";
 import { fetchSubgraph, fetchGraphSearch, GraphSearchResult } from "@/lib/api";
 import Link from "next/link";
+import { recordedGraph } from "@/lib/showcase";
 
 // Safe to register at module level — this file is never loaded on the server
 cytoscape.use(cytoscapeDagre);
@@ -298,6 +299,7 @@ export default function KGExplorerContent({ entityId }: KGExplorerContentProps) 
         </div>
       </div>
 
+      {recordedGraph(decodedEntityId) && <p className="border-b border-white/10 bg-sidebar-dark px-4 py-2 text-xs text-parchment/60">Recorded SymMap snapshot · expansion is limited to saved relationships. Relationship labels are dataset statements, not proof of clinical benefit.</p>}
       {/* Mobile Search Bar */}
       <div className="md:hidden px-4 py-2 bg-sidebar-dark border-b border-[#1a3130] z-10 shrink-0">
         <div className="relative">

@@ -14,8 +14,10 @@ import { useSettings } from "@/hooks/useSettings";
 import type { VoteOption } from "@/hooks/useArena";
 import type { Citation } from "@/lib/types";
 import { ARENA_SAMPLE_PROMPTS } from "@/lib/arenaPrompts";
+import { PublicEvaluation } from "@/components/PublicEvaluation";
+import { PRESENTATION_MODE } from "@/lib/showcase";
 
-export default function ArenaPage() {
+function PresentationArena() {
   const { t } = useI18n();
   const { settings, isLoaded } = useSettings();
   const [sessionId] = useState(() =>
@@ -248,4 +250,8 @@ export default function ArenaPage() {
       </div>
     </ErrorBoundary>
   );
+}
+
+export default function ArenaPage() {
+  return PRESENTATION_MODE ? <PresentationArena /> : <PublicEvaluation />;
 }

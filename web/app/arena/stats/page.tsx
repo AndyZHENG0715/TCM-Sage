@@ -14,10 +14,13 @@ import {
   Tooltip,
 } from "chart.js";
 import ChartDataLabels, { type Context as ChartDataLabelsContext } from "chartjs-plugin-datalabels";
+import type { ChartOptions } from "chart.js";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useI18n } from "@/i18n/context";
 import { fetchArenaStats } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PublicEvaluation } from "@/components/PublicEvaluation";
+import { PRESENTATION_MODE } from "@/lib/showcase";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
@@ -71,7 +74,7 @@ type ArenaStats = {
   query_results: QueryResult[];
 };
 
-export default function ArenaStatsPage() {
+function PresentationArenaStats() {
   const { t } = useI18n();
   const [stats, setStats] = useState<ArenaStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,7 +152,7 @@ export default function ArenaStatsPage() {
     ],
   };
 
-  const barOptions = {
+  const barOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -195,7 +198,7 @@ export default function ArenaStatsPage() {
     ],
   };
 
-  const pieOptions = {
+  const pieOptions: ChartOptions<"pie"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -391,4 +394,8 @@ export default function ArenaStatsPage() {
       </div>
     </div>
   );
+}
+
+export default function ArenaStatsPage() {
+  return PRESENTATION_MODE ? <PresentationArenaStats /> : <PublicEvaluation />;
 }
