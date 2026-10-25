@@ -33,4 +33,6 @@ The earlier entries below describe pre-existing local work and historical contex
 
 ### Fixed
 
+- Public BGE index integrity validation now accepts Git line-ending normalization using a declared canonical JSON fingerprint while retaining the original raw SHA and rejecting source-content changes.
+
 - Prevented the arena from calling the Google provider with DashScope model names, which failed with a 404.

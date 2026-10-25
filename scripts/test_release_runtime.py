@@ -1,6 +1,7 @@
 """Offline public-runtime security checks. All network/provider work is mocked."""
 
 import io
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -37,6 +38,66 @@ class RuntimeTests(unittest.TestCase):
     def retrieval_row(self, source):
         return {"chunk_id": source['id'], "content": source['content'],
                 "metadata": source['metadata'], "distance": 0.2}
+
+    def fingerprint_fixture(self):
+        records = [self.row(content='第一行\n第二行。')]
+        lf = (json.dumps(records, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+        crlf = lf.replace(b'\n', b'\r\n')
+        canonical = json.dumps(records, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
+        return records, lf, crlf, {'corpus_sha256': hashlib.sha256(crlf).hexdigest(),
+                                  'corpus_canonical_sha256': hashlib.sha256(canonical).hexdigest(),
+                                  'corpus_canonical_format': 'json-sort-keys-utf8-v1'}
+
+    def test_corpus_fingerprint_accepts_json_lineending_only_difference(self):
+        records, lf, crlf, fingerprint = self.fingerprint_fixture()
+        self.assertNotEqual(hashlib.sha256(lf).hexdigest(), fingerprint['corpus_sha256'])
+        path = Mock()
+        path.read_bytes.return_value = lf
+        with patch.object(runtime, 'CHUNKS_PATH', path):
+            runtime.verify_corpus_fingerprint(fingerprint)
+        self.assertEqual(json.loads(lf), json.loads(crlf))
+        self.assertEqual(records[0]['content'], '第一行\n第二行。')
+
+    def test_corpus_fingerprint_raw_match_backward_compatible(self):
+        _, _, crlf, fingerprint = self.fingerprint_fixture()
+        path = Mock()
+        path.read_bytes.return_value = crlf
+        with patch.object(runtime, 'CHUNKS_PATH', path):
+            runtime.verify_corpus_fingerprint({'corpus_sha256': fingerprint['corpus_sha256']})
+
+    def test_corpus_fingerprint_changed_text_or_metadata_fails(self):
+        for mutation in ('text', 'metadata', 'embedded-lineending', 'id'):
+            with self.subTest(mutation=mutation):
+                records, _, _, fingerprint = self.fingerprint_fixture()
+                if mutation == 'text':
+                    records[0]['content'] += 'changed'
+                elif mutation == 'metadata':
+                    records[0]['metadata']['source'] = 'different chapter'
+                elif mutation == 'embedded-lineending':
+                    records[0]['content'] = records[0]['content'].replace('\n', '\r\n')
+                else:
+                    records[0]['id'] = 'different-id'
+                path = Mock()
+                path.read_bytes.return_value = json.dumps(records, ensure_ascii=False).encode('utf-8')
+                with patch.object(runtime, 'CHUNKS_PATH', path):
+                    with self.assertRaises(runtime.RuntimeFailure) as error:
+                        runtime.verify_corpus_fingerprint(fingerprint)
+                self.assertEqual(str(error.exception), 'The research index does not match the source corpus.')
+
+    def test_corpus_fingerprint_missing_or_wrong_canonical_fails(self):
+        _, lf, _, fingerprint = self.fingerprint_fixture()
+        for invalid in (
+            {'corpus_sha256': fingerprint['corpus_sha256']},
+            {**fingerprint, 'corpus_canonical_sha256': ''},
+            {**fingerprint, 'corpus_canonical_sha256': '0' * 64},
+            {**fingerprint, 'corpus_canonical_format': 'unknown-v2'},
+        ):
+            with self.subTest(fingerprint=invalid):
+                path = Mock()
+                path.read_bytes.return_value = lf
+                with patch.object(runtime, 'CHUNKS_PATH', path):
+                    with self.assertRaises(runtime.RuntimeFailure):
+                        runtime.verify_corpus_fingerprint(invalid)
 
     def test_chat_is_fixed_free_openrouter_and_uses_only_its_key(self):
         os.environ.update(OPENROUTER_API_KEY="fake-chat-secret", SILICONFLOW_API_KEY="fake-retrieval-secret",
