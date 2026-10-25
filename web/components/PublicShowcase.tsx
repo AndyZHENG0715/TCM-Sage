@@ -92,6 +92,7 @@ export function PublicShowcase() {
                 <div className="max-w-6xl mx-auto flex min-h-16 items-center justify-between gap-3 px-4 sm:px-6">
                     <Link href="/" className="font-serif text-xl tracking-tight">TCM-Sage<span className="text-primary">.</span></Link>
                     <nav className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm text-parchment/70">
+                        <Link href="/system" className="hover:text-parchment">{chinese ? "完整系统" : "Full system"}</Link>
                         <Link href="/arena" className="hover:text-parchment">{chinese ? "研究记录" : "Evaluation"}</Link>
                         <button onClick={() => { stop(); setMessage(null); setLocale(chinese ? "en" : "zh"); }} className="flex items-center gap-1 hover:text-parchment" aria-label="Change language"><Globe2 size={15} />{locale === "en" ? "中文" : "English"}</button>
                         <button onClick={() => { stop(); setLive(!live); setMessage(null); setError(""); setLiveAccessCode(""); }} className="flex items-center gap-1 hover:text-parchment"><LockKeyhole size={14} />{live ? (chinese ? "回到演示" : "Showcase") : (chinese ? "实时预览" : "Live preview")}</button>
@@ -107,8 +108,11 @@ export function PublicShowcase() {
                 </section>
 
                 {!live && <section className="max-w-3xl mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-sidebar-dark p-4">
-                    <p className="text-sm text-parchment/75">{chinese ? "想问自己的问题？用项目访问码打开实时问答。" : "Want to ask your own question? Open the live preview with a project access code."}</p>
+                    <p className="text-sm text-parchment/75">{chinese ? "想问自己的问题，或看原来的完整研究界面？实时提问需要项目访问码。" : "Want to ask your own question or see the original research interface? Live questions need a project access code."}</p>
+                    <div className="flex flex-wrap gap-2">
+                    <Link href="/system" className="inline-flex items-center gap-2 rounded-lg border border-primary/50 px-4 py-2 text-sm text-parchment hover:bg-primary/10">{chinese ? "打开完整系统" : "Open full system"}<ArrowRight size={14} /></Link>
                     <button onClick={() => { stop(); setLive(true); setMessage(null); setError(""); setLiveAccessCode(""); }} className="inline-flex items-center gap-2 rounded-lg bg-primary-dark px-4 py-2 text-sm text-white"><LockKeyhole size={14} />{chinese ? "实时问答" : "Ask live"}<ArrowRight size={14} /></button>
+                    </div>
                 </section>}
 
                 {live && <section className="max-w-3xl mb-6 rounded-xl border border-primary/30 bg-sidebar-dark p-4 space-y-3" aria-label="Live preview access">
