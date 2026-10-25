@@ -74,7 +74,10 @@ export function PublicShowcase() {
                 setMessage(next);
             }
         } catch {
-            if (!controller.signal.aborted) setError(chinese ? "实时服务暂不可用或访问被限制。可以继续使用下方预录示例；没有自动切换到付费服务。" : "Live access is unavailable or limited. Recorded examples remain available below; no paid fallback was selected.");
+            if (!controller.signal.aborted) {
+                if (!next.content.trim()) setMessage({ ...next, content: chinese ? "未生成回答。请重试或选择预录示例。" : "No answer was generated. Try again or select a recorded example." });
+                setError(chinese ? "实时服务暂不可用或访问被限制。可以继续使用下方预录示例；没有自动切换到付费服务。" : "Live access is unavailable or limited. Recorded examples remain available below; no paid fallback was selected.");
+            }
         } finally {
             if (request.current === controller) {
                 setBusy(false);
@@ -107,7 +110,7 @@ export function PublicShowcase() {
                     <h2 className="font-semibold text-sm">{chinese ? "受控实时预览" : "Controlled live preview"}</h2>
                     <p className="text-xs text-parchment/65">{chinese ? "需要项目访问码；发送问题时由服务器验证。请勿输入姓名、联系方式或患者身份资料。免费服务可能休眠、限流或不可用。" : "A project access code is checked by the server when you send. Do not enter names, contact details or patient identifiers. Free services may sleep, be limited or unavailable."}</p>
                     <input value={code} onChange={e => setCode(e.target.value)} type="password" autoComplete="off" maxLength={256} placeholder={chinese ? "项目访问码（不是模型 API Key）" : "Project access code (not a model API key)"} aria-label="Project access code" className="w-full px-3 py-2 text-sm rounded-lg border border-white/15 bg-background-dark" />
-                    <textarea value={question} onChange={e => setQuestion(e.target.value)} maxLength={2000} rows={3} placeholder={chinese ? "输入古籍研究问题…" : "Ask a question about the classical texts…"} aria-label="Research question" className="w-full px-3 py-2 text-sm rounded-lg border border-white/15 bg-background-dark resize-y" />
+                    <textarea value={question} onChange={e => setQuestion(e.target.value)} maxLength={1000} rows={3} placeholder={chinese ? "输入古籍研究问题…" : "Ask a question about the classical texts…"} aria-label="Research question" className="w-full px-3 py-2 text-sm rounded-lg border border-white/15 bg-background-dark resize-y" />
                     <button onClick={() => void askLive()} disabled={busy || !code.trim() || !question.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary-dark px-4 py-2 text-sm text-white disabled:opacity-40">{chinese ? "发送实时问题" : "Send live question"}<ArrowRight size={14} /></button>
                 </section>}
 

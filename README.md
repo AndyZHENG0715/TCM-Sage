@@ -1,5 +1,13 @@
 # TCM-Sage: An Evidence-Synthesis Tool for TCM
 
+## Public research preview
+
+The public site is [tcm-sage-sandy.vercel.app](https://tcm-sage-sandy.vercel.app/). It starts with six clearly labelled prerecorded examples, original excerpts and saved SymMap relationships. These examples work without a model or backend request. English is the default; Chinese is available.
+
+Optional live research requires a project access code. It uses the full12,204-chunk BGE-M3 index, SiliconFlow's fixed free BGE embedding/reranking models and OpenRouter's fixed free Nemotron model. Provider availability is not guaranteed. Historical prescriptions and graph labels are research material, not medical advice or evidence of clinical benefit. Public Arena submissions and raw statistics are disabled; the original presentation entrypoint remains available locally.
+
+Vercel Hobby serves `web/`; Render Free serves `src/release_api.py` at [tcm-sage-api.onrender.com](https://tcm-sage-api.onrender.com). Provider keys belong only in the backend environment. Render may sleep; its SQLite quota ledger can reset on replacement instances. Initial live access is code-restricted and fixed-free, with no paid fallback. See [release verification and limitations](docs/RELEASE_VERIFICATION.md) and [release operations](docs/RELEASE_OPERATIONS.md). The historical architecture/setup below describes the original presentation stack.
+
 **TCM-Sage** is an evidence-synthesis tool for Traditional Chinese Medicine (TCM) practitioners. This project aims to empower practitioners by providing explainable, evidence-backed insights from the vast corpus of classical TCM literature using a Retrieval-Augmented Generation (RAG) architecture.
 
 ## Project Background
