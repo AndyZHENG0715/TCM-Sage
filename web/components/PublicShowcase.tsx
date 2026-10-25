@@ -106,6 +106,11 @@ export function PublicShowcase() {
                     <p className="text-sm text-parchment/65 leading-relaxed">{chinese ? "探索中医古籍中的文字、上下文和知识图谱关系。下方为人工整理的预录示例，不是实时生成。" : "Explore passages, context and recorded graph relationships from classical Chinese medicine texts. Start with a curated example, prepared in advance."}</p>
                 </section>
 
+                {!live && <section className="max-w-3xl mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-sidebar-dark p-4">
+                    <p className="text-sm text-parchment/75">{chinese ? "想问自己的问题？用项目访问码打开实时问答。" : "Want to ask your own question? Open the live preview with a project access code."}</p>
+                    <button onClick={() => { stop(); setLive(true); setMessage(null); setError(""); setLiveAccessCode(""); }} className="inline-flex items-center gap-2 rounded-lg bg-primary-dark px-4 py-2 text-sm text-white"><LockKeyhole size={14} />{chinese ? "实时问答" : "Ask live"}<ArrowRight size={14} /></button>
+                </section>}
+
                 {live && <section className="max-w-3xl mb-6 rounded-xl border border-primary/30 bg-sidebar-dark p-4 space-y-3" aria-label="Live preview access">
                     <h2 className="font-semibold text-sm">{chinese ? "受控实时预览" : "Controlled live preview"}</h2>
                     <p className="text-xs text-parchment/65">{chinese ? "需要项目访问码；发送问题时由服务器验证。请勿输入姓名、联系方式或患者身份资料。免费服务可能休眠、限流或不可用。" : "A project access code is checked by the server when you send. Do not enter names, contact details or patient identifiers. Free services may sleep, be limited or unavailable."}</p>
