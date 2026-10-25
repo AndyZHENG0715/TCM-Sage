@@ -33,6 +33,8 @@ The earlier entries below describe pre-existing local work and historical contex
 
 ### Fixed
 
+- Distinguish formula cross-references from clause numbers in the public prompt; downgrade verification when generated Arabic clause numbers are absent from the supplied source metadata, including a reproduced false-positive verifier case.
+
 - Public BGE index integrity validation now accepts Git line-ending normalization using a declared canonical JSON fingerprint while retaining the original raw SHA and rejecting source-content changes.
 
 - Prevented the arena from calling the Google provider with DashScope model names, which failed with a 404.

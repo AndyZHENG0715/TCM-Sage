@@ -251,6 +251,48 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(meta['verification']['status'], 'UNSUPPORTED')
         self.assertEqual(meta['citation_bounds']['out_of_range'], [2])
 
+    def test_absent_clause_reference_overrides_supported_verifier(self):
+        source = self.row(content='13．太阳病，头痛、发热、汗出、恶风。用前第一方。')
+        source['metadata']['clause_number'] = 13
+        for answer in ('The formula is listed in Clause 1 [1].', 'CLAUSE 1 supplies the ingredients [1].',
+                       '方药见第1条 [1]。', '方药见第 1 条 [1]。'):
+            with self.subTest(answer=answer), \
+                 patch.object(runtime, 'corpus', return_value={source['id']: source}), \
+                 patch.object(runtime, 'retrieve', return_value=[self.retrieval_row(source)]), \
+                 patch.object(runtime, 'chat', side_effect=['informational', 'SUPPORTED']), \
+                 patch.object(runtime, 'chat_stream', return_value=iter([answer])):
+                meta = list(runtime.run_query('Explain historical clause13'))[-1]
+                self.assertEqual(meta['verification']['status'], 'UNSUPPORTED')
+                self.assertIn('1', meta['verification']['explanation'])
+                self.assertTrue(meta['citation_bounds']['is_valid'])
+
+    def test_supplied_clause13_and_formula_number_distinction(self):
+        source = self.row(content='13．原始条文。用前第一方。')
+        source['metadata']['clause_number'] = 13
+        for answer in ('Clause 13 contains this wording [1].', '第13条有这段文字 [1]。',
+                       'The source says first formula; no clause cross-reference is supplied [1].'):
+            with self.subTest(answer=answer), \
+                 patch.object(runtime, 'corpus', return_value={source['id']: source}), \
+                 patch.object(runtime, 'retrieve', return_value=[self.retrieval_row(source)]), \
+                 patch.object(runtime, 'chat', side_effect=['informational', 'SUPPORTED']), \
+                 patch.object(runtime, 'chat_stream', return_value=iter([answer])):
+                meta = list(runtime.run_query('Explain historical clause13'))[-1]
+                self.assertEqual(meta['verification']['status'], 'SUPPORTED')
+
+    def test_clause_guard_ignores_source_excluded_from_context(self):
+        admitted = self.row('admitted-13', content='13．源文。')
+        admitted['metadata']['clause_number'] = 13
+        excluded = self.row('excluded-1', content='x' * (runtime.MAX_CONTEXT_CHARS + 1))
+        excluded['metadata']['clause_number'] = 1
+        sources = {row['id']: row for row in (admitted, excluded)}
+        with patch.object(runtime, 'corpus', return_value=sources), \
+             patch.object(runtime, 'retrieve', return_value=[self.retrieval_row(admitted), self.retrieval_row(excluded)]), \
+             patch.object(runtime, 'chat', side_effect=['informational', 'SUPPORTED']), \
+             patch.object(runtime, 'chat_stream', return_value=iter(['Clause 1 supplies it [1].'])):
+            meta = list(runtime.run_query('Historical sources'))[-1]
+        self.assertEqual(meta['verification']['status'], 'UNSUPPORTED')
+        self.assertEqual([c['chunk_id'] for c in meta['citations']], ['admitted-13'])
+
     def test_mutated_retrieved_content_rejected_before_generation(self):
         row = self.row()
         retrieved = self.retrieval_row(row)
