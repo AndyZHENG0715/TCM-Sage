@@ -220,7 +220,7 @@ export function CitationPanel({ citation, onClose }: CitationPanelProps) {
     const chunkId = isText ? (citation as TextCitation).chunk_id : undefined;
 
     return (
-        <div className="relative h-screen w-full sm:w-[400px] lg:w-[450px] bg-parchment shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l border-[#dcd3b8] shrink-0">
+        <div className="relative h-full w-full sm:w-[400px] lg:w-[450px] bg-parchment shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l border-[#dcd3b8] shrink-0">
             <div className="flex items-center justify-between p-6 border-b border-[#dcd3b8] bg-[#ebe5d5]">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg text-primary-dark">
