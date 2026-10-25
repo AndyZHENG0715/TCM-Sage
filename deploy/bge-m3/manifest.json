@@ -8,7 +8,9 @@
     "collection": "tcm_bge_m3",
     "distance": "cosine",
     "input_limit_utf8_bytes": 8000,
-    "schema_version": 1
+    "schema_version": 1,
+    "corpus_canonical_format": "json-sort-keys-utf8-v1",
+    "corpus_canonical_sha256": "4b98790497e1d608879d01d552a31f510305b8cc7879be560c9e98dd084328f4"
   },
   "index_directory": "portable-build-20261024T015651Z",
   "status": "complete",

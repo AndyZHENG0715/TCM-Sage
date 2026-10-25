@@ -31,6 +31,21 @@ class RuntimeFailure(RuntimeError):
     """Sanitized public error."""
 
 
+def verify_corpus_fingerprint(fingerprint):
+    raw = CHUNKS_PATH.read_bytes()
+    if hashlib.sha256(raw).hexdigest() == fingerprint.get('corpus_sha256'):
+        return
+    # Git can normalize Windows CRLF to Linux LF. Compare the same JSON records,
+    # not rewritten source text; changing any content/metadata still fails.
+    expected = fingerprint.get('corpus_canonical_sha256')
+    if expected and fingerprint.get('corpus_canonical_format') == 'json-sort-keys-utf8-v1':
+        canonical = json.dumps(json.loads(raw), ensure_ascii=False, sort_keys=True,
+                               separators=(',', ':')).encode('utf-8')
+        if hashlib.sha256(canonical).hexdigest() == expected:
+            return
+    raise RuntimeFailure("The research index does not match the source corpus.")
+
+
 @lru_cache(maxsize=1)
 def corpus():
     records = json.loads(CHUNKS_PATH.read_text(encoding="utf-8"))
@@ -51,8 +66,7 @@ def collection():
     fingerprint = manifest["fingerprint"]
     if fingerprint.get("model") != "BAAI/bge-m3" or fingerprint.get("dimensions") != 1024:
         raise RuntimeFailure("The research index model is incompatible.")
-    if fingerprint.get("corpus_sha256") != hashlib.sha256(CHUNKS_PATH.read_bytes()).hexdigest():
-        raise RuntimeFailure("The research index does not match the source corpus.")
+    verify_corpus_fingerprint(fingerprint)
     db = chromadb.PersistentClient(path=str(version / "chroma"), settings=Settings(anonymized_telemetry=False))
     result = db.get_collection("tcm_bge_m3", embedding_function=None)
     if result.count() != len(corpus()):

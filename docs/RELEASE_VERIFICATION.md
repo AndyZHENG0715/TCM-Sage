@@ -1,6 +1,6 @@
 # Release verification
 
-Checked 2026-10-24 (Asia/Taipei). Deployment remains pending; these are local checks.
+Checked 2026-10-25 (Asia/Taipei). Public frontend https://tcm-sage-sandy.vercel.app and backend https://tcm-sage-api.onrender.com have deployed from main ea8de65. Linux restored all12,204 vectors and ASGI started. Replay and citation UI pass deployed checks. Live acceptance remains in progress.
 
 - Corpus: 12,204 original chunks, 17 books. Full BGE-M3 index complete with 1,024 dimensions, exact source IDs/content/metadata and corpus SHA256 `225559d3603c5de3bb72277b124e480d269806b8611cbae160cf677751e717c3`. Index version `20261024T015651Z-223a0f34`; original evidence stays under ignored vectorstore.
 - Frozen independent questions: 12 positives and 3 unsupported controls, fixture SHA256 `25893dad77f99dd77ae01ba09266f7ed08f9945caca543c988483cd31f9d3e08`. Full lexical hit@5 9/12; dense11/12; reranked12/12, required-source coverage .958333. Exact metadata checks both pass. Runtime scope kept separate from unfiltered evaluation. Frozen report `full-20261024T033652Z-47a94a0a`; strict top-five gate remains needs_review because Shanghan223 ranks sixth. Actual six-source output includes223,319 and224. Clause224 is a contraindication and must preserve its negation; it cannot substitute for affirmative indications. Manual development labels are incomplete; these are not clinical accuracy figures. Negative controls retrieving neighbours do not establish answerability or calibrated abstention.
@@ -11,3 +11,7 @@ Checked 2026-10-24 (Asia/Taipei). Deployment remains pending; these are local ch
 ## Operations and remaining checks
 
 Render Free has an ephemeral filesystem. SQLite admission counts survive process reuse of the same file, but can reset on instance replacement. Do not describe them as durable account-wide monthly budgets. Initial access is code-restricted with conservative limits, fixed free-only provider IDs and no paid fallback. A durable external ledger is required before unrestricted live access or any paid model support. LIVE_ENABLED=0 immediately denies new admission after environment rollout; removing provider keys also prevents inference. Existing streams may finish. Do not share access codes publicly; rotate by replacing LIVE_ACCESS_CODE_HASH. Render may sleep and providers may exhaust quotas; local prerecorded examples remain usable independently.
+
+## Linux corpus normalization fix
+
+Git normalizes CRLF on Windows to LF in the Linux checkout. The original raw corpus SHA remains recorded; the portable manifest now also records SHA256 of UTF-8 canonical JSON (sort_keys, compact separators, original text/metadata values). Runtime accepts original bytes or the identical JSON records under this declared format, and rejects content changes or missing/malformed fallback fingerprints. No source, vector or frozen experiment artifact was rewritten. The actual origin/main blob passes this check; cloud redeployment pending.
