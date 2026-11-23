@@ -1,5 +1,11 @@
 # Handoff
 
+## Clause 13 landing page branch
+
+Checked at `6a849c2` (origin/main), 2026-11-23 HKT. The default recorded question, its first answer sentence and the **Read original passage** action appear together before the live access card. The button opens the existing citation drawer for clause 13. Review the phone and desktop comparisons under `docs/ux-clause-first/`. The earlier readiness handoff is in PR #7. Existing unrelated checkout edits remain separate.
+
+Verification: all eight frontend tests, ESLint and the production build with TypeScript passed. Local recorded replay completed at both 390 × 844 and 1440 × 900. The passage action ended at y=421 and y=370 respectively. Retrieval mode was bundled replay. Next step: review the draft PR.
+
 Checked at: `735107f` locally and merged origin/main `38f19d4` on 2026-10-25 (Asia/Taipei), plus deployment-state documentation changes below. Remote fetched this continuation. Branch: `codex/free-retrieval-validation`. Canonical workspace: `E:/Projects/tcm-sage` on Windows.
 
 ## Authorization and current goal
