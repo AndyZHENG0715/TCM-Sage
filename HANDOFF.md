@@ -1,32 +1,40 @@
-# Handoff
+# Demo handoff
 
-Checked at: `735107f` locally and merged origin/main `38f19d4` on 2026-10-25 (Asia/Taipei), plus deployment-state documentation changes below. Remote fetched this continuation. Branch: `codex/free-retrieval-validation`. Canonical workspace: `E:/Projects/tcm-sage` on Windows.
+Checked at `6a849c2` (origin/main), 2026-11-23 HKT. Canonical checkout: E:/Projects/tcm-sage. The readiness branch contains documentation. The checkout also contains unrelated local edits to README, ignore rules, release verification and legacy Python files, plus untracked configuration, a root lockfile and src/demo_mode.py. Preserve those separately.
 
-## Authorization and current goal
+## Show the project
 
-Andy explicitly authorized autonomous implementation and deployment until TCM-Sage is fully online, superseding prior phase/sample/hosting holds. Use Vercel Hobby frontend and Render Free backend; no paid upgrade/card setup. Both accounts are logged in. SiliconFlow and OpenRouter keys are configured locally; never print or commit them. See `docs/RELEASE_EXECUTION.md` for release acceptance and ownership.
+Open [TCM-Sage](https://tcm-sage-sandy.vercel.app/). Choose **A clause, with its source**, read the short English answer, then open citation 1 to compare it with the original Shanghan Lun passage. **Explore recorded relationships** opens the saved SymMap graph. The graph describes database relationships and the passage documents a historical claim. Neither establishes clinical efficacy.
 
-## Current state
+The six bilingual examples, their excerpts, and saved graphs are public. Visitors may also open the original interface at /system. Sending a live research question requires the project access code and an available [Render backend](https://tcm-sage-api.onrender.com). Public Arena submissions and raw statistics are disabled. The release runtime uses the packaged BGE index, SiliconFlow embedding/reranking and a fixed free OpenRouter model. Keep provider credentials on the backend.
 
-- Full real BGE index build COMPLETE under retrieval worker: version `vectorstore/bge-m3/20261024T015651Z-223a0f34`, 12,204/12,204 verified records; session1679 exited0. Manifest complete. Builder preserves corpus and reuses 256 validated sample vectors. Portable exports packaged in deploy/bge-m3. Offline native restore passed all12,204 records and19 tests; Linux execution remains unverified.
-- Fixed free models: SiliconFlow `BAAI/bge-m3` and `BAAI/bge-reranker-v2-m3`; OpenRouter `nvidia/nemotron-3-ultra-550b-a55b:free`. Account endpoint confirmed 1,000 free-model requests/day. Gemma free endpoints returned 429; no paid fallback. A small Nemotron classifier probe succeeded; full generated-answer quality remains unverified.
-- New isolated backend: `src/release_api.py`, `release_runtime.py`, `release_limits.py`. Access-code gate, SQLite quotas, bounded requests, fixed providers, sanitized failures, source/graph reads, disabled Arena. SQLite only survives when its filesystem survives; Render instance replacement can reset counters. Initial live access is code-restricted, one concurrent query, ten per code/day,20global/day and100global/month per surviving ledger. No durable account-wide monthly quota claim. Durable external storage is required before unrestricted access or paid models.
-- New frontend defaults to six labelled prerecorded bilingual examples with corpus/graph fixtures and local source navigation; English default. Live code held only in session memory. Historical presentation remains opt-in via NEXT_PUBLIC_PRESENTATION_MODE=1. No public Arena writes/raw vote exports.
-- Frontend worker owns final build and port3001 preview. Audit worker owns full-index independent evaluation runner and tests. Retrieval worker owns full build and Linux restore. Root owns integration/deployment/docs. Shared browser operations are root-only.
-- Release PR #2 MERGED into main as ea8de65. Render Free service srv-dbe2k47b9u1s73bvd3ng at https://tcm-sage-api.onrender.com successfully restored12204 vectors and launched Linux ASGI. Key-enabled deployment dep-dber9o5g1s2s73dhq420 succeeded; fingerprint-fix deployment dep-dbercs0473hc739cqr80 is live. Keys and access hash uploaded via explicitly authorized service-only file, subsequently removed locally after upload. No values were displayed. Vercel project tcm-sage, root web, live at https://tcm-sage-sandy.vercel.app . Both Linux backends and public frontend deployed successfully. PR#3 merged38f19d4 fixes Windows/Linux JSON line-ending fingerprints without corpus/vector edits. Keys must never be set on Vercel frontend. Planning draft PR #1 remains historical.
+## Run the replay locally
 
-## Retrieval evidence
+From the canonical checkout:
 
-Frozen 256-record actual sample: 32 fixed-free calls, 1,024 dimensions. Hit@5 lexical8/12, dense11/12, reranked12/12; required-source coverage .625/.875/.958333. These enriched sample metrics are not corpus or clinical accuracy. Strict cross-book label miss has a relevant unlabelled Qianjin alternative; preserve old labels and metrics. Independent new fixture frozen before full evaluation: `scripts/fixtures/retrieval_independent_cases.json`, SHA256 `25893dad77f99dd77ae01ba09266f7ed08f9945caca543c988483cd31f9d3e08`. Evaluate unfiltered and metadata-filtered lanes separately. All three unsupported controls retrieve neighbours; no abstention threshold validated. See retrieval validation/review documents.
+```powershell
+cd web
+npm.cmd ci
+npm.cmd run dev
+```
+
+Open http://localhost:3000 and select a recorded example. The replay runs from bundled data without a Python server, API keys or retrieval index. Leave NEXT_PUBLIC_PRESENTATION_MODE unset for the showcase. See [release operations](docs/RELEASE_OPERATIONS.md) for live-backend setup and shutdown. The Python release entry point is src/release_api.py. The original presentation entry point is src/api.py.
 
 ## Verification
 
-Current release tests: runtime28PASS, API13PASS, limits16PASS; retrieval/restore19PASS. Frontend eight tests/lint/TypeScript/build passed; final error-placeholder/input-length polish pending worker check. Runtime includes rejection of malformed classifiers, truncated/empty nonstream responses and empty DONE streams. All are mocked/no provider calls. Frontend lint and four fixture/replay tests PASS; final production rebuild pending the last graph-alias fixture change. Earlier production build passed compile/typecheck/prerender. Full corpus evaluation completed: lexical9/12, dense11/12, rerank12/12 hit@5; strict source coverage .958333 (one required passage ranks6). Two tiny generated-answer/out-of-scope smokes passed; browser390px DOM/source checks passed. Linux portable restore and initial startup passed. Windows combined read-side peakRSS279.62MiB; actual Linux retrieval/generation via frontend proxy passed in39seconds with one exact citation and valid bounds. Deployed health200, no-code401, Arena403,source200 andgraph200(31nodes/30edges) passed. Browser replay/language/source/graph and390pxnooverflow passed; replay network capture contained zero backend requests. See docs/RELEASE_VERIFICATION.md. Tested retrieval mode is isolated BGE sample and in-progress full BGE build, not legacy DEMO_MODE=0/DashScope.
+- On 2026-11-23, all six public replays completed at desktop and phone widths. Citation panels, distinct source readers and all graph explorer pages opened. Mobile navigation wraps and most examples initially sit outside the visible horizontal strip. See the [screenshot review](https://github.com/AndyZHENG0715/TCM-Sage/pull/6).
+- Local npm ci and dev startup succeeded. An isolated browser replayed clause 13 and displayed the saved citations and graph. All 28 captured requests went to loopback and returned HTTP 200. Tested retrieval mode: bundled recorded fixtures. Neither legacy DEMO_MODE path ran. On this Windows host the default npm cache returned EPERM; the install used a temporary cache.
+- Direct Render GET /health at 17:36:54 HKT, after 16 min 28 s since the previous known probe, returned HTTP 200 in 42.636 s (42.632 s to first byte). The warm repeat took 149 ms. This measures the first health response after observed idle. Other public traffic and the instance lifecycle were not independently observable.
+- Earlier release verification on 2026-10-25 covered authenticated generation, source bounds and gate enforcement. The previous authenticated query took 30.56 s end to end. See [release verification](docs/RELEASE_VERIFICATION.md) for historical results.
 
-## Preserve
+## Remaining work
 
-Original unrelated presentation changes: .gitignore, README.md, src/embeddings.py, src/main.py, src/ui_backend.py; untracked .editorconfig, .gitattributes, src/demo_mode.py. Do not revert or silently include them in release commits. Corpus and graph are read-only. Legacy vectorstore/chroma absent; legacy12592-ID checkpoint is stale and must not be reused/reset. Current corpus12204 chunks/17 books; graph18450 entities/21476 edges.
+Decide which first-visit UX proposal to try. Before broader live access, revisit source faithfulness and persistent quota storage: Render can sleep, free providers can rate-limit, and the SQLite ledger depends on the instance filesystem. The six-example showcase remains usable independently. The WSL Ubuntu filesystem contained no directory named application-preview during the cleanup check.
 
-## Next
+## Index and evidence
 
-Final source-claim guard/UIpolish/docs change pending commit+PRmerge+autodeploy. The successful live answer incorrectly expanded『用前第一方』toClause1 and the LLMverifier falselySUPPORTED it; new deterministic source-clause-number guard rejects that claim and prompt distinguishesformula/clause.28runtime/13APItests passed; guardusescanonicalcorpus metadata for admittedcitations only. Recheck one actual deployed question after final rollout, and record its outcome. Keep fallible-verifier limitations explicit. Local ignored .env.release-access holds the private tester code; do not output or commit it. Original unrelated edits remain untouched. Genuine provider authentication/terms or sensitive key transmission may require a specific human action; prepare concrete service configuration first.
+The full index has 12,204 records from 17 books, 1,024 dimensions and cosine distance. Local version: `vectorstore/bge-m3/20261024T015651Z-223a0f34`; collection: `tcm_bge_m3`. The builder reused 256 validated sample vectors. Portable artifacts are committed under `deploy/bge-m3`; Linux restored all records offline without provider calls.
+
+Original raw corpus SHA256 `225559d3603c5de3bb72277b124e480d269806b8611cbae160cf677751e717c3` remains recorded. Git normalizes file CRLF to LF on Linux; a declared canonical JSON fingerprint verifies identical records without changing source values. Tests reject altered IDs, content, metadata, embedded newlines and undeclared fallback formats. Corpus and graph remain read-only. Legacy `vectorstore/chroma` is absent; its stale 12,592-ID checkpoint must not be reused or reset.
+
+Frozen independent cases: 12 positive and 3 negative questions. Hit@5: lexical 9/12, dense 11/12, reranked 12/12; required-source coverage 0.958333. The strict gate remains `needs_review` because required Shanghan 223 ranks sixth. Actual six-source output includes 223, 319 and 224; clause 224 is a contraindication and cannot substitute for affirmative indications. Labels/scores remain unchanged. These are manual development metrics, not clinical accuracy. Negative controls retrieve neighbours; no calibrated abstention threshold exists. Details remain in retrieval documents and ignored run `full-20261024T033652Z-47a94a0a`.
