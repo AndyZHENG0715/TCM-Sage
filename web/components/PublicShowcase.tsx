@@ -26,6 +26,12 @@ export function PublicShowcase() {
     const output = message ?? recordedMessage(selected, chinese);
     const graphCitation = selected.citations.find(c => c.type === "graph") as GraphCitation | undefined;
 
+    const firstPassage = selected === RECORDED_EXAMPLES[0] && !live
+        ? selected.citations.find(citation => citation.type === "text")
+        : undefined;
+    const recordedAnswer = chinese ? selected.answerZh : selected.answer;
+    const firstSentence = recordedAnswer.match(/^[^。.!?！？]+[。.!?！？]/u)?.[0] ?? recordedAnswer;
+
     const stop = () => {
         request.current?.abort();
         request.current = null;
@@ -101,17 +107,28 @@ export function PublicShowcase() {
             </header>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7 sm:py-10">
+                {firstPassage ? (
+                    <section className="max-w-3xl mb-6" aria-labelledby="featured-question">
+                        <p className="text-sm text-primary mb-2">{chinese ? "预录示例 · 伤寒论" : "Recorded example · Shanghan Lun"}</p>
+                        <h1 id="featured-question" className="font-serif text-3xl sm:text-4xl leading-tight">{chinese ? selected.questionZh : selected.question}</h1>
+                        <p className="mt-4 mb-5 font-serif text-lg leading-relaxed">{firstSentence}</p>
+                        <button onClick={() => setActiveCitation(firstPassage)} className="inline-flex items-center gap-2 rounded-lg bg-primary-dark px-4 py-3 text-sm text-white hover:brightness-110">
+                            <BookOpen size={16} />{chinese ? "阅读原文" : "Read original passage"}
+                        </button>
+                    </section>
+                ) : (
                 <section className="max-w-3xl mb-5">
                     <p className="text-xs uppercase tracking-[.18em] text-primary mb-2">{chinese ? "古籍 · 引用 · 可追溯" : "Classical texts · citations · context"}</p>
                     <h1 className="font-serif text-3xl sm:text-4xl leading-tight mb-3">{chinese ? "从答案，回到原文。" : "An answer is a starting point. Read the source."}</h1>
                     <p className="text-sm text-parchment/65 leading-relaxed">{chinese ? "探索中医古籍中的文字、上下文和知识图谱关系。下方为人工整理的预录示例，不是实时生成。" : "Explore passages, context and recorded graph relationships from classical Chinese medicine texts. Start with a curated example, prepared in advance."}</p>
                 </section>
+                )}
 
-                {!live && <section className="max-w-3xl mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-sidebar-dark p-4">
+                {!live && <section className="max-w-3xl mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-sidebar-dark p-4">
                     <p className="text-sm text-parchment/75">{chinese ? "想问自己的问题，或看原来的完整研究界面？实时提问需要项目访问码。" : "Want to ask your own question or see the original research interface? Live questions need a project access code."}</p>
                     <div className="flex flex-wrap gap-2">
                     <Link href="/system" className="inline-flex items-center gap-2 rounded-lg border border-primary/50 px-4 py-2 text-sm text-parchment hover:bg-primary/10">{chinese ? "打开完整系统" : "Open full system"}<ArrowRight size={14} /></Link>
-                    <button onClick={() => { stop(); setLive(true); setMessage(null); setError(""); setLiveAccessCode(""); }} className="inline-flex items-center gap-2 rounded-lg bg-primary-dark px-4 py-2 text-sm text-white"><LockKeyhole size={14} />{chinese ? "实时问答" : "Ask live"}<ArrowRight size={14} /></button>
+                    <button onClick={() => { stop(); setLive(true); setMessage(null); setError(""); setLiveAccessCode(""); }} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm text-parchment hover:bg-primary/10"><LockKeyhole size={14} />{chinese ? "实时问答" : "Ask live"}<ArrowRight size={14} /></button>
                     </div>
                 </section>}
 

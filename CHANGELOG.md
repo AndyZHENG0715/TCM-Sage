@@ -6,6 +6,10 @@ The format follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/
 
 ## [Unreleased]
 
+### Changed
+
+- The public showcase opens with the Shanghan Lun clause 13 question, its first answer sentence and a direct action to read the cited passage.
+
 ### Added
 
 - Public release implementation in progress: six bilingual prerecorded examples with local source/graph navigation, isolated fixed-free BGE/OpenRouter runtime, admission and read quotas, source integrity checks, disabled public Arena writes and lean deployment requirements. Full-corpus index and deployed acceptance are pending.
